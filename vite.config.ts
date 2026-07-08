@@ -6,6 +6,10 @@ import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
 
+const ddevPrimaryUrl = process.env.DDEV_PRIMARY_URL;
+const ddevHostname = ddevPrimaryUrl ? new URL(ddevPrimaryUrl).hostname : undefined;
+const vitePort = Number(process.env.VITE_PORT ?? 5173);
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -28,4 +32,19 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        host: '0.0.0.0',
+        port: vitePort,
+        strictPort: true,
+        ...(ddevPrimaryUrl
+            ? {
+                  origin: `${ddevPrimaryUrl}:${vitePort}`,
+                  hmr: {
+                      host: ddevHostname,
+                      protocol: 'wss',
+                      clientPort: vitePort,
+                  },
+              }
+            : {}),
+    },
 });

@@ -118,7 +118,7 @@ resources/js/
 Start simple:
 
 - `User` model with Laravel starter kit authentication;
-- admin middleware for `/admin`;
+- role middleware for the starter `/dashboard` route;
 - policies per model.
 
 Later:

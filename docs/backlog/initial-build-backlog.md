@@ -72,6 +72,27 @@ Acceptance criteria:
 - local URL works over HTTPS or DDEV default routing;
 - setup steps are documented.
 
+### DDS-002A: Configure DDEV Vite Dev Server
+
+Status: complete. Vite is exposed through DDEV on `https://dds-platform.ddev.site:5173`, and `vite.config.ts` is configured to use the DDEV host for dev server origin and HMR.
+
+Goal: make Vite dev mode work through the DDEV URL without distorted or missing assets.
+
+Tasks:
+
+- expose Vite port `5173` through DDEV;
+- configure Vite to listen on `0.0.0.0`;
+- configure DDEV-aware Vite origin and HMR settings;
+- document when to use `ddev npm run dev` versus `ddev npm run build`;
+- document the role of `public/hot`.
+
+Acceptance criteria:
+
+- app is opened through `https://dds-platform.ddev.site`;
+- `ddev npm run dev` serves hot assets through `https://dds-platform.ddev.site:5173`;
+- `public/hot` points to the DDEV Vite URL while dev mode is running;
+- production-style local checks can use built assets after removing `public/hot`.
+
 ### DDS-003: Baseline Quality Tooling
 
 Status: baseline complete. `ddev artisan test` and `ddev npm run build` pass. CI can still be added as a follow-up once the initial codebase is committed.
@@ -114,25 +135,38 @@ Acceptance criteria:
 
 ### DDS-004: Authentication And Admin Gate
 
-Goal: enable login and protect `/admin`.
+Status: implemented locally. `spatie/laravel-permission` is installed and configured, the package migration/config are published, initial `admin` and `editor` roles are seeded, `/dashboard` is protected by auth, email verification, and role middleware, CRUD permissions are available for concrete admin actions, and a repeatable first-admin command exists through `php artisan dds:make-admin`. Backend tests and TypeScript checks pass locally. Final DDEV migration, seeding, build, and browser verification are still pending.
+
+Goal: enable login and protect the starter `/dashboard` route as the first management entrypoint.
 
 Tasks:
 
 - use starter kit authentication;
 - install and configure `spatie/laravel-permission`;
 - create initial `admin` and `editor` roles;
-- create `/admin` route;
-- protect `/admin` with auth middleware;
-- protect admin access through roles/permissions;
-- add a first admin user seeding path.
+- use the existing `/dashboard` route from the starter kit;
+- protect `/dashboard` with auth middleware;
+- protect admin shell access through roles;
+- protect concrete admin actions through permissions;
+- add a first admin user creation command.
 
 Acceptance criteria:
 
-- unauthenticated users cannot access `/admin`;
-- authenticated admin user can access `/admin`;
+- unauthenticated users cannot access `/dashboard`;
+- authenticated admin user can access `/dashboard`;
 - non-admin behavior is defined;
-- role checks use Spatie Permission instead of a custom boolean-only approach;
+- role and permission checks use Spatie Permission instead of a custom boolean-only approach;
 - first admin account can be created repeatably for local/staging setup.
+
+Local verification commands:
+
+- `ddev artisan migrate`;
+- `ddev artisan db:seed`;
+- `ddev artisan dds:make-admin`;
+- `ddev npm run types:check`;
+- `ddev npm run lint:check`;
+- `ddev npm run build`;
+- `ddev artisan test --compact`.
 
 ### DDS-004A: Initial Commit Checkpoint
 
@@ -154,23 +188,44 @@ Acceptance criteria:
 - initial commit contains docs, scaffold, DDEV config, and baseline tooling;
 - no local secrets are committed.
 
-### DDS-005: Public And Admin Layout Shells
+### DDS-004B: DDS-004 Pull Request Verification
 
-Goal: create the first layout boundaries.
+Goal: finish the first admin-access slice through GitHub review.
 
 Tasks:
 
-- create `PublicLayout`;
-- create `AdminLayout`;
-- add basic public header/footer structure;
-- add basic admin sidebar/topbar structure;
-- keep styling minimal but coherent;
-- establish initial spacing, typography, navigation, and interaction conventions.
+- push the `codex/dds-004-admin-gate` branch;
+- open a ready pull request against `main`;
+- verify GitHub Actions for backend tests, frontend typecheck/build, and formatting;
+- record any CI-specific follow-ups separately.
 
 Acceptance criteria:
 
-- public pages render in `PublicLayout`;
-- admin pages render in `AdminLayout`;
+- PR is open and not marked as draft;
+- CI passes or failures are triaged into concrete follow-up tasks;
+- branch contains the DDS-004 admin access foundation only;
+- local verification commands are noted in the PR description.
+
+### DDS-005: Public And Admin Layout Shells
+
+Goal: harden the existing starter layouts into intentional DDS public and management shells.
+
+Tasks:
+
+- turn the existing authenticated app layout into the first management layout for `/dashboard`;
+- decide whether the public site needs a separate `PublicLayout` immediately or can start from dedicated public page components;
+- replace generic starter navigation labels, logo treatment, and dashboard placeholders with DDS-oriented structure;
+- add basic public header/footer structure for the first public pages;
+- add basic management sidebar/topbar structure using the existing starter layout patterns;
+- keep styling minimal but coherent;
+- establish initial spacing, typography, navigation, and interaction conventions;
+- preserve the starter authentication/settings UX unless there is a clear DDS reason to change it.
+
+Acceptance criteria:
+
+- public pages have a clear layout direction and do not rely on generic starter visuals;
+- management pages render through the existing authenticated app layout;
+- `/dashboard` feels like a DDS management entrypoint rather than an untouched starter dashboard;
 - navigation placeholders exist;
 - mobile and desktop layout shells are usable;
 - focus, hover, and active states are visible;
@@ -284,11 +339,11 @@ Acceptance criteria:
 
 ### DDS-011: Admin Event CRUD
 
-Goal: manage events from the custom admin.
+Goal: manage events from the `/dashboard` management area.
 
 Tasks:
 
-- create admin event index;
+- create `/dashboard/events` event index;
 - create event create/edit forms;
 - add server-side validation through Form Requests;
 - add event policies;
@@ -296,7 +351,8 @@ Tasks:
 
 Acceptance criteria:
 
-- admin can create, edit, and archive events;
+- admins can create, edit, and archive events;
+- editors can create and update events according to their seeded permissions;
 - validation errors are shown clearly;
 - event type and registration status are editable;
 - public visibility follows status;
@@ -396,18 +452,20 @@ Acceptance criteria:
 
 1. DDS-001
 2. DDS-002
-3. DDS-003
-4. DDS-004
-5. DDS-005
-6. DDS-006
-7. DDS-007
-8. DDS-009
-9. DDS-010
-10. DDS-011
-11. DDS-012
-12. DDS-013
-13. DDS-014
-14. DDS-015
-15. DDS-016
+3. DDS-002A
+4. DDS-003
+5. DDS-004
+6. DDS-004B
+7. DDS-005
+8. DDS-006
+9. DDS-007
+10. DDS-009
+11. DDS-010
+12. DDS-011
+13. DDS-012
+14. DDS-013
+15. DDS-014
+16. DDS-015
+17. DDS-016
 
 The public website rebuild can begin once DDS-007 and DDS-010 exist, while admin and import work continue behind it.

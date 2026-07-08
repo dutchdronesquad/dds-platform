@@ -54,6 +54,32 @@ Do not run this during the documentation phase. This is the recommended directio
 - Render public pages through Inertia, not a loose Blade/React mix unless deliberately chosen.
 - Admin components can be more abstract than public components because tables and forms repeat.
 
+## Vite With DDEV
+
+The project exposes Vite through DDEV on `https://dds-platform.ddev.site:5173`.
+
+For active frontend development:
+
+```bash
+ddev npm run dev
+```
+
+Keep that command running and open the application through the normal DDEV URL:
+
+```txt
+https://dds-platform.ddev.site
+```
+
+Do not open the raw Vite URL as the application URL. Laravel should serve the app, while Vite serves hot assets.
+
+For a production-style local check:
+
+```bash
+ddev npm run build
+```
+
+If `public/hot` exists, Laravel will keep using the dev server even after a build. Stop the dev server cleanly, or remove `public/hot` before checking built assets.
+
 ## Open Spike Questions
 
 Before the application is built:
