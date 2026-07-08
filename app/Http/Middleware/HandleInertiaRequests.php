@@ -38,6 +38,13 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => [
+                'active' => app()->getLocale(),
+                'supported' => config('localization.supported_locales'),
+                'default' => config('localization.default_locale'),
+                'fallback' => config('localization.fallback_locale'),
+                'usesRoutePrefixes' => config('localization.use_locale_route_prefixes'),
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],

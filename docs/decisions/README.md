@@ -104,9 +104,9 @@ Preferred approach:
 - import referenced media into `MediaAsset`;
 - maintain a redirect map from old WordPress URLs to new Laravel routes.
 
-## 2026-07-04: Dutch-First Bilingual Content
+## 2026-07-04: English-Default Bilingual Content
 
-Decision: support Dutch and English content, with Dutch as the default and primary public locale.
+Decision: support English and Dutch content, with English as the application default and Dutch as a supported locale from the start.
 
 Reason:
 
@@ -117,11 +117,11 @@ Reason:
 
 Implementation direction:
 
-- default locale `nl`;
-- supported locales `nl` and `en`;
+- default locale `en`;
+- supported locales `en` and `nl`;
 - public route names remain English-based for now;
 - content fields should support translations or locale-specific records;
-- full English content parity is not required for the first release.
+- full Dutch content parity is supported incrementally and does not require locale-prefixed routes in phase 1.
 
 ## 2026-07-07: No Locale Prefixes In Phase 1
 
@@ -136,7 +136,7 @@ Reason:
 Implementation direction:
 
 - use English route names such as `/events`, `/news`, `/about`, and `/contact`;
-- default public content locale is `nl`;
+- default public content locale is `en`;
 - optionally expose language selection through content rendering, not separate route trees, in phase 1;
 - keep the architecture open for localized routes later.
 
@@ -153,7 +153,7 @@ Reason:
 Implementation direction:
 
 - admin navigation, forms, validation labels, and empty states can start in English;
-- public content remains Dutch-first and translatable to English;
+- public content remains English-default and translatable to Dutch;
 - content locale should be explicit in admin forms.
 
 ## 2026-07-07: Scaffold Before WordPress Import
