@@ -89,20 +89,20 @@ Legacy URLs that need redirects:
 ## Admin Routes
 
 ```txt
-/admin
-/admin/events
-/admin/events/create
-/admin/events/{event}/edit
-/admin/articles
-/admin/articles/create
-/admin/articles/{article}/edit
-/admin/projects
-/admin/projects/create
-/admin/projects/{project}/edit
-/admin/locations
-/admin/partners
-/admin/media
-/admin/contact-submissions
+/dashboard
+/dashboard/events
+/dashboard/events/create
+/dashboard/events/{event}/edit
+/dashboard/articles
+/dashboard/articles/create
+/dashboard/articles/{article}/edit
+/dashboard/projects
+/dashboard/projects/create
+/dashboard/projects/{project}/edit
+/dashboard/locations
+/dashboard/partners
+/dashboard/media
+/dashboard/contact-submissions
 ```
 
 ## Homepage Structure

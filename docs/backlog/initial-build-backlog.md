@@ -114,25 +114,38 @@ Acceptance criteria:
 
 ### DDS-004: Authentication And Admin Gate
 
-Goal: enable login and protect `/admin`.
+Status: implemented locally. `spatie/laravel-permission` is installed and configured, the package migration/config are published, initial `admin` and `editor` roles are seeded, `/dashboard` is protected by auth, email verification, and role middleware, CRUD permissions are available for concrete admin actions, and a repeatable first-admin command exists through `php artisan dds:make-admin`. Backend tests and TypeScript checks pass locally. Final DDEV migration, seeding, build, and browser verification are still pending.
+
+Goal: enable login and protect the starter `/dashboard` route as the first management entrypoint.
 
 Tasks:
 
 - use starter kit authentication;
 - install and configure `spatie/laravel-permission`;
 - create initial `admin` and `editor` roles;
-- create `/admin` route;
-- protect `/admin` with auth middleware;
-- protect admin access through roles/permissions;
-- add a first admin user seeding path.
+- use the existing `/dashboard` route from the starter kit;
+- protect `/dashboard` with auth middleware;
+- protect admin shell access through roles;
+- protect concrete admin actions through permissions;
+- add a first admin user creation command.
 
 Acceptance criteria:
 
-- unauthenticated users cannot access `/admin`;
-- authenticated admin user can access `/admin`;
+- unauthenticated users cannot access `/dashboard`;
+- authenticated admin user can access `/dashboard`;
 - non-admin behavior is defined;
-- role checks use Spatie Permission instead of a custom boolean-only approach;
+- role and permission checks use Spatie Permission instead of a custom boolean-only approach;
 - first admin account can be created repeatably for local/staging setup.
+
+Local verification commands:
+
+- `ddev artisan migrate`;
+- `ddev artisan db:seed`;
+- `ddev artisan dds:make-admin`;
+- `ddev npm run types:check`;
+- `ddev npm run lint:check`;
+- `ddev npm run build`;
+- `ddev artisan test --compact`.
 
 ### DDS-004A: Initial Commit Checkpoint
 

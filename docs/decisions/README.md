@@ -188,8 +188,9 @@ Implementation direction:
 
 - install `spatie/laravel-permission` during `DDS-004`;
 - create `admin` and `editor` roles;
-- protect `/admin` through role/permission middleware or policies;
-- seed or document a repeatable path for creating the first admin user.
+- use CRUD- and workflow-oriented permissions per domain for concrete actions;
+- protect the starter `/dashboard` route through `admin` and `editor` roles, then protect concrete actions through permissions;
+- provide a repeatable Artisan command for creating or promoting the first admin user.
 
 ## 2026-07-08: Initial Commit After Validated Scaffold
 

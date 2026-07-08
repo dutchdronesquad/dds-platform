@@ -38,7 +38,7 @@ Acceptance criteria:
 - app runs locally through DDEV;
 - login works;
 - `/` renders through Inertia;
-- `/admin` is protected;
+- `/dashboard` is protected;
 - locale configuration is in place;
 - tests and linting run locally and in CI.
 
@@ -86,7 +86,7 @@ Acceptance criteria:
 
 - admin feels like a coherent part of the app;
 - management patterns are reusable;
-- non-admin users cannot access `/admin`;
+- non-admin users cannot access `/dashboard`;
 - CRUD patterns can be applied to the first domain.
 
 ## Phase 4: Events As First Domain
