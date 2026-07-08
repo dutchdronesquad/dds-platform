@@ -7,7 +7,9 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
 
 const ddevPrimaryUrl = process.env.DDEV_PRIMARY_URL;
-const ddevHostname = ddevPrimaryUrl ? new URL(ddevPrimaryUrl).hostname : undefined;
+const ddevHostname = ddevPrimaryUrl
+    ? new URL(ddevPrimaryUrl).hostname
+    : undefined;
 const vitePort = Number(process.env.VITE_PORT ?? 5173);
 
 export default defineConfig({
@@ -39,6 +41,9 @@ export default defineConfig({
         ...(ddevPrimaryUrl
             ? {
                   origin: `${ddevPrimaryUrl}:${vitePort}`,
+                  cors: {
+                      origin: [ddevPrimaryUrl],
+                  },
                   hmr: {
                       host: ddevHostname,
                       protocol: 'wss',

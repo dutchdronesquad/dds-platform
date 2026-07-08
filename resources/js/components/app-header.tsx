@@ -1,5 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import {
+    CalendarDays,
+    ClipboardList,
+    Home,
+    LayoutDashboard,
+    LifeBuoy,
+    MapPin,
+    Menu,
+    Newspaper,
+    Search,
+    ShieldCheck,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -31,8 +42,8 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
-import { cn, toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { cn } from '@/lib/utils';
+import { dashboard, home } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -41,22 +52,47 @@ type Props = {
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Overzicht',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Events',
+        href: `${dashboard.url()}#events`,
+        icon: CalendarDays,
+    },
+    {
+        title: 'Projecten',
+        href: `${dashboard.url()}#projects`,
+        icon: ClipboardList,
+    },
+    {
+        title: 'Nieuws',
+        href: `${dashboard.url()}#news`,
+        icon: Newspaper,
+    },
+    {
+        title: 'Locaties',
+        href: `${dashboard.url()}#locations`,
+        icon: MapPin,
     },
 ];
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Publieke site',
+        href: home(),
+        icon: Home,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Huisregels',
+        href: `${dashboard.url()}#house-rules`,
+        icon: ShieldCheck,
+    },
+    {
+        title: 'Support',
+        href: `${dashboard.url()}#support`,
+        icon: LifeBuoy,
     },
 ];
 
@@ -81,6 +117,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     variant="ghost"
                                     size="icon"
                                     className="mr-2 h-[34px] w-[34px]"
+                                    aria-label="Open navigatiemenu"
                                 >
                                     <Menu className="h-5 w-5" />
                                 </Button>
@@ -90,10 +127,17 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                             >
                                 <SheetTitle className="sr-only">
-                                    Navigation menu
+                                    Navigatiemenu
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                    <div className="flex items-center gap-2">
+                                        <span className="flex size-8 items-center justify-center rounded-md bg-red-600 text-white dark:bg-red-500 dark:text-neutral-950">
+                                            <AppLogoIcon className="size-5 fill-current" />
+                                        </span>
+                                        <span className="font-semibold">
+                                            Dutch Drone Squad
+                                        </span>
+                                    </div>
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
@@ -114,18 +158,16 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                                         <div className="flex flex-col space-y-4">
                                             {rightNavItems.map((item) => (
-                                                <a
+                                                <Link
                                                     key={item.title}
-                                                    href={toUrl(item.href)}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                    href={item.href}
                                                     className="flex items-center space-x-2 font-medium"
                                                 >
                                                     {item.icon && (
                                                         <item.icon className="h-5 w-5" />
                                                     )}
                                                     <span>{item.title}</span>
-                                                </a>
+                                                </Link>
                                             ))}
                                         </div>
                                     </div>
@@ -182,17 +224,16 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 variant="ghost"
                                 size="icon"
                                 className="group h-9 w-9 cursor-pointer"
+                                aria-label="Zoeken"
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
                             <div className="ml-1 hidden gap-1 lg:flex">
                                 {rightNavItems.map((item) => (
                                     <Tooltip key={item.title}>
-                                        <TooltipTrigger>
-                                            <a
-                                                href={toUrl(item.href)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                        <TooltipTrigger asChild>
+                                            <Link
+                                                href={item.href}
                                                 className="group inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium text-accent-foreground ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
                                             >
                                                 <span className="sr-only">
@@ -201,7 +242,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                 {item.icon && (
                                                     <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
                                                 )}
-                                            </a>
+                                            </Link>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>{item.title}</p>
