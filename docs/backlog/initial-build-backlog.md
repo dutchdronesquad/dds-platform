@@ -261,6 +261,7 @@ Tasks:
 - create `/events`;
 - create `/events/{slug}` placeholder;
 - create `/projects`;
+- position `/projects` as a showcase for DDS-built tooling, software, plugins, apps, integrations, and selected community builds;
 - create `/news`;
 - create `/locations`;
 - create `/about`;
@@ -273,6 +274,7 @@ Acceptance criteria:
 - all public routes render;
 - navigation uses `Events`, `Projects`, `News`, `About`, and `Contact`;
 - pages can use placeholder content, but no generic theme copy;
+- `/projects` placeholder copy clearly frames projects as a public showcase rather than internal project management;
 - each page has a clear purpose, heading hierarchy, and primary next action.
 
 ### DDS-008: Baseline SEO And Redirect Shape
@@ -410,6 +412,69 @@ Acceptance criteria:
 - imported WordPress media can be deduplicated by legacy ID;
 - alt text is supported.
 
+### DDS-014A: Project Showcase Model
+
+Goal: model public showcase projects for DDS-built tooling, software, plugins, apps, integrations, and selected community builds.
+
+Tasks:
+
+- create `Project` model and migration;
+- include title, slug, excerpt, content, status, project_type, visibility, featured flag, and sort order;
+- support project types such as `plugin`, `app`, `integration`, `event_tooling`, `community_build`, and `other`;
+- add optional links for GitHub, live demo, documentation, download, and contact;
+- add optional ownership/credit fields for maintainers or contributors;
+- add SEO fields and media references;
+- include locale-aware content fields.
+
+Acceptance criteria:
+
+- RotorHazard plugins, TrackDraw-style apps, race tooling, livestream overlays, and community utilities can be represented cleanly;
+- projects can distinguish open source, public platform, internal/private, and archived work;
+- only published and public projects are visible on the public site;
+- the model does not imply internal task or project-management workflows;
+- project records can be created through factories/tests.
+
+### DDS-014B: Public Project Showcase Pages
+
+Goal: show DDS projects publicly as a credible development and tooling showcase.
+
+Tasks:
+
+- build `/projects` project index page;
+- build `/projects/{slug}` project detail page;
+- add filters or grouping by project type when useful;
+- show project links, status, media, and concise value proposition;
+- add useful empty states.
+
+Acceptance criteria:
+
+- `/projects` lists published public projects;
+- `/projects/{slug}` shows a published public project;
+- project cards communicate type, purpose, status, and primary link clearly;
+- archived or internal-only projects are not publicly listed unless explicitly marked visible;
+- pages can support both software/tooling projects and selected community builds without separate content types.
+
+### DDS-014C: Admin Project CRUD
+
+Goal: manage project showcase content from the `/dashboard` management area.
+
+Tasks:
+
+- create `/dashboard/projects` project index;
+- create project create/edit forms;
+- add server-side validation through Form Requests;
+- add project policies;
+- add publish status and featured controls;
+- make link fields easy to add, remove, and validate.
+
+Acceptance criteria:
+
+- admins can create, edit, publish, feature, archive, and reorder projects;
+- editors can create and update projects according to their seeded permissions;
+- validation errors are shown clearly;
+- public visibility follows status and visibility fields;
+- forms are structured for concise project showcase editing, not task tracking.
+
 ## Epic 6: WordPress Import Spike
 
 ### DDS-015: WordPress Export Discovery
@@ -465,7 +530,10 @@ Acceptance criteria:
 13. DDS-012
 14. DDS-013
 15. DDS-014
-16. DDS-015
-17. DDS-016
+16. DDS-014A
+17. DDS-014B
+18. DDS-014C
+19. DDS-015
+20. DDS-016
 
 The public website rebuild can begin once DDS-007 and DDS-010 exist, while admin and import work continue behind it.

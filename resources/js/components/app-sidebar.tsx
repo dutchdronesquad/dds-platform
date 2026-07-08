@@ -1,5 +1,14 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import {
+    CalendarDays,
+    ClipboardList,
+    Home,
+    LayoutDashboard,
+    LifeBuoy,
+    MapPin,
+    Newspaper,
+    ShieldCheck,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,27 +22,52 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Overzicht',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Events',
+        href: `${dashboard.url()}#events`,
+        icon: CalendarDays,
+    },
+    {
+        title: 'Projecten',
+        href: `${dashboard.url()}#projects`,
+        icon: ClipboardList,
+    },
+    {
+        title: 'Nieuws',
+        href: `${dashboard.url()}#news`,
+        icon: Newspaper,
+    },
+    {
+        title: 'Locaties',
+        href: `${dashboard.url()}#locations`,
+        icon: MapPin,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        title: 'Publieke site',
+        href: home(),
+        icon: Home,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Huisregels',
+        href: `${dashboard.url()}#house-rules`,
+        icon: ShieldCheck,
+    },
+    {
+        title: 'Support',
+        href: `${dashboard.url()}#support`,
+        icon: LifeBuoy,
     },
 ];
 
