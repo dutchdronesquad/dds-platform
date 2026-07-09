@@ -1,21 +1,25 @@
 import { Link, usePage } from '@inertiajs/react';
+import type { InertiaLinkProps } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogo from '@/components/app-logo';
 import { cn } from '@/lib/utils';
-import { dashboard, home, login } from '@/routes';
+import { about, contact, dashboard, home, login } from '@/routes';
+import { index as eventsIndex } from '@/routes/events';
+import { index as newsIndex } from '@/routes/news';
+import { index as projectsIndex } from '@/routes/projects';
 
 type PublicNavItem = {
     title: string;
-    href: string;
-    current?: boolean;
+    href: NonNullable<InertiaLinkProps['href']>;
+    activePath: string;
 };
 
 const publicNavItems: PublicNavItem[] = [
-    { title: 'Events', href: '#events' },
-    { title: 'Projecten', href: '#projects' },
-    { title: 'Nieuws', href: '#news' },
-    { title: 'Over DDS', href: '#about' },
-    { title: 'Contact', href: '#contact' },
+    { title: 'Events', href: eventsIndex(), activePath: '/events' },
+    { title: 'Projects', href: projectsIndex(), activePath: '/projects' },
+    { title: 'News', href: newsIndex(), activePath: '/news' },
+    { title: 'About', href: about(), activePath: '/about' },
+    { title: 'Contact', href: contact(), activePath: '/contact' },
 ];
 
 type Props = {
@@ -23,7 +27,9 @@ type Props = {
 };
 
 export default function PublicLayout({ children }: Props) {
-    const { auth } = usePage().props;
+    const { props, url } = usePage();
+    const { auth } = props;
+    const currentPath = url.split('?')[0];
 
     return (
         <div className="min-h-screen bg-stone-50 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">
@@ -42,17 +48,18 @@ export default function PublicLayout({ children }: Props) {
                         className="hidden items-center gap-1 lg:flex"
                     >
                         {publicNavItems.map((item) => (
-                            <a
+                            <Link
                                 key={item.title}
                                 href={item.href}
+                                prefetch
                                 className={cn(
                                     'rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:outline-none dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-neutral-950',
-                                    item.current &&
+                                    currentPath.startsWith(item.activePath) &&
                                         'bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white',
                                 )}
                             >
                                 {item.title}
-                            </a>
+                            </Link>
                         ))}
                     </nav>
 
@@ -80,13 +87,18 @@ export default function PublicLayout({ children }: Props) {
                     className="flex gap-1 overflow-x-auto border-t border-neutral-200 px-4 py-2 lg:hidden dark:border-neutral-800"
                 >
                     {publicNavItems.map((item) => (
-                        <a
+                        <Link
                             key={item.title}
                             href={item.href}
-                            className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:outline-none dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white dark:focus-visible:ring-red-400"
+                            prefetch
+                            className={cn(
+                                'shrink-0 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:outline-none dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white dark:focus-visible:ring-red-400',
+                                currentPath.startsWith(item.activePath) &&
+                                    'bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white',
+                            )}
                         >
                             {item.title}
-                        </a>
+                        </Link>
                     ))}
                 </nav>
             </header>
@@ -109,50 +121,56 @@ export default function PublicLayout({ children }: Props) {
                             Platform
                         </h2>
                         <div className="mt-3 flex flex-col gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            <a
-                                href="#events"
+                            <Link
+                                href={eventsIndex()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
                                 Events
-                            </a>
-                            <a
-                                href="#projects"
+                            </Link>
+                            <Link
+                                href={projectsIndex()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
-                                Projecten
-                            </a>
-                            <a
-                                href="#news"
+                                Projects
+                            </Link>
+                            <Link
+                                href={newsIndex()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
-                                Nieuws
-                            </a>
+                                News
+                            </Link>
                         </div>
                     </div>
 
                     <div>
                         <h2 className="text-sm font-semibold text-neutral-950 dark:text-white">
-                            Contact
+                            Community
                         </h2>
                         <div className="mt-3 flex flex-col gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            <a
-                                href="#contact"
+                            <Link
+                                href={contact()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
-                                Word lid
-                            </a>
-                            <a
-                                href="#partners"
+                                Contact
+                            </Link>
+                            <Link
+                                href={about()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
-                                Partners
-                            </a>
-                            <a
-                                href="#house-rules"
+                                About
+                            </Link>
+                            <Link
+                                href={home()}
+                                prefetch
                                 className="hover:text-neutral-950 dark:hover:text-white"
                             >
-                                Huisregels
-                            </a>
+                                Home
+                            </Link>
                         </div>
                     </div>
                 </div>
