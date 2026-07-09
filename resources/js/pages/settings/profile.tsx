@@ -1,5 +1,5 @@
-import { Form, Head, usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -7,12 +7,21 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import localeRoute from '@/routes/locale';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
-import type { Auth } from '@/types';
+import type { Auth, LocaleProps } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    locale: LocaleProps;
 };
 
 export default function Profile({
@@ -22,7 +31,34 @@ export default function Profile({
     mustVerifyEmail: boolean;
     status?: string;
 }) {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, locale } = usePage<PageProps>().props;
+    const pageLocale = auth.user.locale ?? locale.active;
+    const [optimisticLocale, setOptimisticLocale] = useState<string | null>(
+        null,
+    );
+    const [isSavingLocale, setIsSavingLocale] = useState(false);
+    const selectedLocale = optimisticLocale ?? pageLocale;
+    const supportedLocales = Object.entries(locale.supported);
+
+    const handleLocaleChange = (newLocale: string) => {
+        if (newLocale === selectedLocale) {
+            return;
+        }
+
+        setOptimisticLocale(newLocale);
+
+        router.patch(
+            localeRoute.update.url(),
+            { locale: newLocale },
+            {
+                preserveScroll: true,
+                onStart: () => setIsSavingLocale(true),
+                onSuccess: () => setOptimisticLocale(null),
+                onError: () => setOptimisticLocale(null),
+                onFinish: () => setIsSavingLocale(false),
+            },
+        );
+    };
 
     return (
         <>
@@ -121,6 +157,39 @@ export default function Profile({
                         </>
                     )}
                 </Form>
+            </div>
+
+            <div className="mt-10 space-y-6">
+                <Heading
+                    variant="small"
+                    title="Language"
+                    description="Choose the language used for the DDS interface"
+                />
+
+                <div className="grid gap-2">
+                    <Label htmlFor="locale">Language</Label>
+
+                    <Select
+                        value={selectedLocale}
+                        onValueChange={handleLocaleChange}
+                        disabled={isSavingLocale}
+                    >
+                        <SelectTrigger
+                            id="locale"
+                            className="w-full sm:w-64"
+                            aria-busy={isSavingLocale}
+                        >
+                            <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {supportedLocales.map(([code, supportedLocale]) => (
+                                <SelectItem key={code} value={code}>
+                                    {supportedLocale.native_name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <DeleteUser />

@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { LocaleProps } from '@/types/localization';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,6 +12,7 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            locale: LocaleProps;
             auth: Auth;
             sidebarOpen: boolean;
             [key: string]: unknown;

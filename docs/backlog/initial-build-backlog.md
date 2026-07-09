@@ -8,7 +8,7 @@ This backlog translates the preparation docs into the first practical implementa
 - React, Inertia, TypeScript, and Tailwind;
 - DDEV with PostgreSQL;
 - custom admin, no Filament in phase 1;
-- Dutch-first bilingual content with `nl` and `en`;
+- English-default bilingual content with `en` and `nl`;
 - no locale-prefixed URLs in phase 1;
 - public dated activities are called `Events`;
 - trainings are `Event` records with `type = training`;
@@ -244,10 +244,33 @@ Tasks:
 
 Acceptance criteria:
 
-- app default locale is `nl`;
+- app default locale is `en`;
 - supported locales are explicit in config;
 - no `/nl` or `/en` route prefix is required;
 - implementation notes describe how translatable content fields should be stored.
+
+### DDS-006A: Runtime Locale And Translation UX
+
+Goal: turn the locale configuration into a runtime language experience, using useful patterns from NIPKaart without introducing locale-prefixed URLs.
+
+Tasks:
+
+- add request locale middleware that chooses the locale from an authenticated user preference, a guest cookie, browser preference, and finally the configured default;
+- keep supported locale validation driven by locale config instead of hardcoded locale lists;
+- share the active locale and supported locales with Inertia;
+- decide whether users need a persisted `locale` preference in phase 1 or whether guest-cookie behavior is enough until account settings mature;
+- add a small language switcher only when there are translated UI strings to switch between;
+- define the frontend translation bundle shape for React, likely JSON namespaces grouped by domain such as `frontend`, `backend`, and `global`;
+- avoid adding locale route prefixes, redirects, or duplicate page URLs.
+
+Acceptance criteria:
+
+- the active locale can be resolved per request without changing the URL shape;
+- unsupported locale values are rejected or ignored consistently;
+- Inertia pages can read the active locale from shared props;
+- the selected approach works for both guests and authenticated users;
+- frontend translation files have a predictable namespace convention;
+- the implementation remains optional for pages that still use plain placeholder copy.
 
 ## Epic 3: Core Public Structure
 
@@ -523,17 +546,18 @@ Acceptance criteria:
 6. DDS-004B
 7. DDS-005
 8. DDS-006
-9. DDS-007
-10. DDS-009
-11. DDS-010
-12. DDS-011
-13. DDS-012
-14. DDS-013
-15. DDS-014
-16. DDS-014A
-17. DDS-014B
-18. DDS-014C
-19. DDS-015
-20. DDS-016
+9. DDS-006A
+10. DDS-007
+11. DDS-009
+12. DDS-010
+13. DDS-011
+14. DDS-012
+15. DDS-013
+16. DDS-014
+17. DDS-014A
+18. DDS-014B
+19. DDS-014C
+20. DDS-015
+21. DDS-016
 
 The public website rebuild can begin once DDS-007 and DDS-010 exist, while admin and import work continue behind it.

@@ -23,7 +23,7 @@ Secondary or footer navigation:
 Recommended public label policy:
 
 - support both Dutch and English public content;
-- use Dutch as the default and primary public locale;
+- use English as the default public locale and support Dutch from the start;
 - use `Events` as the public label for the dated-activity section;
 - keep code, database columns, route names, and repository documentation in English;
 - use `Events` as the public section for trainings, races, demos, workshops, and community activities;
@@ -31,13 +31,13 @@ Recommended public label policy:
 
 ## Language Strategy
 
-The platform should support Dutch and English content. DDS is a Netherlands-oriented organization, so Dutch should be the default locale and the primary editorial language. English should be available for international pilots, partners, and content where that adds value.
+The platform should support English and Dutch content. English is the application default and Dutch is available from the start for Netherlands-oriented public content.
 
 Implementation principles:
 
 - code identifiers, model names, route names, database columns, and repository docs use English;
-- public content has `nl` as the default locale;
-- public content should be translatable to `en`;
+- public content has `en` as the default locale;
+- public content should be translatable to `nl`;
 - admin UI can start in English, but content fields should make locale explicit;
 - SEO metadata should be locale-aware;
 - URLs should stay stable and English-based without locale prefixes for the first release.
@@ -45,11 +45,11 @@ Implementation principles:
 Suggested locale handling:
 
 ```txt
-Default locale: nl
-Supported locales: nl, en
+Default locale: en
+Supported locales: en, nl
 Code and routes: English
-Primary content: Dutch
-Optional translated content: English
+Primary content: English
+Optional translated content: Dutch
 Localized URL prefixes: not in phase 1
 ```
 
