@@ -5,12 +5,6 @@
  *
  * This keeps placeholder copy out of route definitions until these pages move
  * to first-class models or constrained managed content.
- *
- * @phpstan-type PublicPageSection array{heading: string, body: string}
- * @phpstan-type PublicPageAction array{label: string, href: string}
- * @phpstan-type PublicShellPage array{title: string, eyebrow: string, description: string, primaryAction: PublicPageAction, sections: list<PublicPageSection>}
- *
- * @var array<string, PublicShellPage>
  */
 return [
     'events' => [
