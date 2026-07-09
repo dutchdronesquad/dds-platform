@@ -15,6 +15,27 @@ This backlog translates the preparation docs into the first practical implementa
 - WordPress import comes after the initial application foundation and target models.
 - UI/UX quality is part of the definition of done for every user-facing ticket.
 
+## Current Backlog Position
+
+Current implementation point: the project is in Epic 3, Core Public Structure.
+
+Recently completed in the current working tree:
+
+- DDS-007: Public Static Shell Pages;
+- DDS-007A: Public Shell Content Registry.
+
+The public route skeleton now exists, and temporary shell page content has been moved out of `routes/web.php` into `config/public_pages.php`. This means the current public pages are still placeholders, but the route structure is in place and the placeholder copy has a clear temporary owner.
+
+Recommended next tickets:
+
+1. DDS-007B: Public Brand Direction;
+2. DDS-007C: Homepage Content And Conversion Pass;
+3. DDS-007D: Public Navigation And Footer Polish;
+4. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
+5. DDS-011A / DDS-011B / DDS-011C / DDS-011D: dashboard IA, admin CRUD patterns, user management, and role review.
+
+Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
+
 ## Global UX Acceptance Criteria
 
 These criteria apply to public and admin UI tickets unless explicitly scoped out:
@@ -276,6 +297,8 @@ Acceptance criteria:
 
 ### DDS-007: Public Static Shell Pages
 
+Status: implemented as a temporary shell. The public URLs render through Inertia and use placeholder page data from `config/public_pages.php`. This is acceptable for the first route skeleton until real models or constrained managed content exist.
+
 Goal: create the first public route structure.
 
 Tasks:
@@ -300,6 +323,99 @@ Acceptance criteria:
 - `/projects` placeholder copy clearly frames projects as a public showcase rather than internal project management;
 - each page has a clear purpose, heading hierarchy, and primary next action.
 
+### DDS-007A: Public Shell Content Registry
+
+Status: implemented. Temporary shell copy lives in `config/public_pages.php`, and `routes/web.php` only maps URLs to the shared Inertia shell component and a page key.
+
+Goal: move temporary public shell page data out of route definitions before the public pages grow.
+
+Tasks:
+
+- decide whether static shell content belongs in a typed PHP config file, enum-backed page registry, dedicated controller data provider, or seed-backed content model;
+- move placeholder page metadata, sections, and primary actions out of `routes/web.php`;
+- keep routes focused on URL definitions and Inertia component selection;
+- keep page data typed and testable;
+- preserve the existing public URLs and rendered components;
+- document that this registry is still a bridge until real models or managed content exist.
+
+Acceptance criteria:
+
+- `routes/web.php` no longer contains large per-page copy arrays;
+- each shell page still renders with title, description, sections, and primary action;
+- page data has one clear owner and can be reused by tests;
+- the approach does not become a generic CMS by accident;
+- the temporary nature is visible in code comments or naming where useful.
+
+### DDS-007B: Public Brand Direction
+
+Goal: establish the first recognizable DDS visual direction before investing in final public pages.
+
+Tasks:
+
+- define the initial DDS color palette, type scale, spacing scale, and interaction style;
+- decide how the existing logo should be used in header, footer, favicon, and social previews;
+- collect or identify the first usable real DDS photos/videos for public pages;
+- define image treatment for hero, cards, event pages, project pages, and news;
+- create a small set of reusable public UI patterns such as hero, content band, CTA band, feature cards, media strip, and page intro;
+- ensure dark mode is either intentionally supported or intentionally scoped out for public pages;
+- align public visuals with FPV racing, indoor training, community, and technical event organization instead of generic club-site styling.
+
+Acceptance criteria:
+
+- public pages have a recognizable DDS look instead of starter-kit styling;
+- visual direction uses real DDS activity or credible placeholders, not abstract filler;
+- mobile and desktop examples exist for the main public patterns;
+- contrast, focus states, and text hierarchy meet the global UX acceptance criteria;
+- the palette does not read as a one-note Tailwind default theme;
+- future public pages can reuse the patterns without copying large blocks.
+
+### DDS-007C: Homepage Content And Conversion Pass
+
+Goal: turn the homepage from a shell into a useful first public entry point.
+
+Tasks:
+
+- rewrite the first viewport around the strongest DDS positioning;
+- add clear CTAs for next event/training, joining, and partner contact;
+- add upcoming events or a temporary next-event placeholder;
+- add a concise "What is DDS?" section;
+- add a "Start with training" path for new pilots and parents;
+- add project/showcase teaser content;
+- add partner/demo/workshop positioning;
+- add final CTA and footer flow;
+- ensure the homepage can function before the WordPress importer exists.
+
+Acceptance criteria:
+
+- visitors can understand what DDS is within the first viewport;
+- new pilots can find the next practical step;
+- experienced pilots can find events quickly;
+- partners can see that DDS is able to organize demos, workshops, and race formats;
+- the page has no generic theme copy;
+- mobile layout is deliberately designed, not just stacked desktop content.
+
+### DDS-007D: Public Navigation And Footer Polish
+
+Goal: make the public shell feel coherent across pages before real content models land.
+
+Tasks:
+
+- finalize primary navigation labels and order;
+- decide where secondary links such as Locations, House Rules, Partners, In The Media, Results, and Privacy live;
+- add active states for section and detail pages;
+- improve mobile navigation ergonomics;
+- add footer contact pathways and partner/demo cues;
+- decide whether login/admin entry should remain visible in the public header;
+- verify navigation with keyboard and screen reader basics.
+
+Acceptance criteria:
+
+- primary navigation uses `Events`, `Projects`, `News`, `About`, and `Contact`;
+- secondary links are discoverable without crowding the header;
+- active states work for index and detail routes;
+- public header/footer do not feel like starter-kit leftovers;
+- mobile navigation fits without awkward wrapping or hidden critical links.
+
 ### DDS-008: Baseline SEO And Redirect Shape
 
 Goal: prepare SEO before content import.
@@ -318,6 +434,49 @@ Acceptance criteria:
 - redirect strategy is implemented or documented in code;
 - old `/trainingen/` can redirect to `/events?type=training`;
 - old `/agenda/` can redirect to `/events`.
+
+### DDS-008A: Public Metadata Component And Defaults
+
+Goal: make SEO metadata easy to apply consistently across public Inertia pages.
+
+Tasks:
+
+- create a typed metadata shape for title, description, canonical URL, robots, and Open Graph data;
+- expose metadata from public route data or public models;
+- update the root Blade template to render metadata safely;
+- add default metadata for pages that do not provide custom values yet;
+- add tests for title and description availability where practical;
+- ensure canonical URLs use the application URL and stable public routes.
+
+Acceptance criteria:
+
+- public pages can set title, description, canonical URL, and Open Graph image;
+- missing metadata falls back to sensible DDS defaults;
+- metadata rendering does not leak unsafe HTML;
+- metadata shape can be reused by events, articles, projects, locations, and partners;
+- future imported content has clear SEO fields to map into.
+
+### DDS-008B: Redirect Model And Admin Review Flow
+
+Goal: prepare SEO-safe legacy URL handling before WordPress URLs are imported.
+
+Tasks:
+
+- create a `Redirect` model and migration;
+- store source path, target URL/path, status code, active flag, hit count, and notes;
+- implement middleware that checks active redirects before public route fallback;
+- add seed or migration examples for known legacy URLs;
+- add a simple admin review screen or defer the UI behind a clear follow-up if needed;
+- add tests for exact path redirects and query-string targets.
+
+Acceptance criteria:
+
+- legacy paths can redirect without redeploying code;
+- `/trainingen/` redirects to `/events?type=training`;
+- `/agenda/` redirects to `/events`;
+- inactive redirects are ignored;
+- redirect loops are prevented or detected;
+- WordPress importer can create or update redirect records later.
 
 ## Epic 4: Event Domain
 
@@ -383,6 +542,113 @@ Acceptance criteria:
 - public visibility follows status;
 - forms are structured for efficient repeated admin use;
 - destructive or publishing actions require clear confirmation/feedback.
+
+### DDS-011A: Management Dashboard Information Architecture
+
+Goal: turn `/dashboard` into a practical management home instead of a placeholder.
+
+Tasks:
+
+- define the first dashboard sections and resource navigation;
+- add quick links for events, projects, articles, locations, partners, media, users, and redirects;
+- show useful operational cards such as drafts, upcoming events, recent submissions, and import status placeholders;
+- define empty states for a fresh installation;
+- keep the dashboard dense and task-oriented rather than marketing-like;
+- ensure admin and editor roles see appropriate navigation.
+
+Acceptance criteria:
+
+- `/dashboard` clearly explains what can be managed;
+- primary admin tasks are reachable in one click;
+- empty installation state is useful;
+- dashboard layout works on mobile and desktop;
+- navigation is permission-aware enough to avoid dead-end links;
+- the page no longer reads as starter-kit content.
+
+### DDS-011B: Admin Resource Shell And Shared CRUD Patterns
+
+Goal: establish repeatable admin patterns before building many resource screens.
+
+Tasks:
+
+- define list page layout conventions for filters, search, pagination, bulk actions, and row actions;
+- define create/edit form layout conventions for tabs or sections, save actions, validation, and destructive actions;
+- add shared admin components only where repetition is already visible;
+- define status badge patterns for draft, published, archived, active, inactive, and imported states;
+- define confirmation dialog patterns for archive, delete, publish, and unpublish;
+- ensure all patterns work with Inertia forms and server-side validation.
+
+Acceptance criteria:
+
+- event, article, project, location, partner, media, user, and redirect screens can share consistent patterns;
+- admin tables support scanning and repeated work;
+- form actions are predictable across resources;
+- validation and success/error feedback are consistent;
+- abstractions remain small and do not block resource-specific UX.
+
+### DDS-011C: User Management
+
+Goal: manage platform users from the dashboard without relying on direct database access.
+
+Tasks:
+
+- create `/dashboard/users` user index;
+- add search and filters for role, verification state, and recent activity where available;
+- create user detail or edit screen;
+- allow admins to update name, email, roles, locale preference, and account state;
+- define whether admins can create users directly or invite/reset password only;
+- prevent admins from accidentally removing their own last admin access;
+- add policies and tests for admin-only user management.
+
+Acceptance criteria:
+
+- admins can view users from the dashboard;
+- admins can update roles safely;
+- editors cannot manage users unless explicitly permitted later;
+- last-admin lockout is prevented;
+- role changes use Spatie Permission;
+- user management forms provide clear validation and feedback.
+
+### DDS-011D: Role And Permission Review UI
+
+Goal: make the seeded role and permission model visible and reviewable.
+
+Tasks:
+
+- create a read-only or limited-edit screen for roles and permissions;
+- show which permissions belong to admin and editor roles;
+- decide whether permissions are code-owned only or editable in admin;
+- expose role assignment through the user edit screen;
+- add tests for permission visibility and restricted access.
+
+Acceptance criteria:
+
+- admins can inspect the active role/permission setup;
+- editors cannot change role configuration;
+- permissions stay aligned with seeded enum values;
+- the UI avoids implying arbitrary permission creation if the system remains code-owned;
+- future resource permissions can be reviewed before launch.
+
+### DDS-011E: Admin Activity, Audit, And Safety Feedback
+
+Goal: add lightweight operational confidence for content changes.
+
+Tasks:
+
+- decide whether phase 1 needs audit logging or only timestamp/user metadata;
+- add created_by and updated_by fields to content models where useful;
+- show last updated information on admin edit screens;
+- add clear publish/unpublish/archive feedback;
+- define how failed imports and validation errors appear to admins;
+- defer full audit logs if they are not needed for launch.
+
+Acceptance criteria:
+
+- admins can see whether content is draft, published, archived, or imported;
+- admins can see recent update metadata on managed content where available;
+- destructive changes require confirmation;
+- the app avoids silent publish-state changes;
+- full audit logging is either implemented or explicitly deferred.
 
 ## Epic 5: Supporting Content Models
 
@@ -498,6 +764,152 @@ Acceptance criteria:
 - public visibility follows status and visibility fields;
 - forms are structured for concise project showcase editing, not task tracking.
 
+### DDS-014D: Partner Model And Public Partner Pages
+
+Goal: represent DDS partners and sponsors as structured content.
+
+Tasks:
+
+- create `Partner` model and migration;
+- include name, slug, description, logo media reference, website URL, partner type, status, featured flag, and sort order;
+- include optional contact notes for internal admin use;
+- add public partner listing or section support;
+- add factories and tests;
+- include locale-aware public fields where useful.
+
+Acceptance criteria:
+
+- partners and sponsors can be represented without hardcoded page copy;
+- partner logos can be associated with media assets;
+- only active public partners are visible publicly;
+- featured partners can be highlighted on home or partner pages;
+- internal notes do not leak to public pages.
+
+### DDS-014E: Admin Partner CRUD
+
+Goal: manage partner content from the dashboard.
+
+Tasks:
+
+- create `/dashboard/partners` partner index;
+- create partner create/edit forms;
+- add validation, policies, status controls, featured controls, and ordering;
+- support logo selection once media library exists;
+- show useful empty states before partners are imported or entered manually.
+
+Acceptance criteria:
+
+- admins can create, edit, publish, feature, archive, and reorder partners;
+- editors can manage partners according to their permissions;
+- validation errors are clear;
+- public visibility follows status;
+- logo/media selection has a fallback state.
+
+### DDS-014F: Managed Static Content For Known Public Pages
+
+Goal: avoid a generic page builder while still allowing known public pages to be edited.
+
+Tasks:
+
+- decide which known pages need managed content: about, house rules, contact intro, homepage sections, partner intro, and location intro;
+- create a constrained `StaticPage` or `PublicPage` model if hardcoded content becomes too limiting;
+- support fixed page keys instead of arbitrary user-created routes in phase 1;
+- include locale-aware title, intro, body sections, SEO fields, status, and updated_by metadata;
+- add admin edit screens for fixed pages;
+- migrate temporary shell copy into the managed approach when ready.
+
+Acceptance criteria:
+
+- known static pages can be updated without code changes;
+- arbitrary CMS route creation is not introduced in phase 1;
+- page keys are stable and testable;
+- pages still use designed React templates;
+- WordPress page content has a clear target when imported or manually rewritten.
+
+### DDS-014G: Contact Submission Model And Form
+
+Goal: make `/contact` useful before external CRM or email automation exists.
+
+Tasks:
+
+- create `ContactSubmission` model and migration;
+- add public contact form with name, email, topic, message, consent/anti-spam field, and optional source context;
+- validate and store submissions;
+- send notification email if mail configuration is ready, otherwise record a clear follow-up;
+- create `/dashboard/contact-submissions` index and detail view;
+- add spam and rate-limit protections.
+
+Acceptance criteria:
+
+- public visitors can submit contact requests;
+- submissions are stored and visible to admins;
+- validation and success/error states are clear;
+- spam protection exists without harming accessibility;
+- no submitted message is silently lost if email delivery fails.
+
+### DDS-014H: Media Library Admin
+
+Goal: manage reusable media assets before importing WordPress media at scale.
+
+Tasks:
+
+- build `/dashboard/media` media index;
+- support upload, edit metadata, delete/archive, and alt text updates;
+- show previews for images and useful fallbacks for non-images;
+- support filtering by mime type, usage state, and import source;
+- define storage path conventions for uploaded and imported files;
+- add validation for file size, mime type, and image dimensions where needed.
+
+Acceptance criteria:
+
+- admins can upload and manage media assets;
+- alt text is editable;
+- media records can be attached to events, articles, projects, partners, and locations later;
+- imported WordPress media can coexist with manually uploaded media;
+- unused media can be reviewed without deleting it automatically.
+
+### DDS-014I: Public Location Pages And Admin Location CRUD
+
+Goal: turn locations into useful public and admin-managed content.
+
+Tasks:
+
+- build `/locations` public index;
+- build `/locations/{slug}` public detail page;
+- create `/dashboard/locations` admin index;
+- create location create/edit forms;
+- connect locations to events;
+- show operational fields such as floor size, height, facilities, suitability, parking, and map URL.
+
+Acceptance criteria:
+
+- public location pages are useful for visitors attending events;
+- recurring DDS locations can be managed without code changes;
+- events can show linked location details;
+- draft or inactive locations are not publicly listed unless linked content explicitly requires them;
+- map URLs and practical notes are validated.
+
+### DDS-014J: Public News Pages And Admin Article CRUD
+
+Goal: make the article model useful before WordPress import work begins.
+
+Tasks:
+
+- build `/news` article index;
+- build `/news/{slug}` article detail page;
+- create `/dashboard/articles` article index;
+- create article create/edit forms;
+- support published/draft/archive states;
+- support cover media, author display, category, SEO fields, and import metadata.
+
+Acceptance criteria:
+
+- published articles render publicly;
+- draft and archived articles are hidden from public pages;
+- admins can create and edit articles manually before import;
+- imported articles can be reviewed through the same admin UI later;
+- empty news states are useful before content exists.
+
 ## Epic 6: WordPress Import Spike
 
 ### DDS-015: WordPress Export Discovery
@@ -536,6 +948,242 @@ Acceptance criteria:
 - dry-run output is useful;
 - no manual copy-paste is required for posts.
 
+### DDS-017: WordPress Media Import Prototype
+
+Goal: prove repeatable media import before importing article and page bodies that reference media.
+
+Tasks:
+
+- create dry-run capable media import command;
+- fetch media through REST API or XML attachment data;
+- download files to the configured storage disk;
+- create or update `MediaAsset` records with legacy IDs;
+- preserve alt text, captions where useful, mime type, file size, and original URL;
+- report failed downloads and unsupported file types;
+- avoid duplicate files on repeated runs.
+
+Acceptance criteria:
+
+- media import can run twice without duplicate media records;
+- imported media can be matched by legacy WordPress attachment ID;
+- failed downloads are reported clearly;
+- imported images are previewable in the media library;
+- article importer can reference imported media by legacy ID.
+
+### DDS-018: WordPress Pages Mapping Prototype
+
+Goal: map valuable WordPress pages into first-class DDS targets instead of generic pages.
+
+Tasks:
+
+- inspect the current WordPress pages and identify target models or static page keys;
+- map training pages into event guidance or future event records;
+- map location pages into `Location` records;
+- map house rules into managed static content;
+- map partners into `Partner` records where possible;
+- map media mentions into articles or a deferred media-mention model;
+- produce a report for pages that require manual rewriting.
+
+Acceptance criteria:
+
+- every valuable WordPress page has a target or an explicit skip reason;
+- known routes from the information architecture have a redirect target;
+- importer does not create arbitrary public pages by default;
+- manual rewrite work is visible before launch;
+- page mapping can be rerun in staging.
+
+### DDS-019: Imported Content Cleanup Pipeline
+
+Goal: normalize imported WordPress HTML into clean public content.
+
+Tasks:
+
+- strip WordPress shortcodes, theme wrappers, social widgets, and duplicated layout markup;
+- normalize heading levels;
+- rewrite internal links to new Laravel routes where mappings exist;
+- rewrite media URLs to imported media asset URLs;
+- preserve useful embeds such as YouTube where safe;
+- report unresolved links, missing media, and suspicious markup;
+- decide whether cleaned content is stored as HTML, markdown-like content, or structured rich text.
+
+Acceptance criteria:
+
+- imported article/page content does not carry WordPress theme markup;
+- broken internal links are reported;
+- media references are rewritten where possible;
+- cleanup can run in dry-run mode;
+- risky transformations are visible in import logs.
+
+### DDS-020: WordPress Redirect Import And Review
+
+Goal: generate a launch-ready redirect map from legacy WordPress URLs.
+
+Tasks:
+
+- collect URLs from WordPress exports, known page mappings, and current sitemap if available;
+- generate `Redirect` records for posts, pages, locations, training URLs, and news URLs;
+- detect duplicate sources and target conflicts;
+- add admin review state or notes for uncertain redirects;
+- add tests for common legacy redirects;
+- prepare a report for redirects that need manual decision.
+
+Acceptance criteria:
+
+- old post URLs redirect to new article URLs;
+- known page URLs redirect to event, location, partner, house rules, or contact targets;
+- duplicate or ambiguous redirects are flagged;
+- redirects can be reviewed before launch;
+- redirect import can run repeatedly without creating duplicates.
+
+### DDS-021: Import Review Dashboard
+
+Goal: make staging import results understandable without reading command output only.
+
+Tasks:
+
+- add dashboard cards or pages for import runs, imported counts, skipped records, failed media, unresolved links, and redirect conflicts;
+- store import run metadata if needed;
+- link imported records back to legacy IDs and source URLs;
+- provide filters for imported/manual records in admin lists;
+- define how admins mark imported content as reviewed.
+
+Acceptance criteria:
+
+- admins can see what the importer did;
+- failed or skipped records are visible after the command exits;
+- imported records are traceable to WordPress source data;
+- review status is clear enough for launch preparation;
+- command-line logs and dashboard review tell the same story.
+
+### DDS-022: Staging Import Rehearsal
+
+Goal: run the full import sequence in staging and identify launch blockers.
+
+Tasks:
+
+- run media import;
+- run posts/articles import;
+- run pages mapping import;
+- run redirect import;
+- review sample public pages after import;
+- review admin import reports;
+- document blockers, manual cleanup, and content gaps;
+- rerun import after fixes to prove idempotency.
+
+Acceptance criteria:
+
+- full import can be run in a staging environment;
+- repeated import does not duplicate records;
+- sample imported articles, media, redirects, locations, and static pages render correctly;
+- launch blockers are documented as concrete backlog tickets;
+- manual cleanup workload is understood before production cutover.
+
+## Epic 7: Launch Readiness
+
+### DDS-023: Production Runtime Configuration
+
+Goal: prepare the Laravel app for production hosting.
+
+Tasks:
+
+- define cache, session, queue, mail, filesystem, and scheduler requirements;
+- decide whether Redis is required for launch or deferred;
+- configure queue worker and scheduler process expectations;
+- configure production mail provider and from-addresses;
+- define backup expectations for database and media storage;
+- document environment variables needed for deployment.
+
+Acceptance criteria:
+
+- production runtime requirements are explicit;
+- required environment variables are known;
+- queue and scheduler expectations are not forgotten;
+- mail delivery path is tested or explicitly deferred;
+- backups are planned before production launch.
+
+### DDS-024: CI And Deployment Pipeline
+
+Goal: make quality checks and deployment repeatable.
+
+Tasks:
+
+- add or finalize GitHub Actions for PHP tests, Pint, Larastan, frontend lint/typecheck/build, and dependency validation;
+- decide deployment target and deployment trigger;
+- ensure build artifacts are generated in deployment, not committed;
+- add smoke check expectations for public URLs after deploy;
+- document rollback expectations.
+
+Acceptance criteria:
+
+- pull requests run the baseline checks;
+- deployment process is documented and repeatable;
+- failed checks block unsafe merges;
+- public smoke checks cover home, events, projects, news, about, contact, login, and dashboard;
+- rollback approach is understood.
+
+### DDS-025: Public Accessibility And Responsive Audit
+
+Goal: verify public pages against the UX quality bar before launch.
+
+Tasks:
+
+- audit home, events, event detail, projects, project detail, news, article detail, locations, about, house rules, partners, and contact;
+- check keyboard navigation, focus order, labels, contrast, landmark structure, and heading hierarchy;
+- test common mobile viewport widths;
+- fix overlap, wrapping, and unreadable text issues;
+- check empty states and error states.
+
+Acceptance criteria:
+
+- critical public pages are usable on mobile and desktop;
+- keyboard focus is visible and logical;
+- forms have accessible labels and errors;
+- headings follow a reasonable hierarchy;
+- no critical text overlap or layout breakage remains.
+
+### DDS-026: Admin Usability Audit
+
+Goal: verify the management area is efficient enough for repeated real use.
+
+Tasks:
+
+- audit dashboard, event CRUD, article CRUD, project CRUD, location CRUD, partner CRUD, media library, user management, contact submissions, redirects, and import review;
+- test common admin workflows from empty state to published content;
+- check validation, save feedback, destructive confirmations, and permission behavior;
+- test mobile/tablet fallback for urgent admin tasks;
+- reduce unnecessary clicks in high-frequency workflows.
+
+Acceptance criteria:
+
+- admins can complete common tasks without direct database access;
+- editors are constrained by permissions;
+- repeated content editing is fast and predictable;
+- validation recovery is clear;
+- destructive actions are protected.
+
+### DDS-027: Launch Content Freeze And Cutover Checklist
+
+Goal: coordinate final content, redirects, and production switch-over.
+
+Tasks:
+
+- define content freeze timing for WordPress;
+- run final production or staging import;
+- review critical pages and redirects;
+- verify DNS/deployment steps;
+- verify analytics, robots, sitemap, and canonical behavior;
+- verify contact form and mail delivery;
+- prepare post-launch monitoring checklist.
+
+Acceptance criteria:
+
+- final import and redirect state are reviewed;
+- WordPress freeze/cutover process is clear;
+- critical public pages work after deployment;
+- contact path works;
+- SEO basics are active;
+- post-launch issues can be triaged quickly.
+
 ## Recommended Sequence
 
 1. DDS-001
@@ -548,16 +1196,46 @@ Acceptance criteria:
 8. DDS-006
 9. DDS-006A
 10. DDS-007
-11. DDS-009
-12. DDS-010
-13. DDS-011
-14. DDS-012
-15. DDS-013
-16. DDS-014
-17. DDS-014A
-18. DDS-014B
-19. DDS-014C
-20. DDS-015
-21. DDS-016
+11. DDS-007A
+12. DDS-007B
+13. DDS-007C
+14. DDS-007D
+15. DDS-008
+16. DDS-008A
+17. DDS-008B
+18. DDS-011A
+19. DDS-011B
+20. DDS-011C
+21. DDS-011D
+22. DDS-009
+23. DDS-012
+24. DDS-013
+25. DDS-014
+26. DDS-014A
+27. DDS-014D
+28. DDS-014F
+29. DDS-014G
+30. DDS-014H
+31. DDS-010
+32. DDS-011
+33. DDS-014B
+34. DDS-014C
+35. DDS-014E
+36. DDS-014I
+37. DDS-014J
+38. DDS-011E
+39. DDS-015
+40. DDS-017
+41. DDS-016
+42. DDS-018
+43. DDS-019
+44. DDS-020
+45. DDS-021
+46. DDS-022
+47. DDS-023
+48. DDS-024
+49. DDS-025
+50. DDS-026
+51. DDS-027
 
-The public website rebuild can begin once DDS-007 and DDS-010 exist, while admin and import work continue behind it.
+The WordPress importer should not be treated as the next major build step after static routes. The platform needs public branding, target content models, admin review flows, media handling, redirects, and user/permission management first. Import work can start as discovery earlier, but production-grade import should wait until the target models and admin review screens exist.
