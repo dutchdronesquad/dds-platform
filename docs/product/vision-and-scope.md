@@ -16,6 +16,8 @@ DDS stands for:
 
 ## Audiences
 
+Homepage priority is deliberate: experienced pilots should reach practical event information first, followed by a clear and honest starting path for beginners. Parents, partners, schools, and clients remain important audiences, but their deeper proof and contact paths can live on supporting pages instead of competing in the first homepage sections.
+
 ### New Pilots
 
 Need to know:
@@ -26,6 +28,8 @@ Need to know:
 - What does it cost?
 - How do I register?
 
+The Sportpaleis events are not intended as first-flight sessions. Beginners should be directed to De Goorn when a beginner moment is organized based on sufficient interest.
+
 ### Experienced Pilots
 
 Need to know:
@@ -34,6 +38,7 @@ Need to know:
 - Which location and track?
 - Will there be timing, heats, or results?
 - Are there updates or changes?
+- Am I expected to fly a complete track independently and repair my own drone after a crash?
 
 ### Parents And Youth
 
@@ -85,9 +90,22 @@ Out of scope:
 
 Language scope:
 
-- Dutch and English should be supported from the start at the content model level;
-- Dutch is the default and primary public locale;
-- English translations can be added gradually and do not need full content parity in the first release.
+- English and Dutch should be supported from the start at the content model level;
+- English remains the default and primary public locale;
+- Dutch translations can be added gradually and do not need full content parity in the first release;
+- the current landing page can remain temporarily Dutch until the multilingual public content layer is in use;
+- a concise English slogan or campaign line can be used inside the temporary Dutch landing page when it strengthens the DDS brand.
+
+## Current Operational Context
+
+These facts should guide public copy and future managed content until operations change:
+
+- Sportpaleis Alkmaar is the primary recurring indoor race location;
+- the usual indoor season runs from September through May;
+- a regular Sportpaleis event has a maximum capacity of 15 pilots;
+- Sportpaleis participants are expected to fly a complete track independently and repair their own drone;
+- beginner moments can take place in De Goorn based on sufficient interest and do not currently have a fixed schedule;
+- Oosterhout was a temporary fallback location and should not be presented as an equal active homepage destination.
 
 ## Phase 2 Opportunities
 

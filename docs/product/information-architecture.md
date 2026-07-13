@@ -2,14 +2,18 @@
 
 ## Proposed Navigation
 
-Primary navigation:
+The final public navigation should be validated in DDS-007D. The DDS-007B implementation deliberately keeps the desktop header compact: the logo links home, `Nieuws`, `Locaties`, `Huisregels`, and `Contact` are direct links, and `Bekijk agenda` is the primary action. `Over DDS`, `Projecten`, `Partners`, and practical links remain available through the mobile menu or footer while the final hierarchy is reviewed.
+
+Current Dutch homepage navigation language:
 
 - Home
-- Events
-- Projects
-- News
-- About
+- Agenda
+- Projecten
+- Nieuws
+- Over DDS
 - Contact
+
+When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Projects`, `News`, `About`, and `Contact`.
 
 Secondary or footer navigation:
 
@@ -22,16 +26,17 @@ Secondary or footer navigation:
 
 Recommended public label policy:
 
-- support both Dutch and English public content;
-- use English as the default public locale and support Dutch from the start;
-- use `Events` as the public label for the dated-activity section;
-- keep code, database columns, route names, and repository documentation in English;
-- use `Events` as the public section for trainings, races, demos, workshops, and community activities;
+- use English as the default public locale and support Dutch at the content-model level;
+- keep code identifiers, database columns, route names, and repository documentation in English;
+- allow the current landing page to remain temporarily Dutch while no multilingual public content mechanism is in use;
+- use `Agenda` for the current Dutch main action and `Events` for the English equivalent, while `event` remains the generic content term;
+- allow a concise English brand line such as `Where racing brings pilots together.` inside the temporary Dutch landing page;
+- use the Event domain for trainings, races, demos, workshops, and community activities;
 - treat trainings as an event type/filter, not as a separate public section.
 
 ## Language Strategy
 
-The platform should support English and Dutch content. English is the application default and Dutch is available from the start for Netherlands-oriented public content.
+The platform should support English and Dutch content. English remains the application and public-content default; Dutch translations can be added gradually. Until the multilingual public content layer and language switcher are in use, the current landing page is intentionally kept in Dutch as a temporary exception.
 
 Implementation principles:
 
@@ -50,6 +55,7 @@ Supported locales: en, nl
 Code and routes: English
 Primary content: English
 Optional translated content: Dutch
+Temporary landing page content: Dutch until multilingual public content is active
 Localized URL prefixes: not in phase 1
 ```
 
@@ -107,17 +113,18 @@ Legacy URLs that need redirects:
 
 ## Homepage Structure
 
-Recommended order:
+Current DDS-007B order:
 
-1. Hero with strong DDS positioning, photo/video, and primary CTA.
-2. Upcoming events, with the next training highlighted when available.
-3. What is Dutch Drone Squad?
-4. Why join?
-5. Training and getting started, framed as event participation.
-6. Projects, demos, or highlighted media.
-7. News.
-8. Partners.
-9. Final CTA.
+1. Hero with DDS positioning, real photography, and an agenda CTA.
+2. Experienced-pilot introduction and participation requirements.
+3. Sportpaleis proof, track scale, timing context, and season context.
+4. Upcoming events, with the next three shown when data is available.
+5. Beginner path, clearly separated from the experienced Sportpaleis events.
+6. Concise About DDS introduction.
+7. Latest news.
+8. Final agenda CTA.
+
+The structure should stay modular. The future Event and Article domains replace the current fallbacks without redesigning the page. A featured project or partner/demo cue can be added later when it supports a clear visitor action. Team details belong on the About page, and inactive or fallback locations should not be promoted as equal homepage destinations.
 
 ## Event Detail Page
 

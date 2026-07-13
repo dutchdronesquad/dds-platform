@@ -28,7 +28,7 @@ Tasks:
 - install Laravel starter kit with React, Inertia, TypeScript, and Tailwind;
 - configure DDEV;
 - set up authentication;
-- configure supported locales `nl` and `en`, with `nl` as default;
+- configure supported locales `en` and `nl`, with `en` as default;
 - configure Pest, Pint, type checking, and linting;
 - add baseline CI;
 - create empty PublicLayout and AdminLayout shells.
@@ -45,6 +45,8 @@ Acceptance criteria:
 ## Phase 2: Public Website Rebuild
 
 Goal: replace the current WordPress site visually and functionally with static or seeded content.
+
+Status: in progress. DDS-007B establishes the public brand direction and implements the redesigned homepage, responsive public header and footer, experienced-pilot and beginner paths, About teaser, upcoming-events preview, and news preview. The event cards currently use a mock fallback and news can use legacy fallback content until the corresponding domain models exist. Remaining Phase 2 work includes the final navigation review, secondary public pages, projects and partner positioning, contact flow, SEO metadata, and migration inventory.
 
 Tasks:
 
@@ -116,7 +118,7 @@ Acceptance criteria:
 - drafts are protected;
 - validation is reliable server-side;
 - events have clean slugs and metadata;
-- events support Dutch content and optional English translations;
+- events support English content and optional Dutch translations;
 - training evenings can be managed through event CRUD.
 
 ## Phase 5: Event Registrations
@@ -179,7 +181,7 @@ Acceptance criteria:
 - news articles are manageable after import;
 - locations have their own detail pages;
 - partners are manageable and sortable;
-- Dutch is the default content locale and English translations can be added;
+- English is the default content locale and Dutch translations can be added;
 - SEO loss during launch is minimized.
 
 ## Phase 8: Contact And Mail

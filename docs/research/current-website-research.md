@@ -54,7 +54,7 @@ Recommendations:
 - Use `Events` as the primary dated-activity section.
 - Treat regular flight evenings as event records with `type = training`.
 - Keep `Locaties` as a clear secondary navigation item.
-- Support Dutch and English content explicitly, with Dutch as the default public locale and English as an optional translation layer.
+- Support English and Dutch content explicitly, with English as the default public locale and Dutch as an optional translation layer. The current landing page can remain Dutch until the multilingual public content layer is active.
 
 ## Homepage Findings
 
@@ -243,7 +243,7 @@ The house rules page is operationally important and should remain easy to find f
 - footer;
 - confirmation emails.
 
-The current page contains Dutch and English versions. The new platform should support both locales explicitly because international pilots visit DDS, while Dutch remains the default public language.
+The current page contains Dutch and English versions. The new platform should support both locales explicitly because international pilots visit DDS. English remains the platform default, with Dutch available as a translation; the current landing page is a temporary Dutch exception.
 
 Recommendations:
 

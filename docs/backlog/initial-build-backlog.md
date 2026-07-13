@@ -10,28 +10,29 @@ This backlog translates the preparation docs into the first practical implementa
 - custom admin, no Filament in phase 1;
 - English-default bilingual content with `en` and `nl`;
 - no locale-prefixed URLs in phase 1;
-- public dated activities are called `Events`;
+- dated activities use the `Event` domain, while the public navigation can label the overview `Agenda`;
 - trainings are `Event` records with `type = training`;
 - WordPress import comes after the initial application foundation and target models.
 - UI/UX quality is part of the definition of done for every user-facing ticket.
 
 ## Current Backlog Position
 
-Current implementation point: the project is in Epic 3, Core Public Structure.
+Current implementation point: the project is in Epic 3, Core Public Structure. DDS-007B is implemented in the current feature branch. That work also delivers a substantial part of DDS-007C and DDS-007D, but those tickets remain open for the explicitly listed follow-up work.
 
 Recently completed in the current working tree:
 
 - DDS-007: Public Static Shell Pages;
-- DDS-007A: Public Shell Content Registry.
+- DDS-007A: Public Shell Content Registry;
+- DDS-007B: Public Brand Direction.
 
-The public route skeleton now exists, and temporary shell page content has been moved out of `routes/web.php` into `config/public_pages.php`. This means the current public pages are still placeholders, but the route structure is in place and the placeholder copy has a clear temporary owner.
+The public route skeleton and content registry now exist. The homepage and public shell have a recognizable DDS visual direction, while most secondary public pages still use temporary registry-backed content until their real domain models and managed content arrive.
 
 Recommended next tickets:
 
-1. DDS-007B: Public Brand Direction;
-2. DDS-007C: Homepage Content And Conversion Pass;
-3. DDS-007D: Public Navigation And Footer Polish;
-4. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
+1. finish DDS-007C by resolving the remaining project, partner, and backend-backed homepage content;
+2. finish DDS-007D by validating the final navigation hierarchy and remaining footer pathways;
+3. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
+4. DDS-009 / DDS-010: event model and public events pages, then replace the homepage event mock fallback;
 5. DDS-011A / DDS-011B / DDS-011C / DDS-011D: dashboard IA, admin CRUD patterns, user management, and role review.
 
 Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
@@ -259,7 +260,7 @@ Goal: prepare bilingual content without adding locale-prefixed URLs.
 Tasks:
 
 - configure supported locales `nl` and `en`;
-- set `nl` as default locale;
+- set `en` as default locale;
 - define a simple content translation approach for phase 1;
 - make admin forms able to expose locale-specific fields later.
 
@@ -348,6 +349,8 @@ Acceptance criteria:
 
 ### DDS-007B: Public Brand Direction
 
+Status: implemented as an evolutionary refresh of the existing DDS site rather than a rebrand. The direction uses real DDS photography, the existing orange/cyan logo, a deep-signal and light-air editorial palette, purposeful display typography, compact racing details, and restrained interaction states. The homepage now opens with `Where racing brings pilots together.` and prioritizes experienced pilots before giving beginners a clear route into the sport. The desktop homepage header becomes sticky with a translucent background while scrolling, the mobile navigation uses a full-screen menu, and the footer uses a four-column information structure. Upcoming events and latest news use horizontally scrollable mobile rails and three-column desktop layouts. Content is immediately visible; entrance-on-scroll animations were intentionally removed after review, while hover and navigation transitions retain reduced-motion handling. The homepage uses an intentionally art-directed section palette rather than changing its editorial sections with the appearance theme. Social preview metadata remains deferred to DDS-008. Team content belongs on the About page, and project, partner, or location sections should only return to the homepage when they support a clear visitor action.
+
 Goal: establish the first recognizable DDS visual direction before investing in final public pages.
 
 Tasks:
@@ -370,6 +373,8 @@ Acceptance criteria:
 - future public pages can reuse the patterns without copying large blocks.
 
 ### DDS-007C: Homepage Content And Conversion Pass
+
+Status: partially implemented as part of DDS-007B. The homepage now includes the revised hero, an experienced-pilot path, Sportpaleis proof and season context, three upcoming-event cards with a temporary mock fallback, a beginner path through De Goorn, a concise About section, three latest-news cards with a temporary legacy-content fallback, a final agenda CTA, and deliberate mobile carousel behavior. Remaining work is to decide whether a featured project and partner/demo cue materially improve the homepage, replace fallback data after the Event and Article domains exist, and verify final destinations and copy against managed content.
 
 Goal: turn the homepage from a shell into a useful first public entry point.
 
@@ -396,6 +401,8 @@ Acceptance criteria:
 
 ### DDS-007D: Public Navigation And Footer Polish
 
+Status: partially implemented as part of DDS-007B. The public shell now has refreshed desktop and mobile navigation, active-link treatment, a sticky translucent homepage header on desktop, and a four-column footer with brand context and grouped links. Remaining work is to validate the final navigation labels and hierarchy across every public page, decide the long-term visibility of login/admin access, add any required privacy, media, results, social, partner, or direct-contact pathways, and complete keyboard and screen-reader verification.
+
 Goal: make the public shell feel coherent across pages before real content models land.
 
 Tasks:
@@ -410,7 +417,7 @@ Tasks:
 
 Acceptance criteria:
 
-- primary navigation uses `Events`, `Projects`, `News`, `About`, and `Contact`;
+- navigation follows the active locale; the current homepage can remain temporarily Dutch-first until the multilingual public content layer is in use, without changing English as the platform default;
 - secondary links are discoverable without crowding the header;
 - active states work for index and detail routes;
 - public header/footer do not feel like starter-kit leftovers;
@@ -498,7 +505,7 @@ Acceptance criteria:
 - events can be created through factories/tests;
 - event type supports `training`, `race`, `demo`, `workshop`, `community`, `other`;
 - status supports draft/published/archived;
-- model supports Dutch content and optional English translations.
+- model supports English content and optional Dutch translations.
 
 ### DDS-010: Public Events Pages
 
