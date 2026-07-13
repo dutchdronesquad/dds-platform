@@ -8,7 +8,7 @@ This backlog translates the preparation docs into the first practical implementa
 - React, Inertia, TypeScript, and Tailwind;
 - DDEV with PostgreSQL;
 - custom admin, no Filament in phase 1;
-- Dutch-default bilingual content with `nl` and `en`;
+- English-default bilingual content with `en` and `nl`;
 - no locale-prefixed URLs in phase 1;
 - dated activities use the `Event` domain, while the public navigation can label the overview `Agenda`;
 - trainings are `Event` records with `type = training`;
@@ -260,7 +260,7 @@ Goal: prepare bilingual content without adding locale-prefixed URLs.
 Tasks:
 
 - configure supported locales `nl` and `en`;
-- set `nl` as default locale;
+- set `en` as default locale;
 - define a simple content translation approach for phase 1;
 - make admin forms able to expose locale-specific fields later.
 
@@ -417,7 +417,7 @@ Tasks:
 
 Acceptance criteria:
 
-- navigation language is Dutch-first, and `Agenda`, `Projecten`, `Nieuws`, `Over DDS`, and `Contact` remain discoverable without forcing every link into the desktop header;
+- navigation follows the active locale; the current homepage can remain temporarily Dutch-first until the multilingual public content layer is in use, without changing English as the platform default;
 - secondary links are discoverable without crowding the header;
 - active states work for index and detail routes;
 - public header/footer do not feel like starter-kit leftovers;
@@ -505,7 +505,7 @@ Acceptance criteria:
 - events can be created through factories/tests;
 - event type supports `training`, `race`, `demo`, `workshop`, `community`, `other`;
 - status supports draft/published/archived;
-- model supports Dutch content and optional English translations.
+- model supports English content and optional Dutch translations.
 
 ### DDS-010: Public Events Pages
 

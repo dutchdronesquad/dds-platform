@@ -28,7 +28,7 @@ Tasks:
 - install Laravel starter kit with React, Inertia, TypeScript, and Tailwind;
 - configure DDEV;
 - set up authentication;
-- configure supported locales `nl` and `en`, with `nl` as default;
+- configure supported locales `en` and `nl`, with `en` as default;
 - configure Pest, Pint, type checking, and linting;
 - add baseline CI;
 - create empty PublicLayout and AdminLayout shells.
@@ -118,7 +118,7 @@ Acceptance criteria:
 - drafts are protected;
 - validation is reliable server-side;
 - events have clean slugs and metadata;
-- events support Dutch content and optional English translations;
+- events support English content and optional Dutch translations;
 - training evenings can be managed through event CRUD.
 
 ## Phase 5: Event Registrations
@@ -181,7 +181,7 @@ Acceptance criteria:
 - news articles are manageable after import;
 - locations have their own detail pages;
 - partners are manageable and sortable;
-- Dutch is the default content locale and English translations can be added;
+- English is the default content locale and Dutch translations can be added;
 - SEO loss during launch is minimized.
 
 ## Phase 8: Contact And Mail

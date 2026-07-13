@@ -90,10 +90,11 @@ Out of scope:
 
 Language scope:
 
-- Dutch and English should be supported from the start at the content model level;
-- Dutch is the default and primary public locale;
-- English translations can be added gradually and do not need full content parity in the first release;
-- a concise English slogan or campaign line can be used inside otherwise Dutch page content when it strengthens the DDS brand.
+- English and Dutch should be supported from the start at the content model level;
+- English remains the default and primary public locale;
+- Dutch translations can be added gradually and do not need full content parity in the first release;
+- the current landing page can remain temporarily Dutch until the multilingual public content layer is in use;
+- a concise English slogan or campaign line can be used inside the temporary Dutch landing page when it strengthens the DDS brand.
 
 ## Current Operational Context
 

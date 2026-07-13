@@ -59,7 +59,7 @@ Reviewed on: 2026-07-04.
 - Keep navigation compact and focused on participation.
 - Give sponsors and partners a clear, professional presentation.
 - Make event and training detail pages practical, specific, and persuasive.
-- Support Dutch and English content, with Dutch as the default and primary public locale.
+- Support English and Dutch content, with English as the default and primary public locale. Keep the current landing page temporarily Dutch until the multilingual public content layer is active.
 - Focus the first release on training, getting started, locations, events, and contact rather than shop, cart, or league functionality.
 - Explain how someone can start, what to bring, and what a training evening looks like.
 - Surface the next training date and registration state more clearly on the homepage.

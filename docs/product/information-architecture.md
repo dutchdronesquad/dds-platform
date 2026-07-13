@@ -4,7 +4,7 @@
 
 The final public navigation should be validated in DDS-007D. The DDS-007B implementation deliberately keeps the desktop header compact: the logo links home, `Nieuws`, `Locaties`, `Huisregels`, and `Contact` are direct links, and `Bekijk agenda` is the primary action. `Over DDS`, `Projecten`, `Partners`, and practical links remain available through the mobile menu or footer while the final hierarchy is reviewed.
 
-Proposed final navigation language:
+Current Dutch homepage navigation language:
 
 - Home
 - Agenda
@@ -12,6 +12,8 @@ Proposed final navigation language:
 - Nieuws
 - Over DDS
 - Contact
+
+When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Projects`, `News`, `About`, and `Contact`.
 
 Secondary or footer navigation:
 
@@ -24,22 +26,23 @@ Secondary or footer navigation:
 
 Recommended public label policy:
 
-- use Dutch as the default public locale and support English at the content-model level;
+- use English as the default public locale and support Dutch at the content-model level;
 - keep code identifiers, database columns, route names, and repository documentation in English;
-- use `Agenda` for the main public action while `event` remains the generic content term;
-- allow a concise English brand line such as `Where racing brings pilots together.` inside otherwise Dutch public copy;
+- allow the current landing page to remain temporarily Dutch while no multilingual public content mechanism is in use;
+- use `Agenda` for the current Dutch main action and `Events` for the English equivalent, while `event` remains the generic content term;
+- allow a concise English brand line such as `Where racing brings pilots together.` inside the temporary Dutch landing page;
 - use the Event domain for trainings, races, demos, workshops, and community activities;
 - treat trainings as an event type/filter, not as a separate public section.
 
 ## Language Strategy
 
-The platform should support Dutch and English content. Dutch is the application and public-content default; English translations can be added gradually.
+The platform should support English and Dutch content. English remains the application and public-content default; Dutch translations can be added gradually. Until the multilingual public content layer and language switcher are in use, the current landing page is intentionally kept in Dutch as a temporary exception.
 
 Implementation principles:
 
 - code identifiers, model names, route names, database columns, and repository docs use English;
-- public content has `nl` as the default locale;
-- public content should be translatable to `en`;
+- public content has `en` as the default locale;
+- public content should be translatable to `nl`;
 - admin UI can start in English, but content fields should make locale explicit;
 - SEO metadata should be locale-aware;
 - URLs should stay stable and English-based without locale prefixes for the first release.
@@ -47,11 +50,12 @@ Implementation principles:
 Suggested locale handling:
 
 ```txt
-Default locale: nl
-Supported locales: nl, en
+Default locale: en
+Supported locales: en, nl
 Code and routes: English
-Primary content: Dutch
-Optional translated content: English
+Primary content: English
+Optional translated content: Dutch
+Temporary landing page content: Dutch until multilingual public content is active
 Localized URL prefixes: not in phase 1
 ```
 
