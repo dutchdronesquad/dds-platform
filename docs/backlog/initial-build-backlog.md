@@ -348,6 +348,8 @@ Acceptance criteria:
 
 ### DDS-007B: Public Brand Direction
 
+Status: implemented as an evolutionary refresh of the existing DDS site rather than a rebrand. The homepage preserves the recognizable `Become a drone racer today!` positioning and uses the existing site as its content and section baseline: training benefits, the DDS/PDRNL story, community and training paths, demo capability, historical news, photography, locations, team, partners, and the agenda CTA. Generic WordPress theme sections about nonprofit impact, donations, and fundraising are intentionally excluded. Typography, spacing, cards, imagery, navigation, and mobile behavior are refreshed without replacing the recognizable DDS structure. The public shell uses an orange, cyan, and deep-night palette derived from the existing DDS logo, with visible focus treatment and reduced-motion fallbacks. The existing logo is used in the public header, footer, and SVG favicon. Social previews will pair the full orange/cyan logo on a deep-night field with one relevant DDS editorial image when DDS-008 adds Open Graph metadata. Selected DDS photos are stored locally and drive the hero, page intro, news, location, team, and media treatments. Reusable React patterns cover the hero, page intro, content band, CTA band, feature cards, and media strip. Public pages intentionally support the existing light/dark theme mechanism; dark mode uses the night palette rather than being scoped out.
+
 Goal: establish the first recognizable DDS visual direction before investing in final public pages.
 
 Tasks:

@@ -6,6 +6,16 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
+test('homepage exposes the upcoming events module contract', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('welcome')
+            ->has('upcomingEvents', 0)
+            ->where('upcomingEvent', null),
+        );
+});
+
 test('public static shell pages render', function (string $routeName, string $pageKey) {
     $publicPage = config("public_pages.{$pageKey}");
 
@@ -19,6 +29,8 @@ test('public static shell pages render', function (string $routeName, string $pa
             ->has('page.description')
             ->has('page.primaryAction.label')
             ->has('page.primaryAction.href')
+            ->has('page.visual.src')
+            ->has('page.visual.alt')
             ->has('page.sections', 2)
             ->has('page.sections.0.heading')
             ->has('page.sections.0.body'),
@@ -56,12 +68,46 @@ test('public shell page copy is owned by the public pages config', function () {
                 'description',
                 'primaryAction',
                 'sections',
+                'visual',
             ])
             ->and($publicPage['primaryAction'])
             ->toHaveKeys(['label', 'href'])
+            ->and($publicPage['visual'])
+            ->toHaveKeys(['src', 'alt'])
+            ->and($publicPage['visual']['src'])
+            ->toStartWith('/images/dds/')
+            ->and(public_path(ltrim($publicPage['visual']['src'], '/')))
+            ->toBeFile()
             ->and($publicPage['sections'])
             ->toHaveCount(2);
     }
+});
+
+test('public brand assets are available locally', function () {
+    expect(public_path('brand/dds-logo.svg'))
+        ->toBeFile()
+        ->and(public_path('favicon.svg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/homepage-hero.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/indoor-track.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/pilot-preparing-drone.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/pilot-at-training.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/race-control.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/training-community.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/sporthal-koggenhal.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/sporthal-oosterhout.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/team-klaas.png'))
+        ->toBeFile()
+        ->and(public_path('images/dds/team-nico.png'))
+        ->toBeFile();
 });
 
 test('projects page frames projects as a public showcase', function () {
