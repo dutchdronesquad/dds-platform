@@ -39,7 +39,7 @@ const mockUpcomingEvents: UpcomingEvent[] = [
     {
         availabilityLabel: '12 van 15 plekken vrij',
         dateLabel: '13 SEP',
-        href: eventsIndex().url,
+        href: eventsIndex.url(),
         location: 'Sportpaleis Alkmaar',
         priceLabel: '€15',
         timeLabel: '18:00–21:00',
@@ -49,7 +49,7 @@ const mockUpcomingEvents: UpcomingEvent[] = [
     {
         availabilityLabel: '8 van 15 plekken vrij',
         dateLabel: '11 OKT',
-        href: eventsIndex().url,
+        href: eventsIndex.url(),
         location: 'Sportpaleis Alkmaar',
         priceLabel: '€15',
         timeLabel: '18:00–21:00',
@@ -59,7 +59,7 @@ const mockUpcomingEvents: UpcomingEvent[] = [
     {
         availabilityLabel: 'Aanmelding volgt',
         dateLabel: '15 NOV',
-        href: eventsIndex().url,
+        href: eventsIndex.url(),
         location: 'Sportpaleis Alkmaar',
         priceLabel: '€15',
         timeLabel: '18:00–21:00',
@@ -140,7 +140,7 @@ export default function Welcome({
                 title="Where racing brings pilots together."
                 description="Race door de gates, jaag op snellere rondetijden en push elkaar tot de laatste accu. Indoor FPV-racing in Alkmaar."
                 actions={[
-                    { label: 'Bekijk de agenda', href: eventsIndex().url },
+                    { label: 'Bekijk de agenda', href: eventsIndex.url() },
                     {
                         label: 'Voor ervaren piloten',
                         href: '#ervaren-piloten',

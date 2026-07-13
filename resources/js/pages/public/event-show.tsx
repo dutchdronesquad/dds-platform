@@ -30,7 +30,7 @@ export default function EventShow({ slug }: Props) {
                 description="Deze detailpagina reserveert de publieke URL voor een DDS-event. Het echte eventmodel kan later datum, locatie, programma en deelnamegegevens leveren."
                 action={{
                     label: 'Terug naar events',
-                    href: eventsIndex().url,
+                    href: eventsIndex.url(),
                 }}
                 media={{
                     src: '/images/dds/indoor-track.jpg',
@@ -66,7 +66,7 @@ export default function EventShow({ slug }: Props) {
                 description="Ontdek welke trainingen, races, demo’s en community-activiteiten binnenkort op de planning staan."
                 action={{
                     label: 'Alle events',
-                    href: eventsIndex().url,
+                    href: eventsIndex.url(),
                 }}
             />
         </>
