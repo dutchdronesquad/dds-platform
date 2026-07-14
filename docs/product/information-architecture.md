@@ -2,7 +2,7 @@
 
 ## Proposed Navigation
 
-The final public navigation should be validated in DDS-007D. The DDS-007B implementation deliberately keeps the desktop header compact: the logo links home, `Nieuws`, `Locaties`, `Huisregels`, and `Contact` are direct links, and `Bekijk agenda` is the primary action. `Over DDS`, `Projecten`, `Partners`, and practical links remain available through the mobile menu or footer while the final hierarchy is reviewed.
+The DDS-007D public hierarchy keeps the desktop header focused: the logo links home, followed by `Projecten`, `Nieuws`, `Over DDS`, `Locaties`, and `Contact`, with `Bekijk agenda` as the primary action. `Huisregels` is a practical footer-only link, while `Partners` is available in the footer and represented by verified partner logos on the homepage. Login and admin access are private operational entry points and are therefore not linked from the public shell; their direct routes remain available to authorized users.
 
 Current Dutch homepage navigation language:
 
@@ -113,7 +113,7 @@ Legacy URLs that need redirects:
 
 ## Homepage Structure
 
-Current DDS-007B order:
+Current homepage order:
 
 1. Hero with DDS positioning, real photography, and an agenda CTA.
 2. Experienced-pilot introduction and participation requirements.
@@ -122,9 +122,10 @@ Current DDS-007B order:
 5. Beginner path, clearly separated from the experienced Sportpaleis events.
 6. Concise About DDS introduction.
 7. Latest news.
-8. Final agenda CTA.
+8. Compact row with verified partner logos from backend content.
+9. Final agenda CTA.
 
-The structure should stay modular. The future Event and Article domains replace the current fallbacks without redesigning the page. A featured project or partner/demo cue can be added later when it supports a clear visitor action. Team details belong on the About page, and inactive or fallback locations should not be promoted as equal homepage destinations.
+The structure stays modular. Projects remain directly accessible through the primary navigation and footer; a project only earns homepage space when a real case supports a clear visitor action. Temporary homepage modules are delivered from backend configuration so the future Event, Article, Partner, and managed-content domains can replace them without redesigning the page. Team details belong on the About page, and inactive or fallback locations should not be promoted as equal homepage destinations.
 
 ## Event Detail Page
 

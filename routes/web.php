@@ -8,10 +8,10 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 /** @var array<string, array<string, mixed>> $publicPages */
 $publicPages = config('public_pages');
 
-Route::inertia('/', 'welcome', [
-    'upcomingEvents' => [],
-    'upcomingEvent' => null,
-])->name('home');
+/** @var array<string, mixed> $homepage */
+$homepage = config('homepage');
+
+Route::inertia('/', 'welcome', $homepage)->name('home');
 
 Route::inertia('/events', 'public/shell', [
     'page' => $publicPages['events'],

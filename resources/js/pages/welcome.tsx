@@ -21,7 +21,7 @@ type NewsItem = {
 type UpcomingEvent = {
     availabilityLabel: string;
     dateLabel: string;
-    href: string;
+    href?: string;
     location: string;
     priceLabel: string;
     timeLabel: string;
@@ -29,44 +29,19 @@ type UpcomingEvent = {
     typeLabel: string;
 };
 
-type WelcomeProps = {
-    latestNews?: NewsItem[];
-    upcomingEvent?: UpcomingEvent | null;
-    upcomingEvents: UpcomingEvent[];
+type PartnerLogo = {
+    alt: string;
+    href?: string;
+    src: string;
 };
 
-const mockUpcomingEvents: UpcomingEvent[] = [
-    {
-        availabilityLabel: '12 van 15 plekken vrij',
-        dateLabel: '13 SEP',
-        href: eventsIndex.url(),
-        location: 'Sportpaleis Alkmaar',
-        priceLabel: '€15',
-        timeLabel: '18:00–21:00',
-        title: 'Indoor training · Round 01',
-        typeLabel: '5-inch FPV racing',
-    },
-    {
-        availabilityLabel: '8 van 15 plekken vrij',
-        dateLabel: '11 OKT',
-        href: eventsIndex.url(),
-        location: 'Sportpaleis Alkmaar',
-        priceLabel: '€15',
-        timeLabel: '18:00–21:00',
-        title: 'Indoor training · Round 02',
-        typeLabel: '5-inch FPV racing',
-    },
-    {
-        availabilityLabel: 'Aanmelding volgt',
-        dateLabel: '15 NOV',
-        href: eventsIndex.url(),
-        location: 'Sportpaleis Alkmaar',
-        priceLabel: '€15',
-        timeLabel: '18:00–21:00',
-        title: 'Indoor training · Round 03',
-        typeLabel: '5-inch FPV racing',
-    },
-];
+type WelcomeProps = {
+    latestNews: NewsItem[];
+    latestNewsAreLegacy: boolean;
+    partnerLogos: PartnerLogo[];
+    upcomingEvents: UpcomingEvent[];
+    upcomingEventsArePlaceholder: boolean;
+};
 
 const pilotBenefits = [
     {
@@ -83,54 +58,15 @@ const pilotBenefits = [
     },
 ];
 
-const legacyNews: NewsItem[] = [
-    {
-        dateLabel: '9 september 2024',
-        excerpt: 'De planning en veranderingen voor het nieuwe indoorseizoen.',
-        href: 'https://dutchdronesquad.nl/seizoen-24-25/',
-        image: {
-            alt: 'FPV-piloot tijdens een indoor event van Dutch Drone Squad',
-            src: '/images/dds/pilot-at-training.jpg',
-        },
-        title: "Let's Get Ready! Indoor seizoen 24/25",
-    },
-    {
-        dateLabel: '4 september 2022',
-        excerpt:
-            'Een nieuw indoorseizoen in Alkmaar, met een vernieuwde aanpak voor de events.',
-        href: 'https://dutchdronesquad.nl/here-we-go-indoor-seizoen-22-23/',
-        image: {
-            alt: 'Indoor FPV-track in het Sportpaleis in Alkmaar',
-            src: '/images/dds/indoor-track.jpg',
-        },
-        title: 'Here we go! Indoor seizoen 22/23',
-    },
-    {
-        dateLabel: '13 augustus 2022',
-        excerpt:
-            'Een gezamenlijke vliegmiddag en barbecue als afsluiting van de zomer.',
-        href: 'https://dutchdronesquad.nl/bbq-2022/',
-        image: {
-            alt: 'Piloten bij elkaar tijdens een event van Dutch Drone Squad',
-            src: '/images/dds/training-community.jpg',
-        },
-        title: 'BBQ: Fly to meat you 2022',
-    },
-];
-
 export default function Welcome({
     latestNews,
-    upcomingEvent,
+    latestNewsAreLegacy,
+    partnerLogos,
     upcomingEvents,
+    upcomingEventsArePlaceholder,
 }: WelcomeProps) {
-    const visibleEvents = (
-        upcomingEvents.length > 0
-            ? upcomingEvents
-            : upcomingEvent
-              ? [upcomingEvent]
-              : mockUpcomingEvents
-    ).slice(0, 3);
-    const newsItems = latestNews?.length ? latestNews : legacyNews;
+    const visibleEvents = upcomingEvents.slice(0, 3);
+    const newsItems = latestNews.slice(0, 3);
 
     return (
         <>
@@ -147,7 +83,7 @@ export default function Welcome({
                     },
                 ]}
                 media={{
-                    src: '/images/dds/homepage-hero.jpg',
+                    src: '/images/dds/racing/homepage-hero.jpg',
                     alt: 'Lichtspoor van een FPV-drone boven het indoor raceparcours van Dutch Drone Squad',
                     className: 'object-[42%_center] sm:object-[center_42%]',
                 }}
@@ -182,7 +118,7 @@ export default function Welcome({
                             <figure>
                                 <div className="relative aspect-[4/3] overflow-hidden bg-deep-signal/10">
                                     <img
-                                        src="/images/dds/training-community.jpg"
+                                        src="/images/dds/racing/training-community.jpg"
                                         alt="Piloten en bezoekers tijdens een event van Dutch Drone Squad"
                                         loading="lazy"
                                         className="h-full w-full object-cover"
@@ -251,7 +187,7 @@ export default function Welcome({
                         <figure>
                             <div className="relative aspect-[4/3] overflow-hidden bg-white/8">
                                 <img
-                                    src="/images/dds/indoor-track.jpg"
+                                    src="/images/dds/racing/indoor-track.jpg"
                                     alt="Volledig indoor FPV-parcours in het Sportpaleis Alkmaar"
                                     loading="lazy"
                                     className="h-full w-full object-cover"
@@ -270,7 +206,7 @@ export default function Welcome({
 
             <UpcomingEventsSection
                 events={visibleEvents}
-                isMock={upcomingEvents.length === 0 && !upcomingEvent}
+                isPlaceholder={upcomingEventsArePlaceholder}
             />
 
             <section className="overflow-hidden bg-warmup text-deep-signal">
@@ -333,8 +269,8 @@ export default function Welcome({
                     <div>
                         <figure className="relative min-h-[24rem] overflow-hidden bg-white/8 lg:min-h-[34rem]">
                             <img
-                                src="/images/dds/race-control.jpg"
-                                alt="De timing- en racetechniek van Dutch Drone Squad in het Sportpaleis"
+                                src="/images/dds/racing/pilot-preparing-drone.jpg"
+                                alt="FPV-piloot werkt aan een racedrone tijdens een event van Dutch Drone Squad"
                                 loading="lazy"
                                 className="absolute inset-0 h-full w-full object-cover"
                             />
@@ -375,7 +311,7 @@ export default function Welcome({
                             tabIndex={0}
                             className="flex snap-x snap-proximity scroll-px-public-gutter scrollbar-none gap-4 overflow-x-auto overscroll-x-contain px-public-gutter pb-4 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset md:grid md:snap-none md:grid-cols-3 md:gap-7 md:overflow-visible md:px-0 md:pb-0 lg:gap-10"
                         >
-                            {newsItems.slice(0, 3).map((item) => (
+                            {newsItems.map((item) => (
                                 <li
                                     key={item.href}
                                     className="w-[calc(100vw-3.5rem)] max-w-[22rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
@@ -386,6 +322,13 @@ export default function Welcome({
                         </ul>
                     </div>
 
+                    {latestNewsAreLegacy && (
+                        <p className="mt-5 font-mono text-[0.68rem] tracking-[0.08em] text-signal-muted uppercase">
+                            Archiefselectie · wordt later gekoppeld aan de
+                            nieuwsmodule
+                        </p>
+                    )}
+
                     <Link
                         href={newsIndex()}
                         prefetch
@@ -395,6 +338,8 @@ export default function Welcome({
                     </Link>
                 </div>
             </section>
+
+            <PartnerLogosSection partnerLogos={partnerLogos} />
 
             <section className="bg-dds-orange text-deep-signal">
                 <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-public-gutter py-12 sm:py-14 lg:grid-cols-[1fr_auto]">
@@ -421,12 +366,77 @@ export default function Welcome({
     );
 }
 
-type UpcomingEventsSectionProps = {
-    events: UpcomingEvent[];
-    isMock: boolean;
+type PartnerLogosSectionProps = {
+    partnerLogos: PartnerLogo[];
 };
 
-function UpcomingEventsSection({ events, isMock }: UpcomingEventsSectionProps) {
+function PartnerLogosSection({ partnerLogos }: PartnerLogosSectionProps) {
+    if (partnerLogos.length === 0) {
+        return null;
+    }
+
+    return (
+        <section className="border-t border-deep-signal/10 bg-paddock text-deep-signal">
+            <div className="mx-auto w-full max-w-7xl px-public-gutter py-12 sm:py-14">
+                <h2 className="text-xs font-semibold tracking-[0.12em] text-signal-muted uppercase">
+                    Partners & sponsors
+                </h2>
+
+                <ul className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-8 md:gap-x-12">
+                    {partnerLogos.map((partnerLogo) => (
+                        <li
+                            key={partnerLogo.src}
+                            className="flex min-h-14 w-48 items-center sm:w-52"
+                        >
+                            <PartnerLogoItem partnerLogo={partnerLogo} />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    );
+}
+
+type PartnerLogoItemProps = {
+    partnerLogo: PartnerLogo;
+};
+
+function PartnerLogoItem({ partnerLogo }: PartnerLogoItemProps) {
+    const image = (
+        <img
+            src={partnerLogo.src}
+            alt={partnerLogo.alt}
+            loading="lazy"
+            className="max-h-12 max-w-full object-contain"
+        />
+    );
+
+    if (partnerLogo.href) {
+        return (
+            <a
+                href={partnerLogo.href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Bekijk website van ${partnerLogo.alt}`}
+                className="inline-flex w-full items-center rounded-sm opacity-80 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-paddock focus-visible:outline-none motion-reduce:transition-none"
+            >
+                {image}
+            </a>
+        );
+    }
+
+    return image;
+}
+
+type UpcomingEventsSectionProps = {
+    events: UpcomingEvent[];
+    isPlaceholder: boolean;
+};
+
+function UpcomingEventsSection({
+    events,
+    isPlaceholder,
+}: UpcomingEventsSectionProps) {
     return (
         <section id="upcoming-events" className="bg-paper text-deep-signal">
             <div className="mx-auto w-full max-w-7xl px-public-gutter py-20 sm:py-28 lg:py-32">
@@ -472,7 +482,7 @@ function UpcomingEventsSection({ events, isMock }: UpcomingEventsSectionProps) {
                     </ul>
                 </div>
 
-                {isMock && (
+                {isPlaceholder && (
                     <p className="mt-5 font-mono text-[0.68rem] tracking-[0.08em] text-signal-muted uppercase">
                         Voorbeelddata · wordt later gekoppeld aan de eventmodule
                     </p>
@@ -548,7 +558,7 @@ type EventCardProps = {
 function EventCard({ event, index }: EventCardProps) {
     return (
         <Link
-            href={event.href}
+            href={event.href ?? eventsIndex()}
             prefetch
             className="group flex h-full min-h-[25rem] flex-col border-t-4 border-dds-orange bg-deep-signal p-6 text-white transition duration-300 hover:-translate-y-1 hover:bg-[#174a52] focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:outline-none motion-reduce:transform-none motion-reduce:transition-none sm:p-7"
         >
@@ -613,7 +623,7 @@ function NewsCard({ item }: NewsCardProps) {
                     <img
                         src={
                             item.image?.src ??
-                            '/images/dds/pilot-at-training.jpg'
+                            '/images/dds/racing/pilot-at-training.jpg'
                         }
                         alt={
                             item.image?.alt ??

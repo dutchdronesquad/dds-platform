@@ -12,7 +12,7 @@ return [
         'eyebrow' => 'Agenda',
         'description' => 'Clubdagen, trainingen, demo-vluchten en communitybijeenkomsten krijgen hier een vaste publieke plek.',
         'visual' => [
-            'src' => '/images/dds/indoor-track.jpg',
+            'src' => '/images/dds/racing/indoor-track.jpg',
             'alt' => 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
             'position' => '56% center',
         ],
@@ -36,7 +36,7 @@ return [
         'eyebrow' => 'Showcase',
         'description' => 'Publieke showcase voor DDS-built tooling, software, plugins, apps, integraties en geselecteerde community builds.',
         'visual' => [
-            'src' => '/images/dds/pilot-preparing-drone.jpg',
+            'src' => '/images/dds/racing/pilot-preparing-drone.jpg',
             'alt' => 'FPV-piloot werkt aan een racedrone tijdens een DDS-training',
             'position' => '44% center',
         ],
@@ -60,7 +60,7 @@ return [
         'eyebrow' => 'Updates',
         'description' => 'Publieke updates, aankondigingen en terugblikken vormen straks de tijdlijn van Dutch Drone Squad.',
         'visual' => [
-            'src' => '/images/dds/pilot-at-training.jpg',
+            'src' => '/images/dds/racing/pilot-at-training.jpg',
             'alt' => 'Pilot tijdens een indoor trainingsavond van Dutch Drone Squad',
             'position' => '62% center',
         ],
@@ -84,7 +84,7 @@ return [
         'eyebrow' => 'Vliegplekken',
         'description' => 'Locaties verzamelen straks clubplekken, eventlocaties en relevante regionale context voor activiteiten.',
         'visual' => [
-            'src' => '/images/dds/indoor-track.jpg',
+            'src' => '/images/dds/racing/indoor-track.jpg',
             'alt' => 'Indoor trainingslocatie met FPV-raceparcours',
             'position' => '50% center',
         ],
@@ -108,7 +108,7 @@ return [
         'eyebrow' => 'Dutch Drone Squad',
         'description' => 'Dutch Drone Squad brengt dronevliegers, makers en partners samen rond veilig vliegen, kennisdeling en zichtbare communityprojecten.',
         'visual' => [
-            'src' => '/images/dds/pilot-at-training.jpg',
+            'src' => '/images/dds/racing/pilot-at-training.jpg',
             'alt' => 'Lid van Dutch Drone Squad vliegt tijdens een indoor training',
             'position' => '62% center',
         ],
@@ -132,7 +132,7 @@ return [
         'eyebrow' => 'Afspraken',
         'description' => 'De huisregels geven straks duidelijke verwachtingen voor deelname, veiligheid en gedrag binnen de DDS-community.',
         'visual' => [
-            'src' => '/images/dds/pilot-preparing-drone.jpg',
+            'src' => '/images/dds/racing/pilot-preparing-drone.jpg',
             'alt' => 'FPV-piloot bereidt veilig een racedrone voor',
             'position' => '44% center',
         ],
@@ -156,7 +156,7 @@ return [
         'eyebrow' => 'Samenwerking',
         'description' => 'Partners krijgen straks een herkenbare plek voor samenwerkingen, bijdragen en community-initiatieven.',
         'visual' => [
-            'src' => '/images/dds/indoor-track.jpg',
+            'src' => '/images/dds/racing/indoor-track.jpg',
             'alt' => 'Professioneel indoor FPV-raceparcours voor DDS-events en partners',
             'position' => '56% center',
         ],
@@ -180,7 +180,7 @@ return [
         'eyebrow' => 'Bereik DDS',
         'description' => 'Contact wordt de publieke route voor vragen over events, projecten, partnerschappen en deelname aan Dutch Drone Squad.',
         'visual' => [
-            'src' => '/images/dds/pilot-at-training.jpg',
+            'src' => '/images/dds/racing/pilot-at-training.jpg',
             'alt' => 'FPV-piloot bij een trainingsavond van Dutch Drone Squad',
             'position' => '62% center',
         ],

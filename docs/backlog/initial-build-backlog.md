@@ -17,23 +17,23 @@ This backlog translates the preparation docs into the first practical implementa
 
 ## Current Backlog Position
 
-Current implementation point: the project is in Epic 3, Core Public Structure. DDS-007B is implemented in the current feature branch. That work also delivers a substantial part of DDS-007C and DDS-007D, but those tickets remain open for the explicitly listed follow-up work.
+Current implementation point: the project is in Epic 3, Core Public Structure. DDS-007C is implemented in the current working tree. DDS-007D remains open for the explicitly listed navigation and footer follow-up work.
 
 Recently completed in the current working tree:
 
 - DDS-007: Public Static Shell Pages;
 - DDS-007A: Public Shell Content Registry;
-- DDS-007B: Public Brand Direction.
+- DDS-007B: Public Brand Direction;
+- DDS-007C: Homepage Content And Conversion Pass.
 
 The public route skeleton and content registry now exist. The homepage and public shell have a recognizable DDS visual direction, while most secondary public pages still use temporary registry-backed content until their real domain models and managed content arrive.
 
 Recommended next tickets:
 
-1. finish DDS-007C by resolving the remaining project, partner, and backend-backed homepage content;
-2. finish DDS-007D by validating the final navigation hierarchy and remaining footer pathways;
-3. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
-4. DDS-009 / DDS-010: event model and public events pages, then replace the homepage event mock fallback;
-5. DDS-011A / DDS-011B / DDS-011C / DDS-011D: dashboard IA, admin CRUD patterns, user management, and role review.
+1. finish DDS-007D by validating the final navigation hierarchy and remaining footer pathways;
+2. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
+3. DDS-009 / DDS-010: event model and public events pages, then replace the homepage event placeholder;
+4. DDS-011A / DDS-011B / DDS-011C / DDS-011D: dashboard IA, admin CRUD patterns, user management, and role review.
 
 Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
 
@@ -374,7 +374,7 @@ Acceptance criteria:
 
 ### DDS-007C: Homepage Content And Conversion Pass
 
-Status: partially implemented as part of DDS-007B. The homepage now includes the revised hero, an experienced-pilot path, Sportpaleis proof and season context, three upcoming-event cards with a temporary mock fallback, a beginner path through De Goorn, a concise About section, three latest-news cards with a temporary legacy-content fallback, a final agenda CTA, and deliberate mobile carousel behavior. Remaining work is to decide whether a featured project and partner/demo cue materially improve the homepage, replace fallback data after the Event and Article domains exist, and verify final destinations and copy against managed content.
+Status: implemented. The homepage includes the revised hero, experienced-pilot and beginner paths, Sportpaleis proof, upcoming events, About and news previews, a compact partner-logo row near the footer, and a final agenda CTA. Projects are deliberately routed through the primary navigation and footer until real project cases justify a homepage feature. The partner zone shows the verified Droneshop.nl logo from the legacy website, omits its anonymous template placeholders, and does not include a separate sales callout. Temporary event, legacy-news, and partner content is server-backed through `config/homepage.php`; the future Event, Article, Partner, and managed-content domains can replace those props without redesigning the page.
 
 Goal: turn the homepage from a shell into a useful first public entry point.
 
@@ -386,7 +386,7 @@ Tasks:
 - add a concise "What is DDS?" section;
 - add a "Start with training" path for new pilots and parents;
 - add project/showcase teaser content;
-- add partner/demo/workshop positioning;
+- add visible partner recognition without a separate homepage sales callout;
 - add final CTA and footer flow;
 - ensure the homepage can function before the WordPress importer exists.
 
@@ -401,7 +401,7 @@ Acceptance criteria:
 
 ### DDS-007D: Public Navigation And Footer Polish
 
-Status: partially implemented as part of DDS-007B. The public shell now has refreshed desktop and mobile navigation, active-link treatment, a sticky translucent homepage header on desktop, and a four-column footer with brand context and grouped links. Remaining work is to validate the final navigation labels and hierarchy across every public page, decide the long-term visibility of login/admin access, add any required privacy, media, results, social, partner, or direct-contact pathways, and complete keyboard and screen-reader verification.
+Status: partially implemented as part of DDS-007B and DDS-007C. The public shell now has refreshed desktop and mobile navigation, active-link treatment, the primary hierarchy `Projecten`, `Nieuws`, `Over DDS`, `Locaties`, and `Contact`, a separate agenda CTA, a sticky translucent homepage header on desktop, and a four-column footer with brand context and grouped links. `Huisregels` is intentionally footer-only. Login and admin access are hidden from the public shell while their direct routes remain available. Remaining work is to validate the hierarchy across every public page, add any required privacy, media, results, social, partner, or direct-contact pathways, and complete keyboard and screen-reader verification.
 
 Goal: make the public shell feel coherent across pages before real content models land.
 
@@ -412,7 +412,7 @@ Tasks:
 - add active states for section and detail pages;
 - improve mobile navigation ergonomics;
 - add footer contact pathways and partner/demo cues;
-- decide whether login/admin entry should remain visible in the public header;
+- keep login/admin entry private and available only through its direct route;
 - verify navigation with keyboard and screen reader basics.
 
 Acceptance criteria:

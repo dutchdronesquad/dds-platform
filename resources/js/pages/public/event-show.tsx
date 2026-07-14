@@ -33,7 +33,7 @@ export default function EventShow({ slug }: Props) {
                     href: eventsIndex.url(),
                 }}
                 media={{
-                    src: '/images/dds/indoor-track.jpg',
+                    src: '/images/dds/racing/indoor-track.jpg',
                     alt: 'Indoor FPV-raceparcours waar Dutch Drone Squad events organiseert',
                     position: '56% center',
                 }}

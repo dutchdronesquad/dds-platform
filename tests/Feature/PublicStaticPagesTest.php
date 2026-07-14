@@ -6,14 +6,45 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
-test('homepage exposes the upcoming events module contract', function () {
+test('homepage exposes its backend-backed conversion content', function () {
+    $homepage = config('homepage');
+
     $this->get(route('home'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('welcome')
-            ->has('upcomingEvents', 0)
-            ->where('upcomingEvent', null),
+            ->where('upcomingEvents', $homepage['upcomingEvents'])
+            ->where('upcomingEventsArePlaceholder', true)
+            ->where('latestNews', $homepage['latestNews'])
+            ->where('latestNewsAreLegacy', true)
+            ->where('partnerLogos', $homepage['partnerLogos']),
         );
+});
+
+test('temporary homepage content is owned by the homepage config', function () {
+    $homepage = config('homepage');
+
+    expect(array_keys($homepage))->toBe([
+        'upcomingEvents',
+        'upcomingEventsArePlaceholder',
+        'latestNews',
+        'latestNewsAreLegacy',
+        'partnerLogos',
+    ])
+        ->and($homepage['upcomingEvents'])->toHaveCount(3)
+        ->and($homepage['latestNews'])->toHaveCount(3)
+        ->and($homepage['partnerLogos'])->toHaveCount(1);
+
+    foreach ($homepage['latestNews'] as $newsItem) {
+        expect(public_path(ltrim($newsItem['image']['src'], '/')))->toBeFile();
+    }
+
+    foreach ($homepage['partnerLogos'] as $partnerLogo) {
+        expect($partnerLogo)
+            ->toHaveKeys(['alt', 'href', 'src'])
+            ->and(public_path(ltrim($partnerLogo['src'], '/')))
+            ->toBeFile();
+    }
 });
 
 test('public static shell pages render', function (string $routeName, string $pageKey) {
@@ -88,26 +119,72 @@ test('public brand assets are available locally', function () {
         ->toBeFile()
         ->and(public_path('favicon.svg'))
         ->toBeFile()
-        ->and(public_path('images/dds/homepage-hero.jpg'))
+        ->and(public_path('images/dds/racing/homepage-hero.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/indoor-track.jpg'))
+        ->and(public_path('images/dds/racing/indoor-track.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/pilot-preparing-drone.jpg'))
+        ->and(public_path('images/dds/racing/pilot-preparing-drone.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/pilot-at-training.jpg'))
+        ->and(public_path('images/dds/racing/pilot-at-training.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/race-control.jpg'))
+        ->and(public_path('images/dds/racing/race-control.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/training-community.jpg'))
+        ->and(public_path('images/dds/racing/training-community.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/sporthal-koggenhal.jpg'))
+        ->and(public_path('images/dds/locations/sporthal-koggenhal.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/sporthal-oosterhout.jpg'))
+        ->and(public_path('images/dds/locations/sporthal-oosterhout.jpg'))
         ->toBeFile()
-        ->and(public_path('images/dds/team-klaas.png'))
+        ->and(public_path('images/dds/team/team-klaas.png'))
         ->toBeFile()
-        ->and(public_path('images/dds/team-nico.png'))
+        ->and(public_path('images/dds/team/team-nico.png'))
+        ->toBeFile()
+        ->and(public_path('images/dds/partners/partner-droneshop.png'))
         ->toBeFile();
+});
+
+test('public navigation keeps private authentication links out of the public shell', function () {
+    $publicLayout = file_get_contents(resource_path('js/layouts/public-layout.tsx'));
+
+    preg_match('/const headerNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $headerNavigation);
+    preg_match('/const mobileNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $mobileNavigation);
+
+    expect($publicLayout)
+        ->not->toBeFalse()
+        ->not->toContain('login()')
+        ->not->toContain('dashboard()')
+        ->not->toContain('Inloggen')
+        ->not->toContain('Beheer')
+        ->and($headerNavigation[1])
+        ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
+        ->not->toContain('Huisregels')
+        ->and($mobileNavigation[1])
+        ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
+        ->not->toContain('Huisregels');
+});
+
+test('homepage partner section only contains verified logos', function () {
+    $homepage = file_get_contents(resource_path('js/pages/welcome.tsx'));
+
+    expect($homepage)
+        ->not->toBeFalse()
+        ->toContain('Partners & sponsors')
+        ->toContain('Bekijk website van')
+        ->not->toContain('Met dank aan de partijen')
+        ->not->toContain('Demo, workshop of raceformat')
+        ->not->toContain('Samen iets organiseren?')
+        ->not->toContain('Bespreek een idee');
+});
+
+test('partner logo uses a tightly cropped canvas for visual alignment', function () {
+    $dimensions = getimagesize(public_path('images/dds/partners/partner-droneshop.png'));
+
+    expect($dimensions)
+        ->not->toBeFalse()
+        ->and($dimensions[0])
+        ->toBe(947)
+        ->and($dimensions[1])
+        ->toBe(95);
 });
 
 test('projects page frames projects as a public showcase', function () {
