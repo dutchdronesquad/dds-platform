@@ -1,4 +1,3 @@
-import { Head } from '@inertiajs/react';
 import { Compass, RadioTower } from 'lucide-react';
 import {
     ContentBand,
@@ -6,6 +5,8 @@ import {
     FeatureCard,
     PageIntro,
 } from '@/components/public/public-patterns';
+import PublicSeoHead from '@/components/public/public-seo-head';
+import type { SeoMetadata } from '@/types';
 
 type PublicPageSection = {
     body: string;
@@ -30,12 +31,13 @@ type PublicPage = {
 
 type Props = {
     page: PublicPage;
+    seo: SeoMetadata;
 };
 
-export default function PublicShell({ page }: Props) {
+export default function PublicShell({ page, seo }: Props) {
     return (
         <>
-            <Head title={page.title} />
+            <PublicSeoHead metadata={seo} />
 
             <PageIntro
                 eyebrow={page.eyebrow}

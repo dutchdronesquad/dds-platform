@@ -7,6 +7,7 @@ import {
     LifeBuoy,
     MapPin,
     Newspaper,
+    Route as RouteIcon,
     ShieldCheck,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -23,6 +24,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
+import { index as redirectsIndex } from '@/routes/redirects';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -50,6 +52,11 @@ const mainNavItems: NavItem[] = [
         title: 'Locaties',
         href: `${dashboard.url()}#locations`,
         icon: MapPin,
+    },
+    {
+        title: 'Redirects',
+        href: redirectsIndex(),
+        icon: RouteIcon,
     },
 ];
 

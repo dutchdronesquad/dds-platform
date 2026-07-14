@@ -29,6 +29,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 PermissionEnum::ViewEvents->value,
                 PermissionEnum::CreateEvents->value,
                 PermissionEnum::UpdateEvents->value,
+                PermissionEnum::ViewRedirects->value,
             ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

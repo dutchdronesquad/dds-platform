@@ -1,8 +1,8 @@
 # DDS Platform
 
-Preparatory documentation for rebuilding the Dutch Drone Squad website as a Laravel platform.
+The Dutch Drone Squad website and administration platform, built with Laravel, Inertia, React, TypeScript, and Tailwind CSS.
 
-The repository currently contains no application code. This phase is intentionally focused on research, scope, architecture, and planning before the Laravel application is scaffolded.
+The application is developed locally with DDEV and PostgreSQL. Public pages, authentication, role-based administration, baseline SEO metadata, and database-backed legacy redirects are in place; the remaining domains are developed incrementally from the product backlog.
 
 ## Documentation
 

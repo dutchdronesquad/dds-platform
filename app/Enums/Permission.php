@@ -9,6 +9,8 @@ enum Permission: string
     case UpdateEvents = 'events.update';
     case DeleteEvents = 'events.delete';
 
+    case ViewRedirects = 'redirects.view';
+
     case ViewUsers = 'users.view';
     case UpdateUsers = 'users.update';
 }
