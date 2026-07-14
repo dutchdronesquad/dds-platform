@@ -146,19 +146,34 @@ test('public brand assets are available locally', function () {
 test('public navigation keeps private authentication links out of the public shell', function () {
     $publicLayout = file_get_contents(resource_path('js/layouts/public-layout.tsx'));
 
-    preg_match('/const headerNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $headerNavigation);
-    preg_match('/const mobileNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $mobileNavigation);
+    if (! is_string($publicLayout)) {
+        $this->fail('The public layout could not be read.');
+    }
+
+    $headerNavigationMatched = preg_match('/const headerNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $headerNavigation);
+    $mobileNavigationMatched = preg_match('/const mobileNavItems: PublicNavItem\[\] = \[(.*?)\];/s', $publicLayout, $mobileNavigation);
+
+    expect($headerNavigationMatched)
+        ->toBe(1)
+        ->and($mobileNavigationMatched)
+        ->toBe(1)
+        ->and($headerNavigation)
+        ->toHaveKey(1)
+        ->and($mobileNavigation)
+        ->toHaveKey(1);
+
+    $headerNavigationItems = $headerNavigation[1] ?? '';
+    $mobileNavigationItems = $mobileNavigation[1] ?? '';
 
     expect($publicLayout)
-        ->not->toBeFalse()
         ->not->toContain('login()')
         ->not->toContain('dashboard()')
         ->not->toContain('Inloggen')
         ->not->toContain('Beheer')
-        ->and($headerNavigation[1])
+        ->and($headerNavigationItems)
         ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
         ->not->toContain('Huisregels')
-        ->and($mobileNavigation[1])
+        ->and($mobileNavigationItems)
         ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
         ->not->toContain('Huisregels');
 });

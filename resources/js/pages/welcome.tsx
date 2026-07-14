@@ -416,7 +416,7 @@ function PartnerLogoItem({ partnerLogo }: PartnerLogoItemProps) {
             <a
                 href={partnerLogo.href}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 aria-label={`Bekijk website van ${partnerLogo.alt}`}
                 className="inline-flex w-full items-center rounded-sm opacity-80 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-paddock focus-visible:outline-none motion-reduce:transition-none"
             >
