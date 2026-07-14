@@ -82,3 +82,14 @@ test('external redirect targets are supported', function () {
         ->assertFound()
         ->assertRedirect('https://example.com/partner');
 });
+
+test('malformed local redirect targets are ignored', function () {
+    $redirect = Redirect::factory()->create([
+        'source_path' => '/malformed-target',
+        'target_url' => '/bad'.chr(0).'path',
+    ]);
+
+    $this->get('/malformed-target')->assertNotFound();
+
+    expect($redirect->refresh()->hit_count)->toBe(0);
+});

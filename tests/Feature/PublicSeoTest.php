@@ -9,6 +9,9 @@ beforeEach(function () {
 
 test('public pages expose complete metadata with canonical application urls', function (string $routeName, string $pageKey, string $canonicalPath) {
     $metadata = (new SeoMetadata)->forPage($pageKey);
+    $documentTitle = $metadata['title'] === $metadata['openGraph']['siteName']
+        ? $metadata['openGraph']['siteName']
+        : "{$metadata['title']} - {$metadata['openGraph']['siteName']}";
 
     $response = $this->get(route($routeName));
 
@@ -23,6 +26,8 @@ test('public pages expose complete metadata with canonical application urls', fu
             ->has('seo.openGraph.image')
             ->has('seo.openGraph.imageAlt'),
         )
+        ->assertSee('<title', false)
+        ->assertSee($documentTitle)
         ->assertSee('name="description"', false)
         ->assertSee('rel="canonical"', false)
         ->assertSee('property="og:image"', false);

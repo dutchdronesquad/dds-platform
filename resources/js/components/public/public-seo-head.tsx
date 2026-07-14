@@ -7,8 +7,7 @@ type Props = {
 
 export default function PublicSeoHead({ metadata }: Props) {
     return (
-        <Head>
-            <title>{metadata.title}</title>
+        <Head title={metadata.title}>
             <meta
                 head-key="description"
                 name="description"

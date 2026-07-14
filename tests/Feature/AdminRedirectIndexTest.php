@@ -42,14 +42,36 @@ test('admins can review redirect status and usage', function () {
             ->where('summary.total', 1)
             ->where('summary.active', 1)
             ->where('summary.hits', 12)
-            ->has('redirects', 1)
-            ->where('redirects.0.sourcePath', '/old-news')
-            ->where('redirects.0.targetUrl', '/news')
-            ->where('redirects.0.statusCode', 301)
-            ->where('redirects.0.isActive', true)
-            ->where('redirects.0.hitCount', 12)
-            ->where('redirects.0.notes', 'Imported from WordPress.')
-            ->has('redirects.0.updatedAt'),
+            ->where('redirects.current_page', 1)
+            ->where('redirects.total', 1)
+            ->has('redirects.data', 1)
+            ->where('redirects.data.0.sourcePath', '/old-news')
+            ->where('redirects.data.0.targetUrl', '/news')
+            ->where('redirects.data.0.statusCode', 301)
+            ->where('redirects.data.0.isActive', true)
+            ->where('redirects.data.0.hitCount', 12)
+            ->where('redirects.data.0.notes', 'Imported from WordPress.')
+            ->has('redirects.data.0.updatedAt'),
+        );
+});
+
+test('redirect review is paginated while its summary covers every record', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->count(51)->create(['hit_count' => 1]);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['page' => 2]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('summary.total', 51)
+            ->where('summary.active', 51)
+            ->where('summary.hits', 51)
+            ->where('redirects.current_page', 2)
+            ->where('redirects.last_page', 2)
+            ->where('redirects.total', 51)
+            ->has('redirects.data', 1),
         );
 });
 

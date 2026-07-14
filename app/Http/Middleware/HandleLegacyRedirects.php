@@ -50,14 +50,14 @@ final class HandleLegacyRedirects
 
     private function hasValidTarget(string $targetUrl): bool
     {
-        if (Str::startsWith($targetUrl, '/') && ! Str::startsWith($targetUrl, '//')) {
-            return true;
+        $uri = $this->parseTargetUrl($targetUrl);
+
+        if (! $uri) {
+            return false;
         }
 
-        try {
-            $uri = Uri::of($targetUrl);
-        } catch (Throwable) {
-            return false;
+        if (Str::startsWith($targetUrl, '/') && ! Str::startsWith($targetUrl, '//')) {
+            return true;
         }
 
         return in_array($uri->scheme(), ['http', 'https'], true) && $uri->host() !== null;
@@ -95,7 +95,12 @@ final class HandleLegacyRedirects
 
     private function localTargetPath(string $targetUrl, Request $request): ?string
     {
-        $uri = Uri::of($targetUrl);
+        $uri = $this->parseTargetUrl($targetUrl);
+
+        if (! $uri) {
+            return null;
+        }
+
         $targetHost = $uri->host();
 
         if ($targetHost !== null) {
@@ -108,5 +113,14 @@ final class HandleLegacyRedirects
         }
 
         return Redirect::normalizePath($uri->path());
+    }
+
+    private function parseTargetUrl(string $targetUrl): ?Uri
+    {
+        try {
+            return Uri::of($targetUrl);
+        } catch (Throwable) {
+            return null;
+        }
     }
 }
