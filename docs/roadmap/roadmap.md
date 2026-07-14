@@ -46,7 +46,7 @@ Acceptance criteria:
 
 Goal: replace the current WordPress site visually and functionally with static or seeded content.
 
-Status: in progress. DDS-007B establishes the public brand direction and implements the redesigned homepage, responsive public header and footer, experienced-pilot and beginner paths, About teaser, upcoming-events preview, and news preview. The event cards currently use a mock fallback and news can use legacy fallback content until the corresponding domain models exist. Remaining Phase 2 work includes the final navigation review, secondary public pages, projects and partner positioning, contact flow, SEO metadata, and migration inventory.
+Status: in progress. DDS-007B establishes the public brand direction, while DDS-007C completes the homepage conversion pass with experienced-pilot and beginner paths, About, upcoming-event, news, and compact partner modules. Projects remain directly accessible from the primary navigation and footer until real cases justify homepage placement. Temporary homepage content is server-backed until the corresponding domain models exist. Remaining Phase 2 work includes the final navigation review, secondary public pages, contact flow, SEO metadata, and migration inventory.
 
 Tasks:
 

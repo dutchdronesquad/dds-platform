@@ -8,10 +8,8 @@ import { cn } from '@/lib/utils';
 import {
     about,
     contact,
-    dashboard,
     home,
     house_rules as houseRules,
-    login,
     partners,
 } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
@@ -26,15 +24,19 @@ type PublicNavItem = {
 };
 
 const headerNavItems: PublicNavItem[] = [
+    { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
     { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
+    { title: 'Over DDS', href: about(), activePath: '/about' },
     { title: 'Locaties', href: locationsIndex(), activePath: '/locations' },
-    { title: 'Huisregels', href: houseRules(), activePath: '/house-rules' },
     { title: 'Contact', href: contact(), activePath: '/contact' },
 ];
 
 const mobileNavItems: PublicNavItem[] = [
+    { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
+    { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
     { title: 'Over DDS', href: about(), activePath: '/about' },
-    ...headerNavItems,
+    { title: 'Locaties', href: locationsIndex(), activePath: '/locations' },
+    { title: 'Contact', href: contact(), activePath: '/contact' },
 ];
 
 const footerExploreItems = [
@@ -59,8 +61,7 @@ type Props = {
 };
 
 export default function PublicLayout({ children }: Props) {
-    const { props, url } = usePage();
-    const { auth } = props;
+    const { url } = usePage();
     const currentPath = url.split('?')[0];
     const isHome = currentPath === '/';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -145,18 +146,6 @@ export default function PublicLayout({ children }: Props) {
                     </nav>
 
                     <Link
-                        href={auth.user ? dashboard() : login()}
-                        className={cn(
-                            'ml-2 hidden rounded-sm px-1 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none lg:inline-flex',
-                            isHome
-                                ? 'text-white/65 hover:text-white'
-                                : 'dark:text-night-300 text-paddock-slate hover:text-ink dark:hover:text-white',
-                        )}
-                    >
-                        {auth.user ? 'Beheer' : 'Inloggen'}
-                    </Link>
-
-                    <Link
                         href={eventsIndex()}
                         prefetch
                         className={cn(
@@ -235,13 +224,6 @@ export default function PublicLayout({ children }: Props) {
                                 >
                                     Bekijk agenda
                                 </Link>
-                                <Link
-                                    href={auth.user ? dashboard() : login()}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex min-h-11 items-center justify-center text-sm font-medium text-white/58 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none"
-                                >
-                                    {auth.user ? 'Naar beheer' : 'Inloggen'}
-                                </Link>
                             </div>
                         </nav>
                     </div>
@@ -271,13 +253,7 @@ export default function PublicLayout({ children }: Props) {
                         <FooterLinks title="DDS" items={footerDdsItems} />
                         <FooterLinks
                             title="Praktisch"
-                            items={[
-                                ...footerPracticalItems,
-                                {
-                                    title: auth.user ? 'Beheer' : 'Inloggen',
-                                    href: auth.user ? dashboard() : login(),
-                                },
-                            ]}
+                            items={footerPracticalItems}
                         />
                     </div>
                 </div>
