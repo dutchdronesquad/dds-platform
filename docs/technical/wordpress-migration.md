@@ -169,13 +169,15 @@ Examples:
 /contact/ -> /contact
 ```
 
-Store redirects in one of these ways:
+Possible storage approaches were:
 
 - static webserver redirects for a small fixed list;
 - database-backed `Redirect` model if there are many URLs;
 - generated config file during deploy.
 
-For launch, a simple database-backed redirect table is practical because WordPress URLs can be reviewed and corrected without redeploying.
+The implemented approach uses a database-backed `Redirect` model. It stores the source path, target, HTTP status, active state, hit count, and review notes. Laravel checks active redirects only after normal routes fail to match, so regular application requests do not perform a redirect lookup. Admins and editors can review the map in the dashboard, and the importer can create or update records idempotently without requiring a deployment.
+
+Initial fixed mappings are provided by `RedirectSeeder`. Post, media, location, and other content-specific redirects remain the responsibility of the later WordPress importer because their final targets depend on imported records. Unused WordPress template pages such as `/about-us/`, `/our-work/`, and `/stories/` are not part of the migration map.
 
 ## Import Commands
 

@@ -49,6 +49,8 @@ Do not run this during the documentation phase. This is the recommended directio
 ## Development Conventions
 
 - Use feature branches from `main`.
+- Run PHP, Artisan, Composer, and Node commands through DDEV on the development MacBook, for example `ddev artisan test`, `ddev composer install`, and `ddev npm run build`.
+- Run repository tooling such as `git` and `gh` directly on the host because it operates on the local checkout rather than inside the application container.
 - Keep migrations and models small per domain.
 - Add tests for domain logic, policies, form requests, and public visibility rules.
 - Render public pages through Inertia, not a loose Blade/React mix unless deliberately chosen.

@@ -425,6 +425,8 @@ Acceptance criteria:
 
 ### DDS-008: Baseline SEO And Redirect Shape
 
+Status: implemented through DDS-008A and DDS-008B. Public pages now have reusable SEO metadata with stable canonical URLs and Open Graph defaults, while legacy WordPress paths are handled through database-backed redirects before the public fallback.
+
 Goal: prepare SEO before content import.
 
 Tasks:
@@ -443,6 +445,8 @@ Acceptance criteria:
 - old `/agenda/` can redirect to `/events`.
 
 ### DDS-008A: Public Metadata Component And Defaults
+
+Status: implemented. A typed SEO metadata shape is shared by Laravel and the public React pages, sensible DDS defaults live in configuration, canonical URLs are based on the application URL, and the root document safely renders title, description, robots, canonical, and Open Graph metadata. Feature tests cover defaults, page overrides, and output escaping.
 
 Goal: make SEO metadata easy to apply consistently across public Inertia pages.
 
@@ -464,6 +468,8 @@ Acceptance criteria:
 - future imported content has clear SEO fields to map into.
 
 ### DDS-008B: Redirect Model And Admin Review Flow
+
+Status: implemented. Legacy paths are stored in an idempotently seeded `Redirect` model with status, active state, hit count, and review notes. Only unmatched safe requests reach the redirect middleware, exact paths and query-string targets are supported, redirect loops are rejected, and admins and editors can inspect the read-only redirect overview. The initial map covers `/trainingen/`, `/trainingsdagen/`, `/agenda/`, `/nieuws/`, and `/huisregels/`; unused WordPress template pages are intentionally excluded.
 
 Goal: prepare SEO-safe legacy URL handling before WordPress URLs are imported.
 

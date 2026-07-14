@@ -38,8 +38,27 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @php
+            $seo = data_get($page, 'props.seo');
+            $siteName = data_get($seo, 'openGraph.siteName', 'Dutch Drone Squad');
+            $pageTitle = data_get($seo, 'title');
+            $documentTitle = $pageTitle && $pageTitle !== $siteName ? "{$pageTitle} - {$siteName}" : $siteName;
+        @endphp
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $documentTitle }}</title>
+
+            @if (is_array($seo))
+                <meta data-inertia="description" name="description" content="{{ data_get($seo, 'description') }}">
+                <meta data-inertia="robots" name="robots" content="{{ data_get($seo, 'robots') }}">
+                <link data-inertia="canonical" rel="canonical" href="{{ data_get($seo, 'canonicalUrl') }}">
+                <meta data-inertia="og:title" property="og:title" content="{{ data_get($seo, 'openGraph.title') }}">
+                <meta data-inertia="og:description" property="og:description" content="{{ data_get($seo, 'openGraph.description') }}">
+                <meta data-inertia="og:type" property="og:type" content="{{ data_get($seo, 'openGraph.type') }}">
+                <meta data-inertia="og:url" property="og:url" content="{{ data_get($seo, 'openGraph.url') }}">
+                <meta data-inertia="og:image" property="og:image" content="{{ data_get($seo, 'openGraph.image') }}">
+                <meta data-inertia="og:image:alt" property="og:image:alt" content="{{ data_get($seo, 'openGraph.imageAlt') }}">
+                <meta data-inertia="og:site_name" property="og:site_name" content="{{ data_get($seo, 'openGraph.siteName') }}">
+            @endif
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

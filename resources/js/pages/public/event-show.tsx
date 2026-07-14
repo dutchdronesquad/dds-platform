@@ -1,4 +1,3 @@
-import { Head } from '@inertiajs/react';
 import { CalendarDays, MapPin } from 'lucide-react';
 import {
     ContentBand,
@@ -6,13 +5,16 @@ import {
     FeatureCard,
     PageIntro,
 } from '@/components/public/public-patterns';
+import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as eventsIndex } from '@/routes/events';
+import type { SeoMetadata } from '@/types';
 
 type Props = {
+    seo: SeoMetadata;
     slug: string;
 };
 
-export default function EventShow({ slug }: Props) {
+export default function EventShow({ seo, slug }: Props) {
     const readableTitle = slug
         .split('-')
         .filter(Boolean)
@@ -22,7 +24,7 @@ export default function EventShow({ slug }: Props) {
 
     return (
         <>
-            <Head title={title} />
+            <PublicSeoHead metadata={seo} />
 
             <PageIntro
                 eyebrow="Event preview"

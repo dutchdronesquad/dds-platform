@@ -1,11 +1,13 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { PublicHero } from '@/components/public/public-patterns';
+import PublicSeoHead from '@/components/public/public-seo-head';
 import { about, contact } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
 import { index as locationsIndex } from '@/routes/locations';
 import { index as newsIndex } from '@/routes/news';
+import type { SeoMetadata } from '@/types';
 
 type NewsItem = {
     dateLabel: string;
@@ -39,6 +41,7 @@ type WelcomeProps = {
     latestNews: NewsItem[];
     latestNewsAreLegacy: boolean;
     partnerLogos: PartnerLogo[];
+    seo: SeoMetadata;
     upcomingEvents: UpcomingEvent[];
     upcomingEventsArePlaceholder: boolean;
 };
@@ -62,6 +65,7 @@ export default function Welcome({
     latestNews,
     latestNewsAreLegacy,
     partnerLogos,
+    seo,
     upcomingEvents,
     upcomingEventsArePlaceholder,
 }: WelcomeProps) {
@@ -70,7 +74,7 @@ export default function Welcome({
 
     return (
         <>
-            <Head title="Home" />
+            <PublicSeoHead metadata={seo} />
 
             <PublicHero
                 title="Where racing brings pilots together."
