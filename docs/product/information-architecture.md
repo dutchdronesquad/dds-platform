@@ -271,7 +271,6 @@ Fields:
 
 - title;
 - slug;
-- excerpt;
 - content;
 - cover_image_id;
 - published_at;

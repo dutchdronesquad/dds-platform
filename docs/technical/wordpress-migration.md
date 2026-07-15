@@ -95,17 +95,17 @@ WordPress posts should usually become `Article` records.
 
 Suggested mapping:
 
-| WordPress                | Laravel                                 |
-| ------------------------ | --------------------------------------- |
-| `post_title`             | `title`                                 |
-| `post_name`              | `slug`                                  |
-| `post_excerpt`           | `excerpt`                               |
-| `post_content`           | `content`                               |
-| `post_date_gmt`          | `published_at`                          |
-| `post_status`            | `status`                                |
-| featured image           | `cover_image_id`                        |
-| author                   | `author_id` or imported author metadata |
-| selected categories/tags | `category` or future taxonomy tables    |
+| WordPress                | Laravel                                      |
+| ------------------------ | -------------------------------------------- |
+| `post_title`             | `title`                                      |
+| `post_name`              | `slug`                                       |
+| `post_excerpt`           | not persisted; derive summaries from content |
+| `post_content`           | `content`                                    |
+| `post_date_gmt`          | `published_at`                               |
+| `post_status`            | `status`                                     |
+| featured image           | `cover_image_id`                             |
+| author                   | `author_id` or imported author metadata      |
+| selected categories/tags | `category` or future taxonomy tables         |
 
 Keep WordPress IDs, source URLs, checksums, target model IDs, and import outcomes in a temporary import manifest outside the permanent domain tables. The manifest makes rehearsal runs idempotent and debuggable, while the resulting `Article`, `Location`, `Event`, and `MediaAsset` records stay source-agnostic. Retain the manifest only through launch verification and the agreed rollback window.
 
@@ -210,7 +210,6 @@ The importer is launch tooling, not a permanent application subsystem. Import-on
 
 During import, normalize:
 
-- empty excerpts;
 - mixed Dutch and English UI labels;
 - WordPress shortcodes;
 - embedded YouTube links;
