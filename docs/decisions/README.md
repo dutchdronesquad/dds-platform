@@ -66,14 +66,14 @@ Decision: model regular training evenings as `Event` records with `type = traini
 
 Reason:
 
-- trainings, races, demos, and workshops share dates, locations, publication state, SEO, media, and registration concepts;
+- trainings, races, demos, and workshops share dates, locations, publication state, media, and registration concepts;
 - the public website exposes events as the main dated-activity section, with trainings as a filter/type;
 - one admin CRUD for events is simpler and prevents duplicated form logic;
 - registration can later attach to `Event` through `EventRegistration`.
 
 Tradeoff:
 
-- event fields need to support training-specific attributes such as capacity, registration deadline, video system notes, and price.
+- event fields need to support shared registration attributes such as capacity, registration windows, and price.
 
 ## 2026-07-04: PostgreSQL As Database
 
@@ -85,42 +85,50 @@ Reason:
 - good fit for structured content, JSON metadata where useful, and future reporting;
 - works well in DDEV and common production environments.
 
-## 2026-07-04: WordPress Migration Should Be Repeatable
+## 2026-07-04: WordPress Migration Should Be Selective And Repeatable
 
-Decision: migrate valuable WordPress content through repeatable import commands instead of manual copy-paste.
+Decision: selectively migrate valuable WordPress content through repeatable import commands instead of manual copy-paste, without adding WordPress-specific fields to the permanent domain models.
 
 Reason:
 
 - posts, pages, media, and redirects need to be tested before launch;
-- legacy IDs make imports traceable and idempotent;
+- a temporary import manifest makes rehearsals traceable and idempotent without coupling runtime tables to WordPress;
 - staging imports can be repeated while the old site remains live;
 - SEO redirects are easier to verify when generated from explicit mappings.
 
 Preferred approach:
 
 - use the WordPress REST API or XML export as the primary source;
+- inventory and approve content before importing it;
 - map posts to `Article`;
 - map selected pages to concrete domain models;
 - import referenced media into `MediaAsset`;
+- keep WordPress IDs, source URLs, and import diagnostics in temporary staging files or import-only storage;
 - maintain a redirect map from old WordPress URLs to new Laravel routes.
 
-## 2026-07-04: English-Default Bilingual Content
+## 2026-07-04: Bilingual Interface And Selectively Translatable Content
 
-Decision: support English and Dutch content, with English as the application default and Dutch as a supported locale from the start.
+Decision: support English and Dutch interface strings, while only stable database content that genuinely needs parallel translations uses locale-keyed JSONB.
 
 Reason:
 
 - DDS is Netherlands-oriented and the current public website is primarily Dutch;
 - international pilots and partners may still benefit from English content;
 - code, routes, database columns, and repository documentation stay English for maintainability;
-- content models and SEO should be locale-aware from the start to avoid a painful retrofit later.
+- code and interface translations remain separate from editor-authored content;
+- events may contain Dutch or English text without duplicating every content field;
+- location descriptions and media alt text can be translated where that adds lasting value;
+- SEO metadata is derived centrally from public content and routes instead of stored on every model.
 
 Implementation direction:
 
 - default locale `en`;
 - supported locales `en` and `nl`;
 - public route names remain English-based for now;
-- content fields should support translations or locale-specific records;
+- UI strings use translation files;
+- selected translatable database fields use locale-keyed JSONB;
+- English is the default required base value for fields that store translations, with Dutch as an optional additional value;
+- domain validation may allow exceptions: media alt text is an optional reusable default in any supported locale, while the rendering context decides whether an image needs descriptive text or an empty `alt` attribute;
 - full Dutch content parity is supported incrementally and does not require locale-prefixed routes in phase 1.
 
 ## 2026-07-07: No Locale Prefixes In Phase 1
@@ -131,7 +139,7 @@ Reason:
 
 - the platform can support Dutch and English content without complicating routing immediately;
 - existing and future URLs stay shorter and easier to redirect from WordPress;
-- locale-aware content and SEO can be modeled first, with localized routing added later if needed.
+- selected translated content can be modeled first, with localized routing added later if needed.
 
 Implementation direction:
 
@@ -153,8 +161,8 @@ Reason:
 Implementation direction:
 
 - admin navigation, forms, validation labels, and empty states can start in English;
-- public content remains English-default and translatable to Dutch;
-- content locale should be explicit in admin forms.
+- public interface strings remain English-default and translatable to Dutch;
+- admin forms only expose multiple locale inputs for fields that are deliberately translatable.
 
 ## 2026-07-07: Scaffold Before WordPress Import
 

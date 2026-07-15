@@ -8,7 +8,7 @@ This backlog translates the preparation docs into the first practical implementa
 - React, Inertia, TypeScript, and Tailwind;
 - DDEV with PostgreSQL;
 - custom admin, no Filament in phase 1;
-- English-default bilingual content with `en` and `nl`;
+- English-default bilingual support with `en` required as the default base value for translated fields and `nl` optional, unless domain validation deliberately defines an exception;
 - no locale-prefixed URLs in phase 1;
 - dated activities use the `Event` domain, while the public navigation can label the overview `Agenda`;
 - trainings are `Event` records with `type = training`;
@@ -17,23 +17,23 @@ This backlog translates the preparation docs into the first practical implementa
 
 ## Current Backlog Position
 
-Current implementation point: the project is in Epic 3, Core Public Structure. DDS-007C is implemented in the current working tree. DDS-007D remains open for the explicitly listed navigation and footer follow-up work.
+Current implementation point: `main` contains the Laravel, authentication, locale, public-shell, homepage, SEO, and redirect foundation through DDS-008B. DDS-007D remains partially open for its explicitly listed navigation, footer, keyboard, and screen-reader follow-up work.
 
-Recently completed in the current working tree:
+The current DDS-009 working tree adds the schema dependency cluster in migration order:
 
-- DDS-007: Public Static Shell Pages;
-- DDS-007A: Public Shell Content Registry;
-- DDS-007B: Public Brand Direction;
-- DDS-007C: Homepage Content And Conversion Pass.
+- DDS-014: reusable `MediaAsset` records for the future dashboard media library;
+- DDS-012: structured `Location` records;
+- DDS-009: minimal `Season` and `Event` models and migrations.
 
-The public route skeleton and content registry now exist. The homepage and public shell have a recognizable DDS visual direction, while most secondary public pages still use temporary registry-backed content until their real domain models and managed content arrive.
+This means 16 items in the recommended sequence are complete on `main`, DDS-007D is partial, and three additional schema tickets are implemented in the current working tree. Public Event pages, Event admin CRUD, the media-library UI, and supporting content models are not implemented yet.
 
 Recommended next tickets:
 
-1. finish DDS-007D by validating the final navigation hierarchy and remaining footer pathways;
-2. DDS-008 / DDS-008A / DDS-008B: SEO metadata and redirect foundation;
-3. DDS-009 / DDS-010: event model and public events pages, then replace the homepage event placeholder;
-4. DDS-011A / DDS-011B / DDS-011C / DDS-011D: dashboard IA, admin CRUD patterns, user management, and role review.
+1. finish and merge the current DDS-014 / DDS-012 / DDS-009 schema cluster;
+2. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
+3. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
+4. build DDS-010 public Event pages and replace the homepage event placeholder;
+5. finish DDS-007D as an independent public-shell polish task before launch.
 
 Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
 
@@ -117,7 +117,7 @@ Acceptance criteria:
 
 ### DDS-003: Baseline Quality Tooling
 
-Status: baseline complete. `ddev artisan test` and `ddev npm run build` pass. CI can still be added as a follow-up once the initial codebase is committed.
+Status: complete. Pest, Pint, Larastan, frontend formatting, linting, type checking, production builds, and GitHub Actions workflows are in place.
 
 Goal: establish basic project checks early.
 
@@ -138,6 +138,8 @@ Acceptance criteria:
 
 ### DDS-003A: Document Runtime Follow-Ups
 
+Status: complete. Early database-backed services and the later Redis, queue-worker, scheduler, production mail, and storage-backup requirements are recorded in the technical documentation.
+
 Goal: track infrastructure items that are intentionally deferred from the first local scaffold.
 
 Tasks:
@@ -157,7 +159,7 @@ Acceptance criteria:
 
 ### DDS-004: Authentication And Admin Gate
 
-Status: implemented locally. `spatie/laravel-permission` is installed and configured, the package migration/config are published, initial `admin` and `editor` roles are seeded, `/dashboard` is protected by auth, email verification, and role middleware, CRUD permissions are available for concrete admin actions, and a repeatable first-admin command exists through `php artisan dds:make-admin`. Backend tests and TypeScript checks pass locally. Final DDEV migration, seeding, build, and browser verification are still pending.
+Status: complete and merged. `spatie/laravel-permission` is configured, initial `admin` and `editor` roles are seeded, `/dashboard` is protected by authentication, email verification, and role middleware, concrete admin permissions exist, and `php artisan dds:make-admin` provides repeatable first-admin setup.
 
 Goal: enable login and protect the starter `/dashboard` route as the first management entrypoint.
 
@@ -192,6 +194,8 @@ Local verification commands:
 
 ### DDS-004A: Initial Commit Checkpoint
 
+Status: complete. The scaffold, DDEV setup, documentation, and baseline tooling were verified and committed before domain work started.
+
 Goal: define when the first GitHub commit should happen.
 
 Tasks:
@@ -212,6 +216,8 @@ Acceptance criteria:
 
 ### DDS-004B: DDS-004 Pull Request Verification
 
+Status: complete. The admin-access foundation was reviewed and merged through pull request #1 with the project checks in place.
+
 Goal: finish the first admin-access slice through GitHub review.
 
 Tasks:
@@ -229,6 +235,8 @@ Acceptance criteria:
 - local verification commands are noted in the PR description.
 
 ### DDS-005: Public And Admin Layout Shells
+
+Status: complete. Dedicated public and authenticated management shells, DDS navigation, responsive layouts, and the initial dashboard presentation are merged.
 
 Goal: harden the existing starter layouts into intentional DDS public and management shells.
 
@@ -255,6 +263,8 @@ Acceptance criteria:
 
 ### DDS-006: Locale Configuration
 
+Status: complete. English and Dutch are configured without locale-prefixed routes, English is the default locale and required base for translated fields by default, and locale-keyed JSON is the selected storage shape for deliberately translated database content. Domain validation can define exceptions where appropriate.
+
 Goal: prepare bilingual content without adding locale-prefixed URLs.
 
 Tasks:
@@ -272,6 +282,8 @@ Acceptance criteria:
 - implementation notes describe how translatable content fields should be stored.
 
 ### DDS-006A: Runtime Locale And Translation UX
+
+Status: complete for the runtime foundation. Request middleware resolves user, cookie, browser, and default preferences; locale data is shared with Inertia; guests and users can persist a supported locale; and the frontend bundle convention is configured. Actual UI-copy translation remains incremental as pages adopt translation bundles.
 
 Goal: turn the locale configuration into a runtime language experience, using useful patterns from NIPKaart without introducing locale-prefixed URLs.
 
@@ -465,7 +477,7 @@ Acceptance criteria:
 - missing metadata falls back to sensible DDS defaults;
 - metadata rendering does not leak unsafe HTML;
 - metadata shape can be reused by events, articles, projects, locations, and partners;
-- future imported content has clear SEO fields to map into.
+- future imported content can feed the same derived metadata shape without model-specific SEO columns.
 
 ### DDS-008B: Redirect Model And Admin Review Flow
 
@@ -491,27 +503,75 @@ Acceptance criteria:
 - redirect loops are prevented or detected;
 - WordPress importer can create or update redirect records later.
 
-## Epic 4: Event Domain
+## Epic 4: Core Domain Foundations And Events
 
-### DDS-009: Event Model And Migration
+Implementation order follows schema dependencies instead of ticket numbering. Ticket IDs remain stable: reusable media and locations are created before events so content tables can declare their foreign keys in their original create migrations.
+
+### DDS-014: MediaAsset Model
+
+Status: implemented in the current working tree as a schema dependency of DDS-009. Media assets have stable storage identity, a recognizable original filename, optional locale-aware alt text defaults, and optional image dimensions, without WordPress-specific runtime metadata. Whether an image is informative or decorative belongs to its rendering context. Images and PDFs share the same reusable model. Upload, search, selection, and usage management remain in DDS-014H.
+
+Goal: prepare basic media storage and future WordPress media import before content models reference cover images.
+
+Tasks:
+
+- create `MediaAsset` model, migration, and factory;
+- include disk, path, original filename, mime type, byte size, optional image dimensions, and optional locale-aware alt text defaults;
+- expose cover-image relationships for locations and events.
+
+Acceptance criteria:
+
+- media can be referenced by events and locations without later foreign-key migrations;
+- media can provide an optional alt text default in one or more supported locales;
+- the rendering context can use a descriptive alt value or an empty `alt` attribute for a decorative use;
+- upload and library management can be added without reshaping the table;
+- temporary import tooling can deduplicate source media without persisting WordPress metadata on the asset.
+
+### DDS-012: Location Model
+
+Status: implemented in the current working tree as a schema dependency of DDS-009. Locations have an official name, an English-base translated description, a structured Dutch address, indoor/outdoor environment, optional physical dimensions, fixed facility codes, coordinates, an optional cover image, and an event relationship. They intentionally have no publication state or model-specific SEO fields. Public pages and admin management remain in DDS-014I.
+
+Goal: model recurring DDS locations before events reference them.
+
+Tasks:
+
+- create `Location` model, migration, and factory;
+- include street, house number, postal code, city, ISO country code, environment, optional floor size and ceiling height, facilities, website URL, and coordinates;
+- store the official name as plain text and the public description as locale-keyed JSONB with English required and Dutch optional;
+- reference an optional media cover image;
+- expose the event relationship.
+
+Acceptance criteria:
+
+- locations can be linked to events through a database-enforced foreign key;
+- Sportpaleis, Koggenhal, and Oosterhout can be represented cleanly;
+- public location pages have structured venue data and translated descriptions available;
+- facility labels are translated in interface language files while the database stores stable codes;
+- later location management does not require reshaping the core table.
+
+### DDS-009: Season And Event Models And Migrations
+
+Status: implemented in the current working tree. Seasons provide optional event grouping, a nullable season price, and a season-ticket limit. Events have a required protected location, an optional protected season, a removable cover-image reference, plain-text content, enum-backed type/publication/registration states, scheduled publication, and one listing-oriented index. Model-specific SEO and WordPress fields are intentionally absent.
 
 Goal: create the first real domain model.
 
 Tasks:
 
-- create `Event` model and migration;
-- add title, slug, excerpt, content, starts_at, ends_at, status, type, category;
-- add location reference or temporary location fields;
-- add registration fields: price, capacity, deadline, registration_status, registration_url;
-- add SEO fields;
-- include locale-aware content fields.
+- create `Season` model, migration, and factory before events;
+- add season name, nullable price, and nullable season-ticket capacity;
+- create `Event` model, migration, and factory;
+- add title, slug, nullable content, starts_at, ends_at, published_at, status, and type;
+- add a required location, optional season, and optional cover-image reference;
+- add registration fields: price, capacity, opening time, deadline, registration status, and registration URL.
 
 Acceptance criteria:
 
 - events can be created through factories/tests;
-- event type supports `training`, `race`, `demo`, `workshop`, `community`, `other`;
-- status supports draft/published/archived;
-- model supports English content and optional Dutch translations.
+- event type supports `training`, `race`, `demo`, `workshop`, and `other`;
+- status supports draft, published, and cancelled;
+- event title and content accept Dutch or English text without duplicated locale fields;
+- deleting a cover preserves the event and clears only the cover reference;
+- a location or season cannot be deleted while an event still references it.
 
 ### DDS-010: Public Events Pages
 
@@ -523,7 +583,7 @@ Tasks:
 - add type filter support;
 - build event detail page;
 - show training-specific details when `type = training`;
-- hide drafts and archived events.
+- hide drafts and keep cancelled events visible with a clear state.
 
 Acceptance criteria:
 
@@ -542,13 +602,15 @@ Tasks:
 
 - create `/dashboard/events` event index;
 - create event create/edit forms;
+- manage seasons as a small supporting resource within the Event workflow;
 - add server-side validation through Form Requests;
 - add event policies;
 - add publish status controls.
 
 Acceptance criteria:
 
-- admins can create, edit, and archive events;
+- admins can create, edit, publish, cancel, and remove events;
+- admins can manage season names, optional prices, and ticket limits;
 - editors can create and update events according to their seeded permissions;
 - validation errors are shown clearly;
 - event type and registration status are editable;
@@ -564,7 +626,7 @@ Tasks:
 
 - define the first dashboard sections and resource navigation;
 - add quick links for events, projects, articles, locations, partners, media, users, and redirects;
-- show useful operational cards such as drafts, upcoming events, recent submissions, and import status placeholders;
+- show useful operational cards such as drafts, upcoming events, and recent submissions;
 - define empty states for a fresh installation;
 - keep the dashboard dense and task-oriented rather than marketing-like;
 - ensure admin and editor roles see appropriate navigation.
@@ -587,7 +649,7 @@ Tasks:
 - define list page layout conventions for filters, search, pagination, bulk actions, and row actions;
 - define create/edit form layout conventions for tabs or sections, save actions, validation, and destructive actions;
 - add shared admin components only where repetition is already visible;
-- define status badge patterns for draft, published, archived, active, inactive, and imported states;
+- define status badge patterns for draft, published, archived, active, and inactive states;
 - define confirmation dialog patterns for archive, delete, publish, and unpublish;
 - ensure all patterns work with Inertia forms and server-side validation.
 
@@ -665,22 +727,6 @@ Acceptance criteria:
 
 ## Epic 5: Supporting Content Models
 
-### DDS-012: Location Model
-
-Goal: model recurring DDS locations.
-
-Tasks:
-
-- create `Location` model and migration;
-- include address, city, floor size, height, facilities, suitability, role, parking, and map URL;
-- create basic admin CRUD or seed-based management.
-
-Acceptance criteria:
-
-- locations can be linked to events;
-- Sportpaleis, Koggenhal, and Oosterhout can be represented cleanly;
-- public location pages have structured fields available.
-
 ### DDS-013: Article Model
 
 Goal: prepare for news and WordPress post import.
@@ -688,31 +734,15 @@ Goal: prepare for news and WordPress post import.
 Tasks:
 
 - create `Article` model and migration;
-- include locale-aware title, excerpt, content, and SEO fields;
-- include published_at, status, category, and legacy source fields;
+- include the content fields needed for manually created and selectively imported articles;
+- include published_at, status, and category;
 - prepare author handling.
 
 Acceptance criteria:
 
 - news articles can be represented before import;
-- legacy WordPress IDs can be stored;
+- articles remain source-agnostic whether created manually or migrated selectively;
 - only published articles are public.
-
-### DDS-014: MediaAsset Model
-
-Goal: prepare basic media storage and future WordPress media import.
-
-Tasks:
-
-- create `MediaAsset` model and migration;
-- include disk, path, original filename, mime type, size, alt text, and legacy source fields;
-- add basic upload or seed/import-friendly storage path.
-
-Acceptance criteria:
-
-- media can be referenced by events/articles/partners later;
-- imported WordPress media can be deduplicated by legacy ID;
-- alt text is supported.
 
 ### DDS-014A: Project Showcase Model
 
@@ -725,8 +755,7 @@ Tasks:
 - support project types such as `plugin`, `app`, `integration`, `event_tooling`, `community_build`, and `other`;
 - add optional links for GitHub, live demo, documentation, download, and contact;
 - add optional ownership/credit fields for maintainers or contributors;
-- add SEO fields and media references;
-- include locale-aware content fields.
+- add media references and only translate content fields where the editing workflow benefits from it.
 
 Acceptance criteria:
 
@@ -827,7 +856,7 @@ Tasks:
 - decide which known pages need managed content: about, house rules, contact intro, homepage sections, partner intro, and location intro;
 - create a constrained `StaticPage` or `PublicPage` model if hardcoded content becomes too limiting;
 - support fixed page keys instead of arbitrary user-created routes in phase 1;
-- include locale-aware title, intro, body sections, SEO fields, status, and updated_by metadata;
+- include the required title, intro, body sections, status, and updated_by metadata, translating only fields that need parallel public variants;
 - add admin edit screens for fixed pages;
 - migrate temporary shell copy into the managed approach when ready.
 
@@ -867,7 +896,10 @@ Goal: manage reusable media assets before importing WordPress media at scale.
 Tasks:
 
 - build `/dashboard/media` media index;
-- support upload, edit metadata, delete/archive, and alt text updates;
+- support upload, edit metadata, delete/archive, and optional alt text default updates;
+- make assets searchable and recognizable by their original filename;
+- add a reusable asset picker so events, locations, and later content models can select existing media instead of uploading duplicates;
+- show where an asset is used before it is removed;
 - show previews for images and useful fallbacks for non-images;
 - support filtering by mime type, usage state, and import source;
 - define storage path conventions for uploaded and imported files;
@@ -876,7 +908,8 @@ Tasks:
 Acceptance criteria:
 
 - admins can upload and manage media assets;
-- alt text is editable;
+- existing assets can be selected and reused from Event and Location forms;
+- optional alt text defaults are editable in supported locales;
 - media records can be attached to events, articles, projects, partners, and locations later;
 - imported WordPress media can coexist with manually uploaded media;
 - unused media can be reviewed without deleting it automatically.
@@ -892,15 +925,15 @@ Tasks:
 - create `/dashboard/locations` admin index;
 - create location create/edit forms;
 - connect locations to events;
-- show operational fields such as floor size, height, facilities, suitability, parking, and map URL.
+- show structured address, environment, optional floor size and height, facilities, website, and map coordinates.
 
 Acceptance criteria:
 
 - public location pages are useful for visitors attending events;
 - recurring DDS locations can be managed without code changes;
 - events can show linked location details;
-- draft or inactive locations are not publicly listed unless linked content explicitly requires them;
-- map URLs and practical notes are validated.
+- location pages use the translated description when available and fall back to another non-empty translation;
+- coordinates and external website URLs are validated.
 
 ### DDS-014J: Public News Pages And Admin Article CRUD
 
@@ -913,7 +946,7 @@ Tasks:
 - create `/dashboard/articles` article index;
 - create article create/edit forms;
 - support published/draft/archive states;
-- support cover media, author display, category, SEO fields, and import metadata.
+- support cover media, author display, and category.
 
 Acceptance criteria:
 
@@ -950,14 +983,14 @@ Tasks:
 
 - create dry-run capable import command;
 - import posts into `Article`;
-- store legacy source IDs;
+- store source-to-target mappings in the temporary import manifest;
 - map published dates, slugs, categories, tags, and featured image references;
 - report skipped records.
 
 Acceptance criteria:
 
 - import can run twice without duplicates;
-- imported posts are traceable to WordPress IDs;
+- imported posts are traceable through the temporary import manifest during rehearsal and cutover;
 - dry-run output is useful;
 - no manual copy-paste is required for posts.
 
@@ -970,7 +1003,7 @@ Tasks:
 - create dry-run capable media import command;
 - fetch media through REST API or XML attachment data;
 - download files to the configured storage disk;
-- create or update `MediaAsset` records with legacy IDs;
+- create or reuse normalized `MediaAsset` records using the temporary import manifest;
 - preserve alt text, captions where useful, mime type, file size, and original URL;
 - report failed downloads and unsupported file types;
 - avoid duplicate files on repeated runs.
@@ -978,10 +1011,10 @@ Tasks:
 Acceptance criteria:
 
 - media import can run twice without duplicate media records;
-- imported media can be matched by legacy WordPress attachment ID;
+- imported media can be matched to WordPress attachments through the temporary import manifest;
 - failed downloads are reported clearly;
 - imported images are previewable in the media library;
-- article importer can reference imported media by legacy ID.
+- article importer can resolve imported media through the temporary import manifest.
 
 ### DDS-018: WordPress Pages Mapping Prototype
 
@@ -1048,25 +1081,26 @@ Acceptance criteria:
 - redirects can be reviewed before launch;
 - redirect import can run repeatedly without creating duplicates.
 
-### DDS-021: Import Review Dashboard
+### DDS-021: Temporary Import Review Report
 
-Goal: make staging import results understandable without reading command output only.
+Goal: make staging import results understandable without turning one-time migration state into a permanent dashboard feature.
 
 Tasks:
 
-- add dashboard cards or pages for import runs, imported counts, skipped records, failed media, unresolved links, and redirect conflicts;
-- store import run metadata if needed;
-- link imported records back to legacy IDs and source URLs;
-- provide filters for imported/manual records in admin lists;
-- define how admins mark imported content as reviewed.
+- generate a staging-only report for imported counts, skipped records, failed media, unresolved links, and redirect conflicts;
+- include temporary source-to-target mappings from the import manifest;
+- record review decisions in the report or manifest during rehearsal;
+- keep permanent admin resource lists source-agnostic;
+- define when import artifacts can be removed after launch verification.
 
 Acceptance criteria:
 
 - admins can see what the importer did;
 - failed or skipped records are visible after the command exits;
-- imported records are traceable to WordPress source data;
+- imported records are traceable to WordPress source data during rehearsal and the rollback window;
 - review status is clear enough for launch preparation;
-- command-line logs and dashboard review tell the same story.
+- command-line logs and the generated report tell the same story;
+- removing import artifacts does not affect normalized content or public redirects.
 
 ### DDS-022: Staging Import Rehearsal
 
@@ -1216,26 +1250,26 @@ Acceptance criteria:
 15. DDS-008
 16. DDS-008A
 17. DDS-008B
-18. DDS-011A
-19. DDS-011B
-20. DDS-011C
-21. DDS-011D
-22. DDS-009
-23. DDS-012
-24. DDS-013
-25. DDS-014
-26. DDS-014A
-27. DDS-014D
-28. DDS-014F
-29. DDS-014G
-30. DDS-014H
-31. DDS-010
-32. DDS-011
-33. DDS-014B
-34. DDS-014C
-35. DDS-014E
-36. DDS-014I
-37. DDS-014J
+18. DDS-014
+19. DDS-012
+20. DDS-009
+21. DDS-013
+22. DDS-014A
+23. DDS-014D
+24. DDS-014F
+25. DDS-011A
+26. DDS-011B
+27. DDS-011C
+28. DDS-011D
+29. DDS-014H
+30. DDS-010
+31. DDS-011
+32. DDS-014B
+33. DDS-014C
+34. DDS-014E
+35. DDS-014I
+36. DDS-014J
+37. DDS-014G
 38. DDS-011E
 39. DDS-015
 40. DDS-017

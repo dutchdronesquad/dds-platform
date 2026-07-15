@@ -26,25 +26,28 @@ Secondary or footer navigation:
 
 Recommended public label policy:
 
-- use English as the default public locale and support Dutch at the content-model level;
+- use English as the default public locale and support Dutch in the interface and selected content fields;
 - keep code identifiers, database columns, route names, and repository documentation in English;
 - allow the current landing page to remain temporarily Dutch while no multilingual public content mechanism is in use;
 - use `Agenda` for the current Dutch main action and `Events` for the English equivalent, while `event` remains the generic content term;
 - allow a concise English brand line such as `Where racing brings pilots together.` inside the temporary Dutch landing page;
-- use the Event domain for trainings, races, demos, workshops, and community activities;
+- use the Event domain for trainings, races, demos, workshops, and other dated activities;
 - treat trainings as an event type/filter, not as a separate public section.
 
 ## Language Strategy
 
-The platform should support English and Dutch content. English remains the application and public-content default; Dutch translations can be added gradually. Until the multilingual public content layer and language switcher are in use, the current landing page is intentionally kept in Dutch as a temporary exception.
+The platform supports English and Dutch interface strings. Editor-authored content does not have to be duplicated: an event can be written in either language, while stable fields such as a location description or media alt text can use locale-keyed JSONB when parallel translations are useful.
 
 Implementation principles:
 
 - code identifiers, model names, route names, database columns, and repository docs use English;
-- public content has `en` as the default locale;
-- public content should be translatable to `nl`;
-- admin UI can start in English, but content fields should make locale explicit;
-- SEO metadata should be locale-aware;
+- the public interface has `en` as its default locale and supports `nl`;
+- UI labels live in translation files;
+- only deliberately translatable content fields expose locale-specific inputs;
+- those locale maps require an English base value by default and may add Dutch as an optional translation;
+- media alt text is an optional reusable default in any supported locale; the rendering context decides whether to use descriptive text or an empty `alt` attribute;
+- event title and content remain plain text in the language chosen by the editor;
+- SEO metadata is derived from model content, routes, publication state, and cover media;
 - URLs should stay stable and English-based without locale prefixes for the first release.
 
 Suggested locale handling:
@@ -53,8 +56,8 @@ Suggested locale handling:
 Default locale: en
 Supported locales: en, nl
 Code and routes: English
-Primary content: English
-Optional translated content: Dutch
+Editor-authored event content: Dutch or English
+Selected translated fields: locale-keyed JSONB
 Temporary landing page content: Dutch until multilingual public content is active
 Localized URL prefixes: not in phase 1
 ```
@@ -176,6 +179,18 @@ Core content:
 
 ## Content Models
 
+### Shared SEO Contract
+
+Public pages derive SEO metadata consistently instead of adding SEO columns to every model:
+
+- the title comes from the public title or name;
+- the description is derived from the content or description;
+- canonical URLs are derived from the named public route and stable slug rather than stored separately;
+- robots directives are derived from publication status or visibility;
+- Open Graph images use the content cover or logo media, with the platform default as fallback.
+
+This contract applies to events, articles, projects, locations, partners, and managed public pages. Models do not store `seo_title` or `seo_description` fields unless a concrete future requirement proves that an override is necessary.
+
 ### Event
 
 For trainings, competitions, demos, special activities, and agenda items.
@@ -184,24 +199,21 @@ Fields:
 
 - title;
 - slug;
-- excerpt;
 - content;
 - starts_at;
 - ends_at;
-- location_id or temporary location fields;
+- location_id;
+- season_id;
 - cover_image_id;
+- published_at;
 - status;
 - registration_url;
 - type;
-- category;
 - price_cents;
 - capacity;
+- registration_opens_at;
 - registration_deadline_at;
 - registration_status;
-- skill_level;
-- video_system_notes;
-- seo_title;
-- seo_description.
 
 Suggested `type` values:
 
@@ -209,7 +221,6 @@ Suggested `type` values:
 - race;
 - demo;
 - workshop;
-- community;
 - other.
 
 Suggested `registration_status` values:
@@ -217,8 +228,40 @@ Suggested `registration_status` values:
 - closed;
 - open;
 - waitlist;
-- full;
-- external.
+- full.
+
+Suggested `status` values:
+
+- draft;
+- published;
+- cancelled.
+
+### Season
+
+For grouping related events and optionally selling a season ticket.
+
+Fields:
+
+- name;
+- price_cents;
+- ticket_capacity.
+
+Season dates are derived from the first and last linked events. Event capacity remains independent from the number of season tickets.
+
+### MediaAsset
+
+For reusable images and PDFs.
+
+Fields:
+
+- disk;
+- path;
+- original_filename;
+- mime_type;
+- size_bytes;
+- width;
+- height;
+- optional alt_text defaults keyed by locale.
 
 ### Article
 
@@ -235,8 +278,6 @@ Fields:
 - status;
 - author_id;
 - category;
-- seo_title;
-- seo_description.
 
 ### Project
 
@@ -254,8 +295,6 @@ Fields:
 - gallery_media_ids;
 - status;
 - sort_order;
-- seo_title;
-- seo_description.
 
 ### Location
 
@@ -266,18 +305,19 @@ Fields:
 - name;
 - slug;
 - description;
-- address;
+- street;
+- house_number;
+- postal_code;
 - city;
-- floor_size;
-- height;
-- parking_info;
+- country_code;
+- environment;
+- floor_size_square_metres;
+- ceiling_height_metres;
 - cover_image_id;
-- map_url;
-- status.
-- role;
 - facilities;
-- suitability;
-- operational_notes.
+- website_url;
+- latitude;
+- longitude.
 
 ### EventRegistration
 
@@ -331,7 +371,7 @@ Fields:
 - type;
 - tier;
 - sort_order;
-- is_visible.
+- is_visible;
 
 ### ContactSubmission
 

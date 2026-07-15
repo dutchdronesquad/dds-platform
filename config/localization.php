@@ -45,10 +45,11 @@ return [
     | Translatable Content Fields
     |--------------------------------------------------------------------------
     |
-    | Phase 1 stores translatable content in JSON columns keyed by locale, for
-    | example: {"en": "Title", "nl": "Titel"}. Admin forms should render one
-    | field per supported locale for these attributes and persist the combined
-    | locale map back to the JSON column.
+    | Selected database fields can store translated content in JSON columns
+    | keyed by locale, for example: {"en": "Description", "nl": "Beschrijving"}.
+    | English is the default required base value when a field stores
+    | translations. Domain validation may deliberately allow exceptions, such
+    | as optional media alt text in any supported locale.
     |
     */
 

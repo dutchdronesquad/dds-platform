@@ -14,13 +14,15 @@ Deliverables:
 - local development recommendation;
 - initial decision log.
 
-Status: started with this documentation set.
+Status: complete. Direction, scope, architecture, local-development guidance, decisions, roadmap, and the implementation backlog are established and maintained as the platform evolves.
 
 Detailed implementation tickets are tracked in [Initial Build Backlog](../backlog/initial-build-backlog.md).
 
 ## Phase 1: Technical Foundation
 
 Goal: turn the empty repository into a working Laravel foundation.
+
+Status: complete. The DDEV/Laravel foundation, authentication, roles and permissions, locale runtime, layouts, quality tooling, and GitHub workflows are merged on `main`.
 
 Tasks:
 
@@ -46,7 +48,7 @@ Acceptance criteria:
 
 Goal: replace the current WordPress site visually and functionally with static or seeded content.
 
-Status: in progress. DDS-007B establishes the public brand direction, while DDS-007C completes the homepage conversion pass with experienced-pilot and beginner paths, About, upcoming-event, news, and compact partner modules. Projects remain directly accessible from the primary navigation and footer until real cases justify homepage placement. Temporary homepage content is server-backed until the corresponding domain models exist. Remaining Phase 2 work includes the final navigation review, secondary public pages, contact flow, SEO metadata, and migration inventory.
+Status: in progress. The public shell, brand direction, homepage conversion, baseline SEO, and legacy redirects are merged. Temporary homepage content remains server-backed until the corresponding domain models are wired in. Remaining Phase 2 work includes the DDS-007D navigation/accessibility review, secondary public pages, contact flow, and selective migration inventory.
 
 Tasks:
 
@@ -58,7 +60,7 @@ Tasks:
 - add news preview;
 - add partners section;
 - add contact page;
-- add baseline locale-aware SEO metadata;
+- add centrally derived baseline SEO metadata;
 - inventory WordPress posts, pages, media, and URLs for migration.
 
 Acceptance criteria:
@@ -72,6 +74,8 @@ Acceptance criteria:
 ## Phase 3: Admin Foundation
 
 Goal: create a custom management environment as the foundation for all domains.
+
+Status: partially implemented. Authentication, role-gated access, the management shell, dashboard placeholders, flash handling, permissions, and redirect review exist. DDS-011A and DDS-011B still need to turn these into reusable resource-management patterns.
 
 Tasks:
 
@@ -95,20 +99,23 @@ Acceptance criteria:
 
 Goal: build one domain properly and use it as the pattern for later domains. Regular trainings are modeled as events with `type = training`.
 
+Status: in progress. The `MediaAsset`, `Location`, `Season`, and `Event` schema foundation is implemented in the current working tree. Public Event pages, media selection, validation, policies, and Event/Season admin management remain open.
+
 Tasks:
 
 - Event model and migration;
-- event type/category support;
-- locale-aware event content fields;
-- training-specific fields on events;
+- database-enforced event type and status support;
+- a small `Season` model for optional event grouping and season tickets;
+- plain-text event content in the editor's chosen language;
+- shared scheduling, pricing, capacity, and registration fields on events;
 - public event index and detail page;
-- public event filters for training, race, demo, workshop, and community events;
+- public event filters for training, race, demo, workshop, and other events;
 - admin event CRUD;
 - form requests;
 - policies;
-- draft/published/archived status;
+- draft/published/cancelled status;
 - cover image;
-- SEO fields;
+- centrally derived SEO metadata;
 - tests.
 
 Acceptance criteria:
@@ -118,7 +125,7 @@ Acceptance criteria:
 - drafts are protected;
 - validation is reliable server-side;
 - events have clean slugs and metadata;
-- events support English content and optional Dutch translations;
+- events can contain Dutch or English content without duplicated locale fields;
 - training evenings can be managed through event CRUD.
 
 ## Phase 5: Event Registrations
@@ -158,7 +165,7 @@ Tasks:
 
 Acceptance criteria:
 
-- imported posts are idempotent and traceable through legacy IDs;
+- imported posts are idempotent and traceable through a temporary import manifest during rehearsal and cutover;
 - media referenced by migrated content is available in Laravel;
 - old important URLs redirect to their new destinations;
 - skipped or manually reviewed records are reported clearly;
@@ -173,7 +180,7 @@ Tasks:
 - Article CRUD;
 - Location CRUD;
 - Partner CRUD;
-- locale-aware content fields and SEO metadata;
+- selectively translated content fields and centrally derived SEO metadata;
 - sitemap.
 
 Acceptance criteria:
@@ -181,7 +188,7 @@ Acceptance criteria:
 - news articles are manageable after import;
 - locations have their own detail pages;
 - partners are manageable and sortable;
-- English is the default content locale and Dutch translations can be added;
+- interface strings support English and Dutch, while each content model only translates fields that need parallel variants;
 - SEO loss during launch is minimized.
 
 ## Phase 8: Contact And Mail

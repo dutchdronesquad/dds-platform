@@ -16,7 +16,7 @@ test('locale route prefixes are disabled', function () {
     expect(config('localization.use_locale_route_prefixes'))->toBeFalse();
 });
 
-test('phase one translatable content storage is documented in config', function () {
+test('translatable database content storage is documented in config', function () {
     expect(config('localization.translatable_content'))
         ->toMatchArray([
             'storage' => 'json_by_locale',
