@@ -3,7 +3,12 @@
 use App\Models\MediaAsset;
 
 test('media assets can be created through their factory', function () {
-    $mediaAsset = MediaAsset::factory()->withDutchTranslation()->create();
+    $mediaAsset = MediaAsset::factory()->create([
+        'alt_text' => [
+            'en' => 'Pilots racing FPV drones indoors.',
+            'nl' => 'Piloten racen binnen met FPV-drones.',
+        ],
+    ]);
 
     $this->assertModelExists($mediaAsset);
 

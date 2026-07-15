@@ -55,16 +55,4 @@ class LocationFactory extends Factory
             'cover_image_id' => MediaAsset::factory(),
         ]);
     }
-
-    public function withDutchTranslation(): static
-    {
-        return $this->state(function (array $attributes): array {
-            /** @var array<string, string> $description */
-            $description = $attributes['description'];
-
-            return [
-                'description' => [...$description, 'nl' => fake()->paragraph()],
-            ];
-        });
-    }
 }

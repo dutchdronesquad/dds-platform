@@ -10,8 +10,12 @@ use Illuminate\Support\Facades\DB;
 test('locations can be created with structured and translatable venue data', function () {
     $location = Location::factory()
         ->withCoverImage()
-        ->withDutchTranslation()
-        ->create()
+        ->create([
+            'description' => [
+                'en' => 'An indoor venue for FPV drone racing.',
+                'nl' => 'Een binnenlocatie voor FPV-droneraces.',
+            ],
+        ])
         ->load('coverImage');
 
     $this->assertModelExists($location);

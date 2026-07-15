@@ -49,16 +49,4 @@ class MediaAssetFactory extends Factory
             'height' => null,
         ]);
     }
-
-    public function withDutchTranslation(): static
-    {
-        return $this->state(function (array $attributes): array {
-            /** @var array<string, string> $altText */
-            $altText = $attributes['alt_text'];
-
-            return [
-                'alt_text' => [...$altText, 'nl' => fake()->sentence(8)],
-            ];
-        });
-    }
 }
