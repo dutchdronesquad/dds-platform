@@ -114,17 +114,40 @@ export default function PublicLayout({ children }: Props) {
     const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
 
     useEffect(() => {
+        let animationFrameId: number | null = null;
+        let lastHeaderScrolled: boolean | null = null;
+
         const updateHeaderState = () => {
-            setIsHeaderScrolled(window.scrollY > 32);
+            animationFrameId = null;
+            const nextHeaderScrolled = window.scrollY > 32;
+
+            if (nextHeaderScrolled === lastHeaderScrolled) {
+                return;
+            }
+
+            lastHeaderScrolled = nextHeaderScrolled;
+            setIsHeaderScrolled(nextHeaderScrolled);
         };
 
-        const animationFrameId =
-            window.requestAnimationFrame(updateHeaderState);
-        window.addEventListener('scroll', updateHeaderState, { passive: true });
+        const scheduleHeaderUpdate = () => {
+            if (animationFrameId !== null) {
+                return;
+            }
+
+            animationFrameId = window.requestAnimationFrame(updateHeaderState);
+        };
+
+        scheduleHeaderUpdate();
+        window.addEventListener('scroll', scheduleHeaderUpdate, {
+            passive: true,
+        });
 
         return () => {
-            window.cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('scroll', updateHeaderState);
+            window.removeEventListener('scroll', scheduleHeaderUpdate);
+
+            if (animationFrameId !== null) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
         };
     }, []);
 
