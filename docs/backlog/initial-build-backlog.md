@@ -32,7 +32,7 @@ Recommended next tickets:
 1. finish and merge the current DDS-014 / DDS-012 / DDS-009 schema cluster;
 2. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
 3. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
-4. build DDS-010 public Event pages and replace the homepage event placeholder;
+4. build DDS-010 public Event pages, then validate realistic event states and responsive presentation in DDS-010A;
 5. finish DDS-007D as an independent public-shell polish task before launch.
 
 Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
@@ -593,6 +593,30 @@ Acceptance criteria:
 - unpublished events are not public;
 - event cards are scannable and communicate date, type, location, and registration state clearly;
 - empty states are useful when no events match a filter.
+
+### DDS-010A: Realistic Event Fixtures And Frontend Validation
+
+Goal: validate the public event experience with representative data before the Event admin workflow becomes the primary way to create content.
+
+Tasks:
+
+- add a deterministic, development-only event dataset using the existing factories and seeder conventions;
+- include races and training events with varied dates, locations, prices, cover-image availability, and registration states;
+- represent open, nearly full, full, closed, and cancelled scenarios where the domain model supports them;
+- review the homepage event selection, event index, type filters, no-result recovery, and event detail pages with the dataset loaded;
+- check event cards and detail content on representative mobile and desktop viewports;
+- cover edge cases such as long titles, missing optional content, and events without a cover image;
+- keep demo records out of production and make the dataset safe to recreate or remove locally.
+
+Acceptance criteria:
+
+- a documented local seeding command creates the same representative event dataset on repeated runs without introducing duplicates;
+- the homepage shows the correct upcoming events and never renders more than its intended event-card limit;
+- event type filters and their empty-state recovery work without an avoidable full-page jump or reload;
+- event cards communicate date, type, location, price, availability, and cancellation state where applicable;
+- long or optional content does not break card or detail layouts on mobile or desktop;
+- automated tests cover public visibility, ordering, filtering, and the representative registration states;
+- demo data can be reset without affecting production seeding or real content.
 
 ### DDS-011: Admin Event CRUD
 
@@ -1265,26 +1289,27 @@ Acceptance criteria:
 28. DDS-011D
 29. DDS-014H
 30. DDS-010
-31. DDS-011
-32. DDS-014B
-33. DDS-014C
-34. DDS-014E
-35. DDS-014I
-36. DDS-014J
-37. DDS-014G
-38. DDS-011E
-39. DDS-015
-40. DDS-017
-41. DDS-016
-42. DDS-018
-43. DDS-019
-44. DDS-020
-45. DDS-021
-46. DDS-022
-47. DDS-023
-48. DDS-024
-49. DDS-025
-50. DDS-026
-51. DDS-027
+31. DDS-010A
+32. DDS-011
+33. DDS-014B
+34. DDS-014C
+35. DDS-014E
+36. DDS-014I
+37. DDS-014J
+38. DDS-014G
+39. DDS-011E
+40. DDS-015
+41. DDS-017
+42. DDS-016
+43. DDS-018
+44. DDS-019
+45. DDS-020
+46. DDS-021
+47. DDS-022
+48. DDS-023
+49. DDS-024
+50. DDS-025
+51. DDS-026
+52. DDS-027
 
 The WordPress importer should not be treated as the next major build step after static routes. The platform needs public branding, target content models, admin review flows, media handling, redirects, and user/permission management first. Import work can start as discovery earlier, but production-grade import should wait until the target models and admin review screens exist.

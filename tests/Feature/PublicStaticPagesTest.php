@@ -13,8 +13,7 @@ test('homepage exposes its backend-backed conversion content', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('welcome')
-            ->where('upcomingEvents', $homepage['upcomingEvents'])
-            ->where('upcomingEventsArePlaceholder', true)
+            ->has('upcomingEvents', 0)
             ->where('latestNews', $homepage['latestNews'])
             ->where('latestNewsAreLegacy', true)
             ->where('partnerLogos', $homepage['partnerLogos']),
@@ -25,13 +24,10 @@ test('temporary homepage content is owned by the homepage config', function () {
     $homepage = config('homepage');
 
     expect(array_keys($homepage))->toBe([
-        'upcomingEvents',
-        'upcomingEventsArePlaceholder',
         'latestNews',
         'latestNewsAreLegacy',
         'partnerLogos',
     ])
-        ->and($homepage['upcomingEvents'])->toHaveCount(3)
         ->and($homepage['latestNews'])->toHaveCount(3)
         ->and($homepage['partnerLogos'])->toHaveCount(1);
 
@@ -67,7 +63,6 @@ test('public static shell pages render', function (string $routeName, string $pa
             ->has('page.sections.0.body'),
         );
 })->with([
-    'events' => ['events.index', 'events'],
     'projects' => ['projects.index', 'projects'],
     'news' => ['news.index', 'news'],
     'locations' => ['locations.index', 'locations'],
@@ -81,7 +76,6 @@ test('public shell page copy is owned by the public pages config', function () {
     $publicPages = config('public_pages');
 
     expect(array_keys($publicPages))->toBe([
-        'events',
         'projects',
         'news',
         'locations',
@@ -122,6 +116,10 @@ test('public brand assets are available locally', function () {
         ->and(public_path('images/dds/racing/homepage-hero.jpg'))
         ->toBeFile()
         ->and(public_path('images/dds/racing/indoor-track.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/racing/sportpaleis-empty.jpg'))
+        ->toBeFile()
+        ->and(public_path('images/dds/racing/sportpaleis-empty-leveled.jpg'))
         ->toBeFile()
         ->and(public_path('images/dds/racing/pilot-preparing-drone.jpg'))
         ->toBeFile()
@@ -170,12 +168,80 @@ test('public navigation keeps private authentication links out of the public she
         ->not->toContain('dashboard()')
         ->not->toContain('Inloggen')
         ->not->toContain('Beheer')
+        ->not->toContain('bg-paper/96')
+        ->not->toContain('isHome')
+        ->toContain('absolute inset-x-0 top-0 z-50 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg')
+        ->toContain('lg:sticky lg:-mb-18')
+        ->toContain('isHeaderScrolled &&')
+        ->toContain('let animationFrameId: number | null = null;')
+        ->toContain("window.addEventListener('scroll', scheduleHeaderUpdate")
+        ->toContain("window.removeEventListener('scroll', scheduleHeaderUpdate)")
+        ->toContain('window.cancelAnimationFrame(animationFrameId)')
+        ->toContain('lg:border-white/12 lg:bg-ink/68 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-xl')
+        ->toMatch('/<PublicBrand\s+inverse\s+/')
         ->and($headerNavigationItems)
         ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
         ->not->toContain('Huisregels')
         ->and($mobileNavigationItems)
         ->toMatch('/Projecten.*Nieuws.*Over DDS.*Locaties.*Contact/s')
         ->not->toContain('Huisregels');
+});
+
+test('public footer links to the official social channels', function () {
+    $publicLayout = file_get_contents(resource_path('js/layouts/public-layout.tsx'));
+
+    if (! is_string($publicLayout)) {
+        $this->fail('The public layout could not be read.');
+    }
+
+    expect($publicLayout)
+        ->toContain('https://www.instagram.com/dutchdronesquad/')
+        ->toContain('https://www.facebook.com/dutchdronesquad')
+        ->toContain('https://www.youtube.com/@dutchdronesquad')
+        ->toContain('https://www.twitch.tv/dutchdronesquad')
+        ->toContain('Volg Dutch Drone Squad op ${item.title}')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"')
+        ->toContain('gap-10 px-public-gutter py-10 sm:py-12')
+        ->toContain('lg:gap-10 lg:py-14')
+        ->toContain('px-public-gutter py-4')
+        ->toContain('flex size-10')
+        ->toContain("import { ArrowUpRight, Menu, X } from 'lucide-react';")
+        ->not->toContain('LucideIcon');
+});
+
+test('public event polish keeps filtering in place and provides a simple empty state', function () {
+    $eventsPage = file_get_contents(resource_path('js/pages/public/events-index.tsx'));
+    $publicPatterns = file_get_contents(resource_path('js/components/public/public-patterns.tsx'));
+    $homepage = file_get_contents(resource_path('js/pages/welcome.tsx'));
+
+    expect($eventsPage)
+        ->not->toBeFalse()
+        ->not->toContain('kicker="Agenda"')
+        ->toMatch('/activeType !== null.*?<Link\s+href=\{eventsIndex\(\)\}\s+preserveScroll\s+preserveState.*?Bekijk alle events/s')
+        ->and($publicPatterns)
+        ->not->toBeFalse()
+        ->toContain('max-w-2xl text-base leading-7 text-white/72')
+        ->toContain('function HeroSeparator')
+        ->toContain('text-paper dark:text-night-950')
+        ->and($homepage)
+        ->not->toBeFalse()
+        ->not->toContain('function HeroRaceLine')
+        ->toContain('separatorTone="air"')
+        ->not->toContain('RadioTower')
+        ->not->toContain('Planning in beweging')
+        ->not->toContain('CalendarClock')
+        ->not->toContain('TBA')
+        ->not->toContain('Next heat')
+        ->not->toContain('--:--')
+        ->not->toContain('Even geen startlichten.')
+        ->toContain('/images/dds/racing/sportpaleis-empty-leveled.jpg')
+        ->toContain('Lege sportvloer in het Sportpaleis Alkmaar')
+        ->toContain('De baan is even leeg.')
+        ->toContain('Zodra de volgende racedag vaststaat,')
+        ->toContain('vind je hem hier.')
+        ->toContain('absolute top-0 right-0 h-1 w-1/5 bg-dds-cyan')
+        ->toContain('events.length > 0 &&');
 });
 
 test('homepage partner section only contains verified logos', function () {
@@ -210,14 +276,5 @@ test('projects page frames projects as a public showcase', function () {
             ->where('page.eyebrow', 'Showcase')
             ->where('page.description', 'Publieke showcase voor DDS-built tooling, software, plugins, apps, integraties en geselecteerde community builds.')
             ->where('page.sections.0.heading', 'Geen intern projectbeheer'),
-        );
-});
-
-test('event detail placeholder renders with the requested slug', function () {
-    $this->get(route('events.show', ['slug' => 'winter-training']))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('public/event-show')
-            ->where('slug', 'winter-training'),
         );
 });

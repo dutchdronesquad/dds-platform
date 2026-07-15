@@ -3,43 +3,22 @@
 use App\Enums\Permission;
 use App\Enums\Role;
 use App\Http\Controllers\Admin\RedirectController;
+use App\Http\Controllers\Public\EventController;
+use App\Http\Controllers\Public\HomeController;
 use App\Http\Middleware\HandleLegacyRedirects;
 use App\Support\SeoMetadata;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
-use Inertia\Inertia;
 use Spatie\Permission\Middleware\RoleMiddleware;
 
 /** @var array<string, array<string, mixed>> $publicPages */
 $publicPages = config('public_pages');
 
-/** @var array<string, mixed> $homepage */
-$homepage = config('homepage');
-
 $seoMetadata = new SeoMetadata;
 
-Route::inertia('/', 'welcome', [
-    ...$homepage,
-    'seo' => $seoMetadata->forPage('home'),
-])->name('home');
+Route::get('/', HomeController::class)->name('home');
 
-Route::inertia('/events', 'public/shell', [
-    'page' => $publicPages['events'],
-    'seo' => $seoMetadata->forPage('events'),
-])->name('events.index');
-
-Route::get('/events/{slug}', function (SeoMetadata $seoMetadata, string $slug) {
-    $title = Str::headline($slug);
-
-    return Inertia::render('public/event-show', [
-        'slug' => $slug,
-        'seo' => $seoMetadata->forPage('event', [
-            'title' => $title,
-            'description' => "Bekijk de praktische informatie voor {$title}, een event van Dutch Drone Squad.",
-            'canonical_path' => "/events/{$slug}",
-        ]),
-    ]);
-})->name('events.show');
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
 
 Route::inertia('/projects', 'public/shell', [
     'page' => $publicPages['projects'],

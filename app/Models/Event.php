@@ -7,6 +7,7 @@ use App\Enums\EventStatus;
 use App\Enums\EventType;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -80,6 +81,34 @@ final class Event extends Model
     public function coverImage(): BelongsTo
     {
         return $this->belongsTo(MediaAsset::class, 'cover_image_id');
+    }
+
+    /**
+     * @param  Builder<Event>  $query
+     * @return Builder<Event>
+     */
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query
+            ->whereIn('status', [EventStatus::Published, EventStatus::Cancelled])
+            ->where('published_at', '<=', now());
+    }
+
+    /**
+     * @param  Builder<Event>  $query
+     * @return Builder<Event>
+     */
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query
+            ->where('starts_at', '>=', now())
+            ->oldest('starts_at');
+    }
+
+    public function isPubliclyVisible(): bool
+    {
+        return in_array($this->status, [EventStatus::Published, EventStatus::Cancelled], true)
+            && $this->published_at?->lte(now()) === true;
     }
 
     /**
