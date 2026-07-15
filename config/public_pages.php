@@ -7,30 +7,6 @@
  * to first-class models or constrained managed content.
  */
 return [
-    'events' => [
-        'title' => 'Events',
-        'eyebrow' => 'Agenda',
-        'description' => 'Clubdagen, trainingen, demo-vluchten en communitybijeenkomsten krijgen hier een vaste publieke plek.',
-        'visual' => [
-            'src' => '/images/dds/racing/indoor-track.jpg',
-            'alt' => 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
-            'position' => '56% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Bekijk projecten',
-            'href' => '/projects',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Wat hier komt',
-                'body' => 'Een overzicht van aankomende DDS-activiteiten met ruimte voor type, locatie en praktische deelname-informatie.',
-            ],
-            [
-                'heading' => 'Voor bezoekers',
-                'body' => 'Deze pagina helpt leden, nieuwe vliegers en partners snel te zien waar DDS zichtbaar is.',
-            ],
-        ],
-    ],
     'projects' => [
         'title' => 'Projects',
         'eyebrow' => 'Showcase',

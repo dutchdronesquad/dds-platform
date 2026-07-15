@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Event;
 use App\Support\SeoMetadata;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -44,7 +45,12 @@ test('public pages expose complete metadata with canonical application urls', fu
 ]);
 
 test('event detail metadata uses the event title and stable public url', function () {
-    $this->get(route('events.show', ['slug' => 'winter-training']))
+    $event = Event::factory()->published()->create([
+        'title' => 'Winter Training',
+        'slug' => 'winter-training',
+    ]);
+
+    $this->get(route('events.show', ['event' => $event->slug]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('seo.title', 'Winter Training')

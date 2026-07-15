@@ -1,13 +1,14 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import PublicEventCard from '@/components/public/public-event-card';
 import { PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { about, contact } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
 import { index as locationsIndex } from '@/routes/locations';
 import { index as newsIndex } from '@/routes/news';
-import type { SeoMetadata } from '@/types';
+import type { PublicEventSummary, SeoMetadata } from '@/types';
 
 type NewsItem = {
     dateLabel: string;
@@ -18,17 +19,6 @@ type NewsItem = {
         src: string;
     };
     title: string;
-};
-
-type UpcomingEvent = {
-    availabilityLabel: string;
-    dateLabel: string;
-    href?: string;
-    location: string;
-    priceLabel: string;
-    timeLabel: string;
-    title: string;
-    typeLabel: string;
 };
 
 type PartnerLogo = {
@@ -42,8 +32,7 @@ type WelcomeProps = {
     latestNewsAreLegacy: boolean;
     partnerLogos: PartnerLogo[];
     seo: SeoMetadata;
-    upcomingEvents: UpcomingEvent[];
-    upcomingEventsArePlaceholder: boolean;
+    upcomingEvents: PublicEventSummary[];
 };
 
 const pilotBenefits = [
@@ -67,7 +56,6 @@ export default function Welcome({
     partnerLogos,
     seo,
     upcomingEvents,
-    upcomingEventsArePlaceholder,
 }: WelcomeProps) {
     const visibleEvents = upcomingEvents.slice(0, 3);
     const newsItems = latestNews.slice(0, 3);
@@ -91,9 +79,8 @@ export default function Welcome({
                     alt: 'Lichtspoor van een FPV-drone boven het indoor raceparcours van Dutch Drone Squad',
                     className: 'object-[42%_center] sm:object-[center_42%]',
                 }}
+                separatorTone="air"
             />
-
-            <HeroRaceLine />
 
             <section
                 id="ervaren-piloten"
@@ -208,10 +195,7 @@ export default function Welcome({
                 </div>
             </section>
 
-            <UpcomingEventsSection
-                events={visibleEvents}
-                isPlaceholder={upcomingEventsArePlaceholder}
-            />
+            <UpcomingEventsSection events={visibleEvents} />
 
             <section className="overflow-hidden bg-warmup text-deep-signal">
                 <div className="mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-20 sm:py-28 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-24 lg:py-32">
@@ -433,14 +417,10 @@ function PartnerLogoItem({ partnerLogo }: PartnerLogoItemProps) {
 }
 
 type UpcomingEventsSectionProps = {
-    events: UpcomingEvent[];
-    isPlaceholder: boolean;
+    events: PublicEventSummary[];
 };
 
-function UpcomingEventsSection({
-    events,
-    isPlaceholder,
-}: UpcomingEventsSectionProps) {
+function UpcomingEventsSection({ events }: UpcomingEventsSectionProps) {
     return (
         <section id="upcoming-events" className="bg-paper text-deep-signal">
             <div className="mx-auto w-full max-w-7xl px-public-gutter py-20 sm:py-28 lg:py-32">
@@ -464,151 +444,62 @@ function UpcomingEventsSection({
                     </Link>
                 </div>
 
-                <p className="mt-9 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-dds-blue uppercase md:hidden">
-                    Veeg voor meer
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                </p>
-
-                <div className="-mx-public-gutter mt-4 md:mx-0 md:mt-12">
-                    <ul
-                        aria-label="Upcoming events"
-                        tabIndex={0}
-                        className="flex snap-x snap-proximity scroll-px-public-gutter scrollbar-none gap-4 overflow-x-auto overscroll-x-contain px-public-gutter pb-4 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset md:grid md:snap-none md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 md:pb-0"
-                    >
-                        {events.map((event, index) => (
-                            <li
-                                key={`${event.dateLabel}-${event.title}`}
-                                className="w-[calc(100vw-3.5rem)] max-w-[22rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
-                            >
-                                <EventCard event={event} index={index} />
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {isPlaceholder && (
-                    <p className="mt-5 font-mono text-[0.68rem] tracking-[0.08em] text-signal-muted uppercase">
-                        Voorbeelddata · wordt later gekoppeld aan de eventmodule
+                {events.length > 0 && (
+                    <p className="mt-9 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-dds-blue uppercase md:hidden">
+                        Veeg voor meer
+                        <ArrowRight className="size-4" aria-hidden="true" />
                     </p>
+                )}
+
+                {events.length > 0 ? (
+                    <div className="-mx-public-gutter mt-4 md:mx-0 md:mt-12">
+                        <ul
+                            aria-label="Upcoming events"
+                            tabIndex={0}
+                            className="flex snap-x snap-proximity scroll-px-public-gutter scrollbar-none gap-4 overflow-x-auto overscroll-x-contain px-public-gutter pb-4 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset md:grid md:snap-none md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 md:pb-0"
+                        >
+                            {events.map((event) => (
+                                <li
+                                    key={event.id}
+                                    className="w-[calc(100vw-3.5rem)] max-w-[22rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
+                                >
+                                    <PublicEventCard event={event} />
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : (
+                    <div className="relative mt-12 min-h-64 overflow-hidden sm:min-h-72 lg:min-h-80">
+                        <img
+                            src="/images/dds/racing/sportpaleis-empty-leveled.jpg"
+                            alt="Lege sportvloer in het Sportpaleis Alkmaar"
+                            className="absolute inset-0 size-full object-cover object-center"
+                        />
+                        <div className="relative flex min-h-64 items-end sm:min-h-72 sm:items-stretch lg:min-h-80">
+                            <div className="flex w-full items-center bg-deep-signal/92 px-6 py-7 text-white sm:w-[52%] sm:px-10 sm:py-10 lg:w-[44%] lg:px-12">
+                                <div>
+                                    <h3 className="font-public-display text-3xl leading-tight font-semibold tracking-[-0.04em] sm:text-4xl">
+                                        De baan is even leeg.
+                                    </h3>
+                                    <p className="mt-3 text-sm leading-6 text-white/72 sm:text-base">
+                                        Zodra de volgende racedag vaststaat,
+                                        vind je hem hier.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <span
+                            aria-hidden="true"
+                            className="absolute bottom-0 left-0 h-1 w-1/3 bg-dds-orange sm:w-[40%]"
+                        />
+                        <span
+                            aria-hidden="true"
+                            className="absolute top-0 right-0 h-1 w-1/5 bg-dds-cyan"
+                        />
+                    </div>
                 )}
             </div>
         </section>
-    );
-}
-
-function HeroRaceLine() {
-    return (
-        <div
-            aria-hidden="true"
-            className="relative z-10 -mt-10 h-10 overflow-hidden text-air sm:-mt-14 sm:h-14"
-        >
-            <svg
-                viewBox="0 0 390 40"
-                preserveAspectRatio="none"
-                className="h-full w-full sm:hidden"
-            >
-                <path
-                    fill="currentColor"
-                    d="M0 40V27H100L124 8H226L252 27H390V40Z"
-                />
-                <path
-                    d="M0 27H100L124 8H153"
-                    fill="none"
-                    stroke="var(--color-dds-orange)"
-                    strokeWidth="3"
-                    vectorEffect="non-scaling-stroke"
-                />
-                <path
-                    d="M226 8L252 27H390"
-                    fill="none"
-                    stroke="var(--color-dds-cyan)"
-                    strokeWidth="3"
-                    vectorEffect="non-scaling-stroke"
-                />
-            </svg>
-            <svg
-                viewBox="0 0 1440 64"
-                preserveAspectRatio="none"
-                className="hidden h-full w-full sm:block"
-            >
-                <path
-                    fill="currentColor"
-                    d="M0 64V48H360L430 15H755L820 48H1120L1190 29H1440V64Z"
-                />
-                <path
-                    d="M0 48H360L430 15H575"
-                    fill="none"
-                    stroke="var(--color-dds-orange)"
-                    strokeWidth="4"
-                    vectorEffect="non-scaling-stroke"
-                />
-                <path
-                    d="M755 15L820 48H1120L1190 29H1440"
-                    fill="none"
-                    stroke="var(--color-dds-cyan)"
-                    strokeWidth="4"
-                    vectorEffect="non-scaling-stroke"
-                />
-            </svg>
-        </div>
-    );
-}
-
-type EventCardProps = {
-    event: UpcomingEvent;
-    index: number;
-};
-
-function EventCard({ event, index }: EventCardProps) {
-    return (
-        <Link
-            href={event.href ?? eventsIndex()}
-            prefetch
-            className="group flex h-full min-h-[25rem] flex-col border-t-4 border-dds-orange bg-deep-signal p-6 text-white transition duration-300 hover:-translate-y-1 hover:bg-[#174a52] focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:outline-none motion-reduce:transform-none motion-reduce:transition-none sm:p-7"
-        >
-            <div className="flex items-start justify-between gap-4">
-                <p className="font-mono text-xs tracking-[0.12em] text-dds-cyan uppercase">
-                    Round {String(index + 1).padStart(2, '0')}
-                </p>
-                <p className="text-xs font-medium text-white/52">
-                    {event.availabilityLabel}
-                </p>
-            </div>
-
-            <p className="mt-10 font-public-display text-5xl leading-none font-semibold tracking-[-0.06em] text-dds-orange sm:text-6xl">
-                {event.dateLabel}
-            </p>
-            <h3 className="mt-6 font-public-display text-2xl leading-tight font-semibold tracking-[-0.035em]">
-                {event.title}
-            </h3>
-            <p className="mt-2 text-sm text-white/52">{event.typeLabel}</p>
-
-            <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-5 border-t border-white/15 pt-6 text-sm">
-                <div>
-                    <dt className="font-mono text-[0.65rem] tracking-[0.1em] text-white/55 uppercase">
-                        Tijd
-                    </dt>
-                    <dd className="mt-1 font-semibold">{event.timeLabel}</dd>
-                </div>
-                <div>
-                    <dt className="font-mono text-[0.65rem] tracking-[0.1em] text-white/55 uppercase">
-                        Ticket
-                    </dt>
-                    <dd className="mt-1 font-semibold">{event.priceLabel}</dd>
-                </div>
-                <div className="col-span-2">
-                    <dt className="font-mono text-[0.65rem] tracking-[0.1em] text-white/55 uppercase">
-                        Locatie
-                    </dt>
-                    <dd className="mt-1 font-semibold">{event.location}</dd>
-                </div>
-            </dl>
-
-            <span className="mt-6 inline-flex items-center justify-between gap-3 text-sm font-semibold text-dds-cyan">
-                Bekijk event
-                <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
-            </span>
-        </Link>
     );
 }
 

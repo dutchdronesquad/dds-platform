@@ -21,6 +21,7 @@ type PublicHeroProps = {
     description: string;
     kicker?: string;
     media: Media;
+    separatorTone?: 'air' | 'paper';
     title: ReactNode;
 };
 
@@ -29,55 +30,125 @@ export function PublicHero({
     description,
     kicker,
     media,
+    separatorTone = 'paper',
     title,
 }: PublicHeroProps) {
     return (
-        <section className="relative isolate flex min-h-[44rem] items-center overflow-hidden bg-ink text-white sm:min-h-[46rem]">
-            <img
-                src={media.src}
-                alt={media.alt}
-                fetchPriority="high"
-                className={cn(
-                    'absolute inset-0 -z-30 h-full w-full object-cover',
-                    media.className,
-                )}
-                style={
-                    media.position
-                        ? { objectPosition: media.position }
-                        : undefined
-                }
-            />
-            <div className="absolute inset-0 -z-20 bg-linear-to-r from-ink/92 from-3% via-ink/55 via-52% to-ink/10" />
-            <div className="absolute inset-0 -z-10 bg-linear-to-t from-ink/48 via-transparent to-ink/16" />
-            <div className="mx-auto w-full max-w-7xl px-public-gutter pt-36 pb-20 sm:pt-40 sm:pb-24">
-                <div className="max-w-3xl">
-                    {kicker && (
-                        <p className="text-signal-200 mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.08em] uppercase">
-                            <span className="size-2 rounded-full bg-flight-500" />
-                            {kicker}
-                        </p>
+        <>
+            <section className="relative isolate flex min-h-[44rem] items-center overflow-hidden bg-ink text-white sm:min-h-[46rem]">
+                <img
+                    src={media.src}
+                    alt={media.alt}
+                    fetchPriority="high"
+                    className={cn(
+                        'absolute inset-0 -z-30 h-full w-full object-cover',
+                        media.className,
                     )}
-                    <h1 className="max-w-3xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.055em] text-white sm:text-6xl sm:text-balance lg:text-7xl">
-                        {title}
-                    </h1>
-                    <p className="mt-6 max-w-xl text-base leading-7 text-white/72 sm:text-lg sm:leading-8">
-                        {description}
-                    </p>
-                    <div className="mt-8 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
-                        {actions.map((action, index) => (
-                            <PublicButton
-                                key={action.label}
-                                href={action.href}
-                                inverse
-                                variant={index === 0 ? 'primary' : 'text'}
-                            >
-                                {action.label}
-                            </PublicButton>
-                        ))}
+                    style={
+                        media.position
+                            ? { objectPosition: media.position }
+                            : undefined
+                    }
+                />
+                <div className="absolute inset-0 -z-20 bg-linear-to-r from-ink/92 from-3% via-ink/55 via-52% to-ink/10" />
+                <div className="absolute inset-0 -z-10 bg-linear-to-t from-ink/48 via-transparent to-ink/16" />
+                <div className="mx-auto w-full max-w-7xl px-public-gutter pt-36 pb-20 sm:pt-40 sm:pb-24">
+                    <div className="max-w-3xl">
+                        {kicker && (
+                            <p className="text-signal-200 mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.08em] uppercase">
+                                <span className="size-2 rounded-full bg-flight-500" />
+                                {kicker}
+                            </p>
+                        )}
+                        <h1 className="max-w-3xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.055em] text-white sm:text-6xl sm:text-balance lg:text-7xl">
+                            {title}
+                        </h1>
+                        <p className="mt-6 max-w-2xl text-base leading-7 text-white/72 sm:text-lg sm:leading-8">
+                            {description}
+                        </p>
+                        <div className="mt-8 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
+                            {actions.map((action, index) => (
+                                <PublicButton
+                                    key={action.label}
+                                    href={action.href}
+                                    inverse
+                                    variant={index === 0 ? 'primary' : 'text'}
+                                >
+                                    {action.label}
+                                </PublicButton>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <HeroSeparator tone={separatorTone} />
+        </>
+    );
+}
+
+type HeroSeparatorProps = {
+    tone: 'air' | 'paper';
+};
+
+function HeroSeparator({ tone }: HeroSeparatorProps) {
+    return (
+        <div
+            aria-hidden="true"
+            className={cn(
+                'relative z-10 -mt-10 h-10 overflow-hidden sm:-mt-14 sm:h-14',
+                tone === 'air' ? 'text-air' : 'text-paper dark:text-night-950',
+            )}
+        >
+            <svg
+                viewBox="0 0 390 40"
+                preserveAspectRatio="none"
+                className="h-full w-full sm:hidden"
+            >
+                <path
+                    fill="currentColor"
+                    d="M0 40V27H100L124 8H226L252 27H390V40Z"
+                />
+                <path
+                    d="M0 27H100L124 8H153"
+                    fill="none"
+                    stroke="var(--color-dds-orange)"
+                    strokeWidth="3"
+                    vectorEffect="non-scaling-stroke"
+                />
+                <path
+                    d="M226 8L252 27H390"
+                    fill="none"
+                    stroke="var(--color-dds-cyan)"
+                    strokeWidth="3"
+                    vectorEffect="non-scaling-stroke"
+                />
+            </svg>
+            <svg
+                viewBox="0 0 1440 64"
+                preserveAspectRatio="none"
+                className="hidden h-full w-full sm:block"
+            >
+                <path
+                    fill="currentColor"
+                    d="M0 64V48H360L430 15H755L820 48H1120L1190 29H1440V64Z"
+                />
+                <path
+                    d="M0 48H360L430 15H575"
+                    fill="none"
+                    stroke="var(--color-dds-orange)"
+                    strokeWidth="4"
+                    vectorEffect="non-scaling-stroke"
+                />
+                <path
+                    d="M755 15L820 48H1120L1190 29H1440"
+                    fill="none"
+                    stroke="var(--color-dds-cyan)"
+                    strokeWidth="4"
+                    vectorEffect="non-scaling-stroke"
+                />
+            </svg>
+        </div>
     );
 }
 

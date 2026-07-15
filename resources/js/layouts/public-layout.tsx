@@ -56,6 +56,53 @@ const footerPracticalItems = [
     { title: 'Contact', href: contact() },
 ];
 
+const socialItems: { href: string; icon: ReactNode; title: string }[] = [
+    {
+        title: 'Instagram',
+        href: 'https://www.instagram.com/dutchdronesquad/',
+        icon: (
+            <>
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle
+                    cx="17.5"
+                    cy="6.5"
+                    r="1"
+                    fill="currentColor"
+                    stroke="none"
+                />
+            </>
+        ),
+    },
+    {
+        title: 'Facebook',
+        href: 'https://www.facebook.com/dutchdronesquad',
+        icon: (
+            <path d="M10 21v-8H7V9h3V7.5C10 4.5 11.9 3 15 3h2v4h-1.5C14.4 7 14 7.6 14 8.5V9h3l-.7 4H14v8" />
+        ),
+    },
+    {
+        title: 'YouTube',
+        href: 'https://www.youtube.com/@dutchdronesquad',
+        icon: (
+            <>
+                <rect x="2.5" y="6" width="19" height="12" rx="4" />
+                <path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none" />
+            </>
+        ),
+    },
+    {
+        title: 'Twitch',
+        href: 'https://www.twitch.tv/dutchdronesquad',
+        icon: (
+            <>
+                <path d="M5 3h15v11l-5 5h-4l-3 3v-3H5Z" />
+                <path d="M10 8v5M15 8v5" />
+            </>
+        ),
+    },
+];
+
 type Props = {
     children: ReactNode;
 };
@@ -63,15 +110,10 @@ type Props = {
 export default function PublicLayout({ children }: Props) {
     const { url } = usePage();
     const currentPath = url.split('?')[0];
-    const isHome = currentPath === '/';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
 
     useEffect(() => {
-        if (!isHome) {
-            return;
-        }
-
         const updateHeaderState = () => {
             setIsHeaderScrolled(window.scrollY > 32);
         };
@@ -84,18 +126,14 @@ export default function PublicLayout({ children }: Props) {
             window.cancelAnimationFrame(animationFrameId);
             window.removeEventListener('scroll', updateHeaderState);
         };
-    }, [isHome]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-paper text-ink dark:bg-night-950 dark:text-white">
             <header
                 className={cn(
-                    'z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none',
-                    isHome
-                        ? 'absolute inset-x-0 top-0 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg lg:sticky lg:-mb-18'
-                        : 'sticky top-0 border-b border-paddock-rule bg-paper/96 backdrop-blur-md dark:border-white/10 dark:bg-night-950/94',
-                    isHome &&
-                        isHeaderScrolled &&
+                    'absolute inset-x-0 top-0 z-50 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none lg:sticky lg:-mb-18',
+                    isHeaderScrolled &&
                         'lg:border-white/12 lg:bg-ink/68 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-xl',
                 )}
             >
@@ -108,7 +146,7 @@ export default function PublicLayout({ children }: Props) {
                         className="min-w-0 rounded-sm focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-3 focus-visible:outline-none dark:focus-visible:ring-signal-400 dark:focus-visible:ring-offset-night-950"
                     >
                         <PublicBrand
-                            inverse={isHome}
+                            inverse
                             className="max-md:[&>span:last-child]:hidden"
                         />
                     </Link>
@@ -129,14 +167,9 @@ export default function PublicLayout({ children }: Props) {
                                     prefetch
                                     aria-current={isActive ? 'page' : undefined}
                                     className={cn(
-                                        'rounded-sm border-b border-transparent py-2 text-[0.82rem] font-semibold tracking-[0.01em] transition-colors hover:border-flight-500 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none motion-reduce:transition-none dark:focus-visible:ring-signal-400',
-                                        isHome
-                                            ? 'text-white/72 hover:text-white'
-                                            : 'dark:text-night-300 text-paddock-slate hover:text-ink dark:hover:text-white',
+                                        'rounded-sm border-b border-transparent py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 transition-colors hover:border-flight-500 hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none motion-reduce:transition-none dark:focus-visible:ring-signal-400',
                                         isActive &&
-                                            (isHome
-                                                ? 'border-flight-400 text-white'
-                                                : 'border-flight-500 text-ink dark:text-white'),
+                                            'border-flight-400 text-white',
                                     )}
                                 >
                                     {item.title}
@@ -148,12 +181,7 @@ export default function PublicLayout({ children }: Props) {
                     <Link
                         href={eventsIndex()}
                         prefetch
-                        className={cn(
-                            'hidden min-h-10 items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:outline-none lg:inline-flex',
-                            isHome
-                                ? 'border-white/15 bg-white/10 text-white hover:border-flight-400 hover:bg-flight-500 hover:text-ink'
-                                : 'border-flight-500 bg-flight-500 text-ink hover:border-flight-400 hover:bg-flight-400',
-                        )}
+                        className="hidden min-h-10 items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-flight-400 hover:bg-flight-500 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none lg:inline-flex"
                     >
                         Bekijk agenda
                     </Link>
@@ -166,12 +194,7 @@ export default function PublicLayout({ children }: Props) {
                             isMenuOpen ? 'Sluit navigatie' : 'Open navigatie'
                         }
                         onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
-                        className={cn(
-                            'ml-auto flex size-11 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none lg:hidden',
-                            isHome
-                                ? 'bg-white/10 text-white hover:bg-white/16'
-                                : 'bg-ink/6 text-ink hover:bg-ink/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/16 dark:focus-visible:ring-signal-400',
-                        )}
+                        className="ml-auto flex size-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/16 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none lg:hidden dark:focus-visible:ring-signal-400"
                     >
                         {isMenuOpen ? (
                             <X className="size-5" />
@@ -233,19 +256,49 @@ export default function PublicLayout({ children }: Props) {
             <main>{children}</main>
 
             <footer className="bg-ink text-white">
-                <div className="mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-14 sm:py-16 lg:grid-cols-[1.5fr_0.58fr_0.58fr_0.58fr] lg:gap-12 lg:py-20">
+                <div className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-10 sm:py-12 lg:grid-cols-[1.5fr_0.58fr_0.58fr_0.58fr] lg:gap-10 lg:py-14">
                     <div className="max-w-sm">
                         <PublicBrand inverse />
-                        <p className="mt-6 text-sm leading-7 text-white/52">
+                        <p className="mt-4 text-sm leading-6 text-white/52">
                             <strong className="font-semibold text-white/78">
                                 Dutch Drone Squad
                             </strong>{' '}
                             is een groep van enthousiaste drone racers uit
                             Alkmaar en omstreken.
                         </p>
+                        <div className="mt-5">
+                            <p className="text-xs font-semibold tracking-[0.12em] text-white/58 uppercase">
+                                Volg ons
+                            </p>
+                            <div className="mt-3 flex items-center gap-2.5">
+                                {socialItems.map((item) => (
+                                    <a
+                                        key={item.title}
+                                        href={item.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={`Volg Dutch Drone Squad op ${item.title}`}
+                                        className="flex size-10 items-center justify-center rounded-full border border-white/14 text-white/62 transition-colors hover:border-flight-400/60 hover:bg-flight-400 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none motion-reduce:transition-none"
+                                    >
+                                        <svg
+                                            aria-hidden="true"
+                                            className="size-4.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            {item.icon}
+                                        </svg>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-x-4 gap-y-10 sm:gap-x-8 lg:contents">
+                    <div className="grid grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-8 lg:contents">
                         <FooterLinks
                             title="Ontdek"
                             items={footerExploreItems}
@@ -259,7 +312,7 @@ export default function PublicLayout({ children }: Props) {
                 </div>
 
                 <div className="border-t border-white/10">
-                    <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-public-gutter py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                    <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-public-gutter py-4 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                         <p>© {new Date().getFullYear()} Dutch Drone Squad</p>
                         <p>Where racing brings pilots together.</p>
                     </div>
@@ -280,7 +333,7 @@ function FooterLinks({ items, title }: FooterLinksProps) {
             <h2 className="text-xs font-semibold tracking-[0.12em] text-white/58 uppercase">
                 {title}
             </h2>
-            <div className="mt-5 flex flex-col items-start gap-3.5 text-sm text-white/62">
+            <div className="mt-4 flex flex-col items-start gap-3 text-sm text-white/62">
                 {items.map((item) => (
                     <Link
                         key={item.title}

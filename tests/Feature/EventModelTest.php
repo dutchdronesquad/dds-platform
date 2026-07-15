@@ -94,3 +94,23 @@ test('cancelled events remain stored as a visible lifecycle state', function () 
 
     expect($event->status)->toBe(EventStatus::Cancelled);
 });
+
+test('only published or cancelled events whose publication date has passed are publicly visible', function () {
+    $publishedEvent = Event::factory()->published()->create([
+        'published_at' => now()->subMinute(),
+    ]);
+    $cancelledEvent = Event::factory()->cancelled()->create([
+        'published_at' => now()->subDay(),
+    ]);
+    Event::factory()->create(['published_at' => now()->subDay()]);
+    Event::factory()->published()->create(['published_at' => now()->addDay()]);
+    Event::factory()->cancelled()->create(['published_at' => null]);
+
+    $publicEvents = Event::query()->publiclyVisible()->get();
+
+    expect($publicEvents)->toHaveCount(2)
+        ->and($publicEvents->contains($publishedEvent))->toBeTrue()
+        ->and($publicEvents->contains($cancelledEvent))->toBeTrue()
+        ->and($publishedEvent->isPubliclyVisible())->toBeTrue()
+        ->and($cancelledEvent->isPubliclyVisible())->toBeTrue();
+});

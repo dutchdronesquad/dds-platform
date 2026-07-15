@@ -3,41 +3,10 @@
 /**
  * Temporary homepage content.
  *
- * Event, article, project, and managed page records will replace these values
- * as their public domains become available. Keeping the bridge server-side
- * lets the Inertia page keep a stable prop contract during that transition.
+ * Article, partner, and managed page records will replace these remaining
+ * values as their public domains become available.
  */
 return [
-    'upcomingEvents' => [
-        [
-            'availabilityLabel' => '12 van 15 plekken vrij',
-            'dateLabel' => '13 SEP',
-            'location' => 'Sportpaleis Alkmaar',
-            'priceLabel' => '€15',
-            'timeLabel' => '18:00–21:00',
-            'title' => 'Indoor training · Round 01',
-            'typeLabel' => '5-inch FPV racing',
-        ],
-        [
-            'availabilityLabel' => '8 van 15 plekken vrij',
-            'dateLabel' => '11 OKT',
-            'location' => 'Sportpaleis Alkmaar',
-            'priceLabel' => '€15',
-            'timeLabel' => '18:00–21:00',
-            'title' => 'Indoor training · Round 02',
-            'typeLabel' => '5-inch FPV racing',
-        ],
-        [
-            'availabilityLabel' => 'Aanmelding volgt',
-            'dateLabel' => '15 NOV',
-            'location' => 'Sportpaleis Alkmaar',
-            'priceLabel' => '€15',
-            'timeLabel' => '18:00–21:00',
-            'title' => 'Indoor training · Round 03',
-            'typeLabel' => '5-inch FPV racing',
-        ],
-    ],
-    'upcomingEventsArePlaceholder' => true,
     'latestNews' => [
         [
             'dateLabel' => '9 september 2024',
