@@ -68,6 +68,8 @@ Frontend:
 Database:
 
 - PostgreSQL.
+- deliberately translated content uses locale-keyed JSONB with English required as the base value and Dutch optional;
+- ordinary editor-authored fields, such as Event title and content, remain plain text.
 
 Cache and queues:
 
@@ -133,7 +135,8 @@ For phase 1, a simple custom media approach is enough:
 
 - uploads through the admin;
 - `MediaAsset` model;
-- disk, path, original filename, mime type, file size, and alt text;
+- disk, path, original filename, mime type, byte size, optional image dimensions, locale-aware alt text, and decorative status;
+- reusable records for images and PDFs without WordPress-specific runtime fields;
 - conversions or thumbnails later through Spatie Media Library or custom queued jobs.
 
 Important: images should always have alt text or an explicit decorative status.

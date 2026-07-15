@@ -95,46 +95,45 @@ WordPress posts should usually become `Article` records.
 
 Suggested mapping:
 
-| WordPress | Laravel |
-| --- | --- |
-| `ID` | `legacy_source_id` |
-| `post_title` | `title` |
-| `post_name` | `slug` |
-| `post_excerpt` | `excerpt` |
-| `post_content` | `content` |
-| `post_date_gmt` | `published_at` |
-| `post_status` | `status` |
-| featured image | `cover_image_id` |
-| author | `author_id` or imported author metadata |
-| categories/tags | `category` or future taxonomy tables |
+| WordPress                | Laravel                                 |
+| ------------------------ | --------------------------------------- |
+| `post_title`             | `title`                                 |
+| `post_name`              | `slug`                                  |
+| `post_excerpt`           | `excerpt`                               |
+| `post_content`           | `content`                               |
+| `post_date_gmt`          | `published_at`                          |
+| `post_status`            | `status`                                |
+| featured image           | `cover_image_id`                        |
+| author                   | `author_id` or imported author metadata |
+| selected categories/tags | `category` or future taxonomy tables    |
 
-Keep a `legacy_source_id` and `legacy_source_type` on imported records, at least during migration. This makes repeated imports and debugging much easier.
+Keep WordPress IDs, source URLs, checksums, target model IDs, and import outcomes in a temporary import manifest outside the permanent domain tables. The manifest makes rehearsal runs idempotent and debuggable, while the resulting `Article`, `Location`, `Event`, and `MediaAsset` records stay source-agnostic. Retain the manifest only through launch verification and the agreed rollback window.
 
 ### Pages To Structured Content
 
 WordPress pages should not automatically become generic pages. Map them deliberately:
 
-| Current WordPress page type | Laravel target |
-| --- | --- |
-| homepage content | homepage sections or seed content |
-| training days | `Event` records with `type = training` or static training content, depending on structure |
-| location pages | `Location` |
-| house rules | static page or managed content record |
-| contact | dedicated contact page |
-| partners | `Partner` records |
-| in the media | `Article` category or future media mention model |
+| Current WordPress page type | Laravel target                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| homepage content            | homepage sections or seed content                                                         |
+| training days               | `Event` records with `type = training` or static training content, depending on structure |
+| location pages              | `Location`                                                                                |
+| house rules                 | static page or managed content record                                                     |
+| contact                     | dedicated contact page                                                                    |
+| partners                    | `Partner` records                                                                         |
+| in the media                | `Article` category or future media mention model                                          |
 
 Observed legacy page mapping:
 
-| WordPress URL | Laravel target |
-| --- | --- |
-| `/trainingen/` | `/events?type=training` plus `Event` records with `type = training` |
-| `/sportpaleis/` | `/locations/sportpaleis-alkmaar` |
-| `/koggenhal/` | `/locations/sporthal-koggenhal` |
-| `/oosterhout/` | `/locations/sporthal-oosterhout` |
-| `/huisregels/` | `/house-rules` |
-| `/media/` | `/media` or article category `media` |
-| `/nieuws/` | `/news` |
+| WordPress URL   | Laravel target                                                      |
+| --------------- | ------------------------------------------------------------------- |
+| `/trainingen/`  | `/events?type=training` plus `Event` records with `type = training` |
+| `/sportpaleis/` | `/locations/sportpaleis-alkmaar`                                    |
+| `/koggenhal/`   | `/locations/sporthal-koggenhal`                                     |
+| `/oosterhout/`  | `/locations/sporthal-oosterhout`                                    |
+| `/huisregels/`  | `/house-rules`                                                      |
+| `/media/`       | `/media` or article category `media`                                |
+| `/nieuws/`      | `/news`                                                             |
 
 ### Media To MediaAsset
 
@@ -142,17 +141,20 @@ WordPress media should become `MediaAsset` records.
 
 Suggested mapping:
 
-| WordPress | Laravel |
-| --- | --- |
-| attachment ID | `legacy_source_id` |
-| source URL | temporary import URL |
-| filename | `original_filename` |
-| MIME type | `mime_type` |
-| file size | `size`, if available |
-| alt text | `alt_text` |
-| downloaded file path | `path` |
+| WordPress            | Import target                      |
+| -------------------- | ---------------------------------- |
+| attachment ID        | temporary import manifest key      |
+| source URL           | temporary import manifest metadata |
+| filename             | `original_filename`                |
+| MIME type            | `mime_type`                        |
+| file size            | `size_bytes`, if available         |
+| image dimensions     | `width` and `height`, if available |
+| alt text             | `alt_text`                         |
+| downloaded file path | `path`                             |
 
 The importer should download media, store it on the configured disk, and rewrite known WordPress media URLs inside article content to Laravel media URLs.
+
+Imported locale-keyed content must not pretend Dutch copy is English. The import review should flag translated fields that lack the required English base so they can be translated, rewritten, or deliberately skipped before publication.
 
 ## URL Redirects
 
@@ -194,12 +196,15 @@ Importer requirements:
 
 - dry-run mode;
 - idempotent imports;
+- an explicit selection list or skip decision for source content;
 - clear logs;
-- stores legacy IDs;
+- stores source IDs and target mappings only in a temporary import manifest;
 - does not overwrite manually edited content unless explicitly allowed;
 - reports skipped records;
 - reports broken media downloads;
 - can run safely in staging more than once.
+
+The importer is launch tooling, not a permanent application subsystem. Import-only manifests, diagnostics, and review reports should be removable after cutover; durable runtime state is limited to normalized domain records, stored media, and redirects that must continue serving legacy public URLs.
 
 ## Data Cleanup Rules
 
