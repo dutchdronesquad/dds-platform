@@ -271,13 +271,14 @@ Fields:
 
 - title;
 - slug;
-- excerpt;
 - content;
 - cover_image_id;
 - published_at;
 - status;
 - author_id;
 - category;
+
+Excerpts are derived from article content by the frontend where a summary is needed. They are not part of the persisted article schema or model API.
 
 ### Project
 

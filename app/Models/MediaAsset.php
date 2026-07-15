@@ -46,6 +46,12 @@ final class MediaAsset extends Model
         return $this->hasMany(Event::class, 'cover_image_id');
     }
 
+    /** @return HasMany<Article, $this> */
+    public function coverArticles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'cover_image_id');
+    }
+
     /** @return HasMany<Location, $this> */
     public function coverLocations(): HasMany
     {
