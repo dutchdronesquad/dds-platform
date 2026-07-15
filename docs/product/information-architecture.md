@@ -278,6 +278,8 @@ Fields:
 - author_id;
 - category;
 
+Excerpts are derived from article content by the frontend where a summary is needed. They are not part of the persisted article schema or model API.
+
 ### Project
 
 For showcases, demos, workshops, and external assignments.

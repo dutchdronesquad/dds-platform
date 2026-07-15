@@ -729,7 +729,7 @@ Acceptance criteria:
 
 ### DDS-013: Article Model
 
-Status: implemented in the current working tree. Articles have source-agnostic content fields, optional author and cover-image relationships, enum-backed semantic categories and draft/published/archived states, and a publication-date-aware public scope. Presentation excerpts are derived from content instead of persisted. WordPress identifiers, legacy terms, and import bookkeeping remain outside the permanent article table.
+Status: implemented in the current working tree. Articles have source-agnostic content fields, optional author and cover-image relationships, enum-backed semantic categories and draft/published/archived states, and a publication-date-aware public scope. Excerpts are a frontend presentation concern derived from content, not a persisted field or `Article` model attribute. WordPress identifiers, legacy terms, and import bookkeeping remain outside the permanent article table.
 
 Goal: prepare for news and WordPress post import.
 
