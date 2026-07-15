@@ -44,7 +44,8 @@ Implementation principles:
 - the public interface has `en` as its default locale and supports `nl`;
 - UI labels live in translation files;
 - only deliberately translatable content fields expose locale-specific inputs;
-- those locale maps require an English base value and may add Dutch as an optional translation;
+- those locale maps require an English base value by default and may add Dutch as an optional translation;
+- media alt text is an optional reusable default in any supported locale; the rendering context decides whether to use descriptive text or an empty `alt` attribute;
 - event title and content remain plain text in the language chosen by the editor;
 - SEO metadata is derived from model content, routes, publication state, and cover media;
 - URLs should stay stable and English-based without locale prefixes for the first release.
@@ -260,8 +261,7 @@ Fields:
 - size_bytes;
 - width;
 - height;
-- alt_text;
-- is_decorative.
+- optional alt_text defaults keyed by locale.
 
 ### Article
 

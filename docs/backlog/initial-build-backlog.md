@@ -8,7 +8,7 @@ This backlog translates the preparation docs into the first practical implementa
 - React, Inertia, TypeScript, and Tailwind;
 - DDEV with PostgreSQL;
 - custom admin, no Filament in phase 1;
-- English-default bilingual support with `en` required as the base value for translated fields and `nl` optional;
+- English-default bilingual support with `en` required as the default base value for translated fields and `nl` optional, unless domain validation deliberately defines an exception;
 - no locale-prefixed URLs in phase 1;
 - dated activities use the `Event` domain, while the public navigation can label the overview `Agenda`;
 - trainings are `Event` records with `type = training`;
@@ -263,7 +263,7 @@ Acceptance criteria:
 
 ### DDS-006: Locale Configuration
 
-Status: complete. English and Dutch are configured without locale-prefixed routes, English is the default and required base for translated fields, and locale-keyed JSON is the selected storage shape for deliberately translated database content.
+Status: complete. English and Dutch are configured without locale-prefixed routes, English is the default locale and required base for translated fields by default, and locale-keyed JSON is the selected storage shape for deliberately translated database content. Domain validation can define exceptions where appropriate.
 
 Goal: prepare bilingual content without adding locale-prefixed URLs.
 
@@ -509,21 +509,21 @@ Implementation order follows schema dependencies instead of ticket numbering. Ti
 
 ### DDS-014: MediaAsset Model
 
-Status: implemented in the current working tree as a schema dependency of DDS-009. Media assets have stable storage identity, a recognizable original filename, locale-aware alt text, optional image dimensions, and an explicit decorative flag, without WordPress-specific runtime metadata. Images and PDFs share the same reusable model. Upload, search, selection, and usage management remain in DDS-014H.
+Status: implemented in the current working tree as a schema dependency of DDS-009. Media assets have stable storage identity, a recognizable original filename, optional locale-aware alt text defaults, and optional image dimensions, without WordPress-specific runtime metadata. Whether an image is informative or decorative belongs to its rendering context. Images and PDFs share the same reusable model. Upload, search, selection, and usage management remain in DDS-014H.
 
 Goal: prepare basic media storage and future WordPress media import before content models reference cover images.
 
 Tasks:
 
 - create `MediaAsset` model, migration, and factory;
-- include disk, path, original filename, mime type, byte size, optional image dimensions, locale-aware alt text, and a decorative flag;
+- include disk, path, original filename, mime type, byte size, optional image dimensions, and optional locale-aware alt text defaults;
 - expose cover-image relationships for locations and events.
 
 Acceptance criteria:
 
 - media can be referenced by events and locations without later foreign-key migrations;
-- non-decorative media can provide English alt text with an optional Dutch translation;
-- decorative media can explicitly omit alt text;
+- media can provide an optional alt text default in one or more supported locales;
+- the rendering context can use a descriptive alt value or an empty `alt` attribute for a decorative use;
 - upload and library management can be added without reshaping the table;
 - temporary import tooling can deduplicate source media without persisting WordPress metadata on the asset.
 
@@ -896,7 +896,7 @@ Goal: manage reusable media assets before importing WordPress media at scale.
 Tasks:
 
 - build `/dashboard/media` media index;
-- support upload, edit metadata, delete/archive, and alt text updates;
+- support upload, edit metadata, delete/archive, and optional alt text default updates;
 - make assets searchable and recognizable by their original filename;
 - add a reusable asset picker so events, locations, and later content models can select existing media instead of uploading duplicates;
 - show where an asset is used before it is removed;
@@ -909,7 +909,7 @@ Acceptance criteria:
 
 - admins can upload and manage media assets;
 - existing assets can be selected and reused from Event and Location forms;
-- alt text is editable;
+- optional alt text defaults are editable in supported locales;
 - media records can be attached to events, articles, projects, partners, and locations later;
 - imported WordPress media can coexist with manually uploaded media;
 - unused media can be reviewed without deleting it automatically.

@@ -127,8 +127,8 @@ Implementation direction:
 - public route names remain English-based for now;
 - UI strings use translation files;
 - selected translatable database fields use locale-keyed JSONB;
-- English is the required base value for fields that store translations, with Dutch as an optional additional value;
-- models may still make an entire translated field optional when the domain allows it;
+- English is the default required base value for fields that store translations, with Dutch as an optional additional value;
+- domain validation may allow exceptions: media alt text is an optional reusable default in any supported locale, while the rendering context decides whether an image needs descriptive text or an empty `alt` attribute;
 - full Dutch content parity is supported incrementally and does not require locale-prefixed routes in phase 1.
 
 ## 2026-07-07: No Locale Prefixes In Phase 1

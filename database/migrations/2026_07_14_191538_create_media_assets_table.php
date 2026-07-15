@@ -21,7 +21,6 @@ return new class extends Migration
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->jsonb('alt_text')->nullable();
-            $table->boolean('is_decorative')->default(false);
             $table->timestamps();
 
             $table->unique(['disk', 'path']);

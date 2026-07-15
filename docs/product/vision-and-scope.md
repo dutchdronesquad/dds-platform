@@ -92,7 +92,7 @@ Language scope:
 
 - English and Dutch interface strings should be supported from the start;
 - English remains the default interface locale;
-- selected database fields require an English base and can add a Dutch variant, while event content may be authored in either language without duplication;
+- selected database fields require an English base by default and can add a Dutch variant, while domain validation may define exceptions and event content may be authored in either language without duplication;
 - the current landing page can remain temporarily Dutch until the multilingual public content layer is in use;
 - a concise English slogan or campaign line can be used inside the temporary Dutch landing page when it strengthens the DDS brand.
 

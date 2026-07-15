@@ -27,16 +27,7 @@ class MediaAssetFactory extends Factory
             'width' => fake()->numberBetween(1_200, 3_840),
             'height' => fake()->numberBetween(800, 2_160),
             'alt_text' => ['en' => fake()->sentence(8)],
-            'is_decorative' => false,
         ];
-    }
-
-    public function decorative(): static
-    {
-        return $this->state(fn (): array => [
-            'alt_text' => null,
-            'is_decorative' => true,
-        ]);
     }
 
     public function pdf(): static
@@ -47,6 +38,7 @@ class MediaAssetFactory extends Factory
             'mime_type' => 'application/pdf',
             'width' => null,
             'height' => null,
+            'alt_text' => null,
         ]);
     }
 }

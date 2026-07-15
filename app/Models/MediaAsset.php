@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $width
  * @property int|null $height
  * @property array<string, string>|null $alt_text
- * @property bool $is_decorative
  */
 final class MediaAsset extends Model
 {
@@ -34,13 +33,11 @@ final class MediaAsset extends Model
         'width',
         'height',
         'alt_text',
-        'is_decorative',
     ];
 
     /** @var array<string, mixed> */
     protected $attributes = [
         'disk' => 'public',
-        'is_decorative' => false,
     ];
 
     /** @return HasMany<Event, $this> */
@@ -65,7 +62,6 @@ final class MediaAsset extends Model
             'width' => 'integer',
             'height' => 'integer',
             'alt_text' => 'json:unicode',
-            'is_decorative' => 'boolean',
         ];
     }
 }

@@ -47,9 +47,9 @@ return [
     |
     | Selected database fields can store translated content in JSON columns
     | keyed by locale, for example: {"en": "Description", "nl": "Beschrijving"}.
-    | English is the required base value when a field stores translations.
-    | Models may still decide that the entire field is optional, such as alt
-    | text for media that is explicitly marked as decorative.
+    | English is the default required base value when a field stores
+    | translations. Domain validation may deliberately allow exceptions, such
+    | as optional media alt text in any supported locale.
     |
     */
 

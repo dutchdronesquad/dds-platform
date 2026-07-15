@@ -154,7 +154,7 @@ Suggested mapping:
 
 The importer should download media, store it on the configured disk, and rewrite known WordPress media URLs inside article content to Laravel media URLs.
 
-Imported locale-keyed content must not pretend Dutch copy is English. The import review should flag translated fields that lack the required English base so they can be translated, rewritten, or deliberately skipped before publication.
+Imported locale-keyed content must not pretend Dutch copy is English. For fields whose domain validation requires English, the import review should flag missing English content so it can be translated, rewritten, or deliberately skipped before publication. Media alt text is optional and may keep its known supported locale because it is only a reusable default for later rendering contexts.
 
 ## URL Redirects
 
