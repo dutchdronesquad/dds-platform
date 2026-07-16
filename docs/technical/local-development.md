@@ -15,11 +15,11 @@ Why:
 
 ## Comparison
 
-| Option | Strong At | Weaker At | Recommendation |
-| --- | --- | --- | --- |
-| DDEV | multiple projects, reproducible services, local domains, team consistency | requires Docker | Preferred |
-| Valet | fast, simple, Mac-native | global PHP/database differences, less reproducible | Good for quick solo prototypes |
-| Sail | Laravel-native Docker, starter-kit friendly | heavier, less convenient across many projects | Good alternative |
+| Option | Strong At                                                                 | Weaker At                                          | Recommendation                 |
+| ------ | ------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------ |
+| DDEV   | multiple projects, reproducible services, local domains, team consistency | requires Docker                                    | Preferred                      |
+| Valet  | fast, simple, Mac-native                                                  | global PHP/database differences, less reproducible | Good for quick solo prototypes |
+| Sail   | Laravel-native Docker, starter-kit friendly                               | heavier, less convenient across many projects      | Good alternative               |
 
 ## Suggested Local Services
 
@@ -55,6 +55,47 @@ Do not run this during the documentation phase. This is the recommended directio
 - Add tests for domain logic, policies, form requests, and public visibility rules.
 - Render public pages through Inertia, not a loose Blade/React mix unless deliberately chosen.
 - Admin components can be more abstract than public components because tables and forms repeat.
+
+## Testing
+
+The test suite uses Pest and is divided by responsibility:
+
+- `tests/Unit` contains isolated tests for small pieces of logic. These tests do not boot Laravel or use the database.
+- `tests/Feature` contains domain, database, authorization, command, middleware, and HTTP/Inertia behavior. Laravel is booted and the database is refreshed for every test.
+- `tests/Browser` contains behavior that requires a real Chromium browser, such as navigation, filtering, responsive layout, accessibility state, and JavaScript errors.
+
+Choose the lowest test layer that proves the behavior with sufficient confidence. Every test should protect an application contract or a concrete regression risk. Do not add tests that only mirror configuration arrays, factory defaults, source code strings, CSS classes, framework behavior, or implementation details.
+
+Factories may prepare fixtures, but should not be used as the expected result. Prefer explicit inputs and assertions against observable output, persisted state, emitted events, redirects, or response contracts. Avoid covering the same contract at multiple layers unless each layer protects a different risk.
+
+Run all Unit and Feature tests:
+
+```bash
+ddev artisan test --compact
+```
+
+Run one test file or a filtered test:
+
+```bash
+ddev artisan test --compact tests/Feature/PublicEventPagesTest.php
+ddev artisan test --compact --filter="unpublished events are not public"
+```
+
+Run the Chromium browser suite:
+
+```bash
+ddev composer test:browser
+```
+
+Install Chromium after the first checkout or a Playwright version change:
+
+```bash
+ddev npm run browser:install
+```
+
+The required Linux browser dependencies and persistent Playwright cache are configured through DDEV, so normal restarts and rebuilds do not require manual system-package installation.
+
+CI is the source of truth for coverage. It runs Unit and Feature tests on PHP 8.4 and PHP 8.5, enforces at least 95% application coverage, and runs the Pest Browser suite separately on PHP 8.4. Developers normally only need to run the relevant local test command; enabling Xdebug and collecting coverage locally is optional and only useful when investigating a coverage regression.
 
 ## Vite With DDEV
 

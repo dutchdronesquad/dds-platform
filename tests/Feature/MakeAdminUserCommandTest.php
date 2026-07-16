@@ -59,3 +59,15 @@ test('it promotes an existing user to admin without changing the password', func
         ->and(Hash::check('current-password', $user->password))->toBeTrue()
         ->and($user->hasRole(Role::Admin->value))->toBeTrue();
 });
+
+test('it rejects invalid admin details without creating a user', function () {
+    $this->artisan('dds:make-admin', [
+        'email' => 'not-an-email',
+        '--name' => 'Invalid Admin',
+        '--password' => 'password',
+    ])->assertFailed();
+
+    $this->assertDatabaseMissing('users', [
+        'email' => 'not-an-email',
+    ]);
+});

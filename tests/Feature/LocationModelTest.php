@@ -7,37 +7,46 @@ use App\Models\MediaAsset;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
-test('locations can be created with structured and translatable venue data', function () {
-    $location = Location::factory()
-        ->withCoverImage()
+test('locations expose structured venue casts and their cover image relationship', function () {
+    $coverImage = MediaAsset::factory()->create();
+    $location = Location::query()
         ->create([
+            'cover_image_id' => $coverImage->id,
+            'name' => 'Sportpaleis Alkmaar',
+            'slug' => 'sportpaleis-alkmaar',
             'description' => [
                 'en' => 'An indoor venue for FPV drone racing.',
                 'nl' => 'Een binnenlocatie voor FPV-droneraces.',
             ],
+            'street' => 'Terborchlaan',
+            'house_number' => '200',
+            'postal_code' => '1816 LE',
+            'city' => 'Alkmaar',
+            'country_code' => 'NL',
+            'environment' => LocationEnvironment::Indoor->value,
+            'floor_size_square_metres' => '1200',
+            'ceiling_height_metres' => '8.50',
+            'facilities' => ['parking', 'power'],
+            'website_url' => 'https://example.com/venue',
+            'latitude' => '52.6320000',
+            'longitude' => '4.7450000',
         ])
+        ->refresh()
         ->load('coverImage');
 
     $this->assertModelExists($location);
 
     expect($location)
-        ->name->toBeString()
+        ->name->toBe('Sportpaleis Alkmaar')
         ->description->toHaveKeys(['en', 'nl'])
-        ->facilities->toBeArray()
+        ->facilities->toBe(['parking', 'power'])
         ->environment->toBe(LocationEnvironment::Indoor)
         ->country_code->toBe('NL')
-        ->floor_size_square_metres->toBeInt()
-        ->ceiling_height_metres->toBeString()
-        ->latitude->toBeString()
-        ->longitude->toBeString()
-        ->coverImage->toBeInstanceOf(MediaAsset::class);
-});
-
-test('location environments cover indoor and outdoor venues', function () {
-    expect(array_column(LocationEnvironment::cases(), 'value'))->toBe([
-        'indoor',
-        'outdoor',
-    ]);
+        ->floor_size_square_metres->toBe(1200)
+        ->ceiling_height_metres->toBe('8.50')
+        ->latitude->toBe('52.6320000')
+        ->longitude->toBe('4.7450000')
+        ->coverImage->id->toBe($coverImage->id);
 });
 
 test('location environments are enforced by the database', function () {
@@ -49,7 +58,7 @@ test('location environments are enforced by the database', function () {
         ->toThrow(QueryException::class);
 });
 
-test('new locations mirror their database defaults before persistence', function () {
+test('new locations default to the Netherlands', function () {
     $location = new Location;
 
     expect($location->country_code)->toBe('NL');

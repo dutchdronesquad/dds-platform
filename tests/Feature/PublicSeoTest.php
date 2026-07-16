@@ -8,22 +8,22 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
-test('public pages expose complete metadata with canonical application urls', function (string $routeName, string $pageKey, string $canonicalPath) {
-    $metadata = (new SeoMetadata)->forPage($pageKey);
-    $documentTitle = $metadata['title'] === $metadata['openGraph']['siteName']
-        ? $metadata['openGraph']['siteName']
-        : "{$metadata['title']} - {$metadata['openGraph']['siteName']}";
-
+test('public pages expose their canonical metadata contract', function (string $routeName, string $expectedTitle, string $canonicalPath) {
+    $canonicalUrl = rtrim((string) config('app.url'), '/').$canonicalPath;
+    $documentTitle = "{$expectedTitle} - Dutch Drone Squad";
     $response = $this->get(route($routeName));
 
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('seo', $metadata)
-            ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').$canonicalPath)
-            ->has('seo.title')
-            ->has('seo.description')
-            ->has('seo.robots')
+            ->where('seo.title', $expectedTitle)
+            ->where('seo.canonicalUrl', $canonicalUrl)
+            ->where('seo.robots', 'index, follow')
+            ->where('seo.openGraph.title', $documentTitle)
+            ->where('seo.openGraph.url', $canonicalUrl)
+            ->where('seo.openGraph.type', 'website')
+            ->where('seo.openGraph.siteName', 'Dutch Drone Squad')
+            ->where('seo.description', fn (mixed $description): bool => is_string($description) && $description !== '')
             ->has('seo.openGraph.image')
             ->has('seo.openGraph.imageAlt'),
         )
@@ -33,15 +33,15 @@ test('public pages expose complete metadata with canonical application urls', fu
         ->assertSee('rel="canonical"', false)
         ->assertSee('property="og:image"', false);
 })->with([
-    'home' => ['home', 'home', '/'],
-    'events' => ['events.index', 'events', '/events'],
-    'projects' => ['projects.index', 'projects', '/projects'],
-    'news' => ['news.index', 'news', '/news'],
-    'locations' => ['locations.index', 'locations', '/locations'],
-    'about' => ['about', 'about', '/about'],
-    'house rules' => ['house_rules', 'house_rules', '/house-rules'],
-    'partners' => ['partners', 'partners', '/partners'],
-    'contact' => ['contact', 'contact', '/contact'],
+    'home' => ['home', 'Indoor FPV-racing in Alkmaar', '/'],
+    'events' => ['events.index', 'Agenda', '/events'],
+    'projects' => ['projects.index', 'Projecten', '/projects'],
+    'news' => ['news.index', 'Nieuws', '/news'],
+    'locations' => ['locations.index', 'Locaties', '/locations'],
+    'about' => ['about', 'Over DDS', '/about'],
+    'house rules' => ['house_rules', 'Huisregels', '/house-rules'],
+    'partners' => ['partners', 'Partners', '/partners'],
+    'contact' => ['contact', 'Contact', '/contact'],
 ]);
 
 test('event detail metadata uses the event title and stable public url', function () {
@@ -65,7 +65,7 @@ test('unknown page metadata falls back to the DDS defaults', function () {
 
     expect($metadata)
         ->title->toBe('Dutch Drone Squad')
-        ->description->toBe(config('seo.defaults.description'))
+        ->description->toBe('Dutch Drone Squad brengt FPV-piloten, makers en partners samen rond indoor drone racing in Alkmaar.')
         ->canonicalUrl->toBe(rtrim((string) config('app.url'), '/').'/')
         ->robots->toBe('index, follow')
         ->openGraph->image->toBe(rtrim((string) config('app.url'), '/').'/images/dds/racing/homepage-hero.jpg');

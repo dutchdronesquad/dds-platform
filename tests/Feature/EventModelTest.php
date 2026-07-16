@@ -11,20 +11,38 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
-test('events can be created through their factory', function () {
-    $event = Event::factory()
-        ->training()
-        ->published()
-        ->withCoverImage()
-        ->inSeason()
-        ->create()
+test('events expose their domain casts and relationships', function () {
+    $location = Location::factory()->create();
+    $season = Season::factory()->create();
+    $coverImage = MediaAsset::factory()->create();
+    $event = Event::query()
+        ->create([
+            'location_id' => $location->id,
+            'season_id' => $season->id,
+            'cover_image_id' => $coverImage->id,
+            'title' => 'Indoor training',
+            'slug' => 'indoor-training',
+            'content' => 'Bring a racequad and goggles.',
+            'starts_at' => '2026-10-15 17:00:00',
+            'ends_at' => '2026-10-15 20:30:00',
+            'published_at' => '2026-07-01 10:00:00',
+            'status' => EventStatus::Published->value,
+            'type' => EventType::Training->value,
+            'price_cents' => '1500',
+            'capacity' => '16',
+            'registration_opens_at' => '2026-09-15 10:00:00',
+            'registration_deadline_at' => '2026-10-14 23:59:00',
+            'registration_status' => EventRegistrationStatus::Open->value,
+            'registration_url' => 'https://example.com/register',
+        ])
+        ->refresh()
         ->load(['location', 'season', 'coverImage']);
 
     $this->assertModelExists($event);
 
     expect($event)
-        ->title->toBeString()
-        ->content->toBeString()
+        ->title->toBe('Indoor training')
+        ->content->toBe('Bring a racequad and goggles.')
         ->starts_at->toBeInstanceOf(CarbonImmutable::class)
         ->ends_at->toBeInstanceOf(CarbonImmutable::class)
         ->published_at->toBeInstanceOf(CarbonImmutable::class)
@@ -32,31 +50,12 @@ test('events can be created through their factory', function () {
         ->registration_deadline_at->toBeInstanceOf(CarbonImmutable::class)
         ->status->toBe(EventStatus::Published)
         ->type->toBe(EventType::Training)
-        ->registration_status->toBe(EventRegistrationStatus::Closed)
-        ->location->toBeInstanceOf(Location::class)
-        ->season->toBeInstanceOf(Season::class)
-        ->coverImage->toBeInstanceOf(MediaAsset::class)
-        ->price_cents->toBeInt()
-        ->capacity->toBeInt();
-});
-
-test('event enum values cover the supported domain states', function () {
-    expect(array_column(EventType::cases(), 'value'))->toBe([
-        'training',
-        'race',
-        'demo',
-        'workshop',
-        'other',
-    ])->and(array_column(EventStatus::cases(), 'value'))->toBe([
-        'draft',
-        'published',
-        'cancelled',
-    ])->and(array_column(EventRegistrationStatus::cases(), 'value'))->toBe([
-        'closed',
-        'open',
-        'waitlist',
-        'full',
-    ]);
+        ->registration_status->toBe(EventRegistrationStatus::Open)
+        ->location->id->toBe($location->id)
+        ->season->id->toBe($season->id)
+        ->coverImage->id->toBe($coverImage->id)
+        ->price_cents->toBe(1500)
+        ->capacity->toBe(16);
 });
 
 test('event enum values are enforced by the database', function (string $column) {
@@ -72,7 +71,7 @@ test('event enum values are enforced by the database', function (string $column)
     'registration status' => 'registration_status',
 ]);
 
-test('new events mirror their database defaults before persistence', function () {
+test('new events default to a closed draft', function () {
     $event = new Event;
 
     expect($event->status)->toBe(EventStatus::Draft)
@@ -87,12 +86,6 @@ test('deleting a cover image preserves the event and clears the reference', func
     $coverImage->delete();
 
     expect($event->refresh()->cover_image_id)->toBeNull();
-});
-
-test('cancelled events remain stored as a visible lifecycle state', function () {
-    $event = Event::factory()->cancelled()->create();
-
-    expect($event->status)->toBe(EventStatus::Cancelled);
 });
 
 test('only published or cancelled events whose publication date has passed are publicly visible', function () {

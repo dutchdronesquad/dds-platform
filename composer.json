@@ -34,6 +34,7 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9.3",
         "pestphp/pest": "^4.7",
+        "pestphp/pest-plugin-browser": "^4.3",
         "pestphp/pest-plugin-laravel": "^4.1"
     },
     "autoload": {
@@ -55,6 +56,7 @@
             "@php artisan key:generate",
             "@php artisan migrate --force",
             "npm install",
+            "npm run browser:install",
             "npm run build"
         ],
         "dev": [
@@ -83,6 +85,7 @@
             "@types:check",
             "@php artisan test"
         ],
+        "test:browser": "@php artisan test --compact tests/Browser",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

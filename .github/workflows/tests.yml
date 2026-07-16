@@ -6,23 +6,35 @@ on:
       - develop
       - main
       - master
-      - workos
   pull_request:
     branches:
       - develop
       - main
       - master
-      - workos
 
 permissions:
   contents: read
 
 jobs:
-  ci:
+  tests:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        php-version: ['8.4', '8.5']
+        include:
+          - name: PHP 8.4
+            php-version: '8.4'
+            coverage: xdebug
+            suite: php
+          - name: PHP 8.5
+            php-version: '8.5'
+            coverage: xdebug
+            suite: php
+          - name: Browser
+            php-version: '8.4'
+            coverage: none
+            suite: browser
 
     steps:
       - name: Checkout code
@@ -35,7 +47,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer:v2
-          coverage: xdebug
+          coverage: ${{ matrix.coverage }}
 
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -43,9 +55,9 @@ jobs:
           node-version: '22'
 
       - name: Install Node Dependencies
-        run: npm i
+        run: npm ci
 
-      - name: Install Dependencies
+      - name: Install PHP Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy Environment File
@@ -54,11 +66,21 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      - name: Install Chromium
+        if: matrix.suite == 'browser'
+        run: npx playwright install --with-deps chromium
+
       - name: Build Assets
         run: npm run build
 
       - name: Run Type Analysis
+        if: matrix.suite == 'php'
         run: composer types:check
 
-      - name: Tests
-        run: php artisan test
+      - name: Tests with Coverage
+        if: matrix.suite == 'php'
+        run: php artisan test --compact --coverage --min=95
+
+      - name: Browser Tests
+        if: matrix.suite == 'browser'
+        run: composer test:browser

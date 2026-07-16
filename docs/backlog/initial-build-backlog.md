@@ -161,7 +161,7 @@ Acceptance criteria:
 
 ### DDS-003B: Replace Source-String Assertions With Behavioral Test Coverage
 
-Status: planned. The current suite contains a large group of `file_get_contents()` and `toContain()` assertions against JSX, import names, Tailwind class strings, and private component structure. These checks are brittle and frequently pass or fail without proving whether the application still works for a visitor.
+Status: complete. Source-string assertions have been replaced with Inertia feature coverage and Pest browser tests for the public shell, safe external links, visible keyboard focus, mobile navigation and reflow, event filters and states, long event content, and empty results. Chromium runs locally through persistent DDEV configuration and in a dedicated CI matrix entry.
 
 Goal: make the test suite prove public behavior, domain rules, and user-visible interactions instead of mirroring implementation text.
 
