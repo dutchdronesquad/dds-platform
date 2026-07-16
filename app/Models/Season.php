@@ -6,12 +6,11 @@ use Database\Factories\SeasonFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
  * @property string $name
- * @property int|null $price_cents
- * @property int|null $ticket_capacity
  */
 final class Season extends Model
 {
@@ -21,8 +20,6 @@ final class Season extends Model
     /** @var list<string> */
     protected $fillable = [
         'name',
-        'price_cents',
-        'ticket_capacity',
     ];
 
     /** @return HasMany<Event, $this> */
@@ -31,14 +28,9 @@ final class Season extends Model
         return $this->hasMany(Event::class);
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    /** @return HasOne<SeasonTicket, $this> */
+    public function seasonTicket(): HasOne
     {
-        return [
-            'price_cents' => 'integer',
-            'ticket_capacity' => 'integer',
-        ];
+        return $this->hasOne(SeasonTicket::class);
     }
 }

@@ -629,6 +629,8 @@ Acceptance criteria:
 
 ### DDS-009A: Season Ticket Product And Eligibility Model
 
+Status: implemented in the current working tree. `Season` remains a generic event grouping for training series, competitions, rankings, or other programmes. A separate optional `SeasonTicket` product owns sales details and an explicit eligible-event selection. Public summaries derive the season date range from all grouped events and ticket eligibility from only the selected events. Cancelled events remain visible in their season context and, when eligible, remain counted as ticket events with their cancelled state; no refund or replacement policy is inferred.
+
 Goal: model season tickets explicitly without conflating a season grouping, event capacity, and attendance.
 
 Tasks:

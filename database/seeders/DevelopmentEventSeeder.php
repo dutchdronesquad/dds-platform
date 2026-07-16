@@ -6,10 +6,12 @@ use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Enums\LocationEnvironment;
+use App\Enums\SeasonTicketSalesState;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
@@ -69,12 +71,11 @@ final class DevelopmentEventSeeder extends Seeder
                 ['name' => self::SEASON_NAME],
                 Season::factory()->make([
                     'name' => self::SEASON_NAME,
-                    'price_cents' => 9000,
-                    'ticket_capacity' => null,
                 ])->toArray(),
             );
 
             $this->seedEvents($referenceDate, $locations, $covers, $season);
+            $this->seedSeasonTicket($referenceDate, $season);
         });
     }
 
@@ -423,6 +424,29 @@ final class DevelopmentEventSeeder extends Seeder
                 $attributes,
             );
         }
+    }
+
+    private function seedSeasonTicket(CarbonImmutable $referenceDate, Season $season): void
+    {
+        $seasonTicket = SeasonTicket::query()->updateOrCreate(
+            ['season_id' => $season->id],
+            SeasonTicket::factory()->available()->make([
+                'season_id' => $season->id,
+                'sales_state' => SeasonTicketSalesState::Available,
+                'sales_opens_at' => $referenceDate->subMonth()->utc(),
+                'sales_closes_at' => $referenceDate->addYear()->utc(),
+                'registration_url' => 'https://example.com/dds-demo-season-ticket',
+                'copy' => 'Met dit seizoenskaartje kun je deelnemen aan de geselecteerde DDS-trainingsavonden.',
+                'price_cents' => 9000,
+                'capacity' => null,
+            ])->toArray(),
+        );
+
+        $eligibleEvent = Event::query()
+            ->where('slug', self::EVENT_SLUGS[0])
+            ->firstOrFail();
+
+        $seasonTicket->eligibleEvents()->sync([$eligibleEvent->id]);
     }
 
     private function eventDate(

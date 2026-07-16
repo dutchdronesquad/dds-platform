@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,8 +20,11 @@ class SeasonFactory extends Factory
     {
         return [
             'name' => 'Seizoen '.fake()->unique()->numberBetween(2026, 2100),
-            'price_cents' => fake()->optional()->numberBetween(5_000, 15_000),
-            'ticket_capacity' => fake()->optional()->numberBetween(5, 25),
         ];
+    }
+
+    public function withTicketOffer(): static
+    {
+        return $this->has(SeasonTicket::factory(), 'seasonTicket');
     }
 }

@@ -2,33 +2,27 @@
 
 use App\Models\Event;
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use Illuminate\Database\QueryException;
 
-test('seasons cast their price and ticket capacity to integers', function () {
-    $season = Season::query()
-        ->create([
-            'name' => 'Winter competition',
-            'price_cents' => '9000',
-            'ticket_capacity' => '10',
-        ])
-        ->refresh();
+test('a season can group events without offering a season ticket', function () {
+    $season = Season::factory()->create(['name' => 'Winter training series']);
+    Event::factory()->count(3)->for($season)->create();
 
-    $this->assertModelExists($season);
+    $season->load(['events', 'seasonTicket']);
 
     expect($season)
-        ->name->toBe('Winter competition')
-        ->price_cents->toBe(9_000)
-        ->ticket_capacity->toBe(10);
+        ->name->toBe('Winter training series')
+        ->events->toHaveCount(3)
+        ->seasonTicket->toBeNull();
 });
 
-test('a season can omit its price and ticket capacity', function () {
-    $season = Season::factory()->create([
-        'price_cents' => null,
-        'ticket_capacity' => null,
-    ]);
+test('a season can have one optional ticket product', function () {
+    $season = Season::factory()->withTicketOffer()->create()->load('seasonTicket');
 
-    expect($season->price_cents)->toBeNull()
-        ->and($season->ticket_capacity)->toBeNull();
+    expect($season->seasonTicket)
+        ->toBeInstanceOf(SeasonTicket::class)
+        ->and($season->seasonTicket?->season->is($season))->toBeTrue();
 });
 
 test('seasons contain their linked events', function () {
