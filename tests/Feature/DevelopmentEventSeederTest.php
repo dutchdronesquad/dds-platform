@@ -25,7 +25,7 @@ afterEach(function () {
 
 test('the local demo event command creates the same representative dataset on repeated runs', function () {
     $this->artisan('dds:seed-demo-events')
-        ->expectsOutput('7 demo-events zijn aangemaakt of bijgewerkt.')
+        ->expectsOutput('10 demo-events zijn aangemaakt of bijgewerkt.')
         ->assertSuccessful();
 
     $firstRun = demoEventsSnapshot();
@@ -41,58 +41,60 @@ test('the local demo event command creates the same representative dataset on re
     expect(demoEventsSnapshot())
         ->toBe($firstRun)
         ->and(demoRecordIds())->toBe($firstIds)
-        ->and($firstRun)->toHaveCount(7)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->registration_status)->toBe(EventRegistrationStatus::Open)
+        ->and($firstRun)->toHaveCount(10)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->registration_status)->toBe(EventRegistrationStatus::Closed)
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[1]]->registration_status)->toBe(EventRegistrationStatus::Open)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[2]]->registration_status)->toBe(EventRegistrationStatus::Waitlist)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[3]]->registration_status)->toBe(EventRegistrationStatus::Full)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[2]]->registration_status)->toBe(EventRegistrationStatus::Open)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[3]]->registration_status)->toBe(EventRegistrationStatus::Closed)
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[4]]->registration_status)->toBe(EventRegistrationStatus::Closed)
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[5]]->status)->toBe(EventStatus::Cancelled)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->title)->toBe('FPV vliegavond - juli 2026')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->title)->toBe('FPV vliegavond - juni 2026')
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[1]]->title)->toBe('Indoor FPV-clubrace met kwalificaties en finales')
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[2]]->title)->toBe('Blacklight FPV-oefenavond')
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[3]]->title)->toBe('FPV-kennismakingsavond')
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[4]]->title)->toBe('Indoor FPV-clubrace')
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[5]]->title)->toBe('FPV uitwijkavond - augustus 2026')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[4]]->title)->toBe('FPV vliegavond - september 2026')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[5]]->title)->toBe('FPV uitwijkavond - oktober 2026')
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[6]]->title)->toBe('Workshop FPV-racevoorbereiding')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[7]]->title)->toBe('FPV vliegavond - november 2026')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[8]]->title)->toBe('FPV vliegavond - december 2026')
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[9]]->title)->toBe('FPV vliegavond - januari 2027')
         ->and($events->pluck('title')->unique()->count())->toBe($events->count())
         ->and(Event::query()->whereNull('content')->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
         ->toBe(1)
         ->and(Event::query()->whereNull('cover_image_id')->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
         ->toBeGreaterThan(0)
         ->and(Event::query()->where('price_cents', 0)->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
-        ->toBe(1)
+        ->toBe(0)
         ->and(Event::query()->whereNull('price_cents')->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
-        ->toBe(1)
+        ->toBe(0)
         ->and(Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->count())
         ->toBe(3)
         ->and(MediaAsset::query()->whereIn('path', DevelopmentEventSeeder::MEDIA_PATHS)->count())
         ->toBe(3)
-        ->and(Season::query()->where('name', DevelopmentEventSeeder::SEASON_NAME)->count())
+        ->and(Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->count())
         ->toBe(1);
 
     $firstTraining = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[0])->firstOrFail();
 
     expect($firstTraining->starts_at->setTimezone('Europe/Amsterdam')->format('H:i'))
         ->toBe('18:00')
+        ->and($firstTraining->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d'))
+        ->toBe('2026-06-21')
+        ->and($firstTraining->registration_opens_at?->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
+        ->toBe('2026-06-08 09:00')
         ->and($firstTraining->registration_deadline_at?->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
-        ->toBe('2026-07-18 23:59');
+        ->toBe('2026-06-20 23:59');
 
-    $yearAheadWorkshop = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[6])->firstOrFail();
+    $workshop = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[6])->firstOrFail();
 
-    expect($yearAheadWorkshop->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
-        ->toBe('2027-07-15 13:00');
+    expect($workshop->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
+        ->toBe('2026-11-08 13:00');
 
-    $closedRace = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[4])->firstOrFail();
-    $fullTraining = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[3])->firstOrFail();
+    $standaloneRace = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[1])->firstOrFail();
 
-    expect($closedRace->registration_opens_at?->isBefore($closedRace->registration_deadline_at))
+    expect($standaloneRace->registration_opens_at?->isBefore($standaloneRace->registration_deadline_at))
         ->toBeTrue()
-        ->and($closedRace->registration_deadline_at?->isBefore($closedRace->starts_at))
-        ->toBeTrue()
-        ->and($fullTraining->registration_opens_at?->isBefore($fullTraining->registration_deadline_at))
-        ->toBeTrue()
-        ->and($fullTraining->registration_deadline_at?->isBefore($fullTraining->starts_at))
+        ->and($standaloneRace->registration_deadline_at?->isBefore($standaloneRace->starts_at))
         ->toBeTrue();
 
     Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'pilot-at-training.jpg');
@@ -100,7 +102,7 @@ test('the local demo event command creates the same representative dataset on re
     Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'indoor-track.jpg');
 });
 
-test('demo event dates follow the current date across calendar years', function () {
+test('demo event dates stay in a rolling window around the current date', function () {
     CarbonImmutable::setTestNow(
         CarbonImmutable::parse('2027-12-20 10:00:00', 'Europe/Amsterdam'),
     );
@@ -110,38 +112,41 @@ test('demo event dates follow the current date across calendar years', function 
     $firstEvent = Event::query()
         ->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[0])
         ->firstOrFail();
-    $lastEvent = Event::query()
-        ->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[5])
+    $lastSeasonEvent = Event::query()
+        ->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[9])
         ->firstOrFail();
-    $yearAheadEvent = Event::query()
+    $workshop = Event::query()
         ->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[6])
         ->firstOrFail();
 
     expect($firstEvent->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
-        ->toBe('2027-12-26 18:00')
-        ->and($lastEvent->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
-        ->toBe('2028-01-30 18:00')
-        ->and($yearAheadEvent->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
-        ->toBe('2028-12-19 13:00');
+        ->toBe('2027-11-28 18:00')
+        ->and($lastSeasonEvent->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
+        ->toBe('2028-06-11 18:00')
+        ->and($workshop->starts_at->setTimezone('Europe/Amsterdam')->format('Y-m-d H:i'))
+        ->toBe('2028-04-16 13:00');
 });
 
 test('the dataset mirrors the published DDS training and location information', function () {
     $this->artisan('dds:seed-demo-events')->assertSuccessful();
 
     $season = Season::query()
-        ->with('seasonTicket.eligibleEvents')
-        ->where('name', DevelopmentEventSeeder::SEASON_NAME)
+        ->with(['events', 'seasonTicket'])
+        ->where('slug', DevelopmentEventSeeder::SEASON_SLUG)
         ->firstOrFail();
     $sportpaleis = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[0])->firstOrFail();
     $koggenhal = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[1])->firstOrFail();
     $oosterhout = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[2])->firstOrFail();
     $training = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[0])->firstOrFail();
-
-    expect($season->seasonTicket?->price_cents)
+    expect($season->name)
+        ->toBe('DDS indoorseizoen 2026/2027')
+        ->and($season->seasonTicket?->price_cents)
         ->toBe(9000)
         ->and($season->seasonTicket?->capacity)->toBeNull()
-        ->and($season->seasonTicket?->eligibleEvents)->toHaveCount(1)
-        ->and($season->seasonTicket?->eligibleEvents->first()?->is($training))->toBeTrue()
+        ->and($season->events)->toHaveCount(8)
+        ->and($season->events->every(
+            fn (Event $event): bool => $event->price_cents === 1500,
+        ))->toBeTrue()
         ->and($sportpaleis->street)->toBe('Terborchlaan')
         ->and($sportpaleis->house_number)->toBe('200')
         ->and($sportpaleis->floor_size_square_metres)->toBe(2000)
@@ -162,7 +167,7 @@ test('the dataset mirrors the published DDS training and location information', 
         ->and($training->registration_deadline_at?->setTimezone('Europe/Amsterdam')->format('l H:i'))->toBe('Saturday 23:59');
 });
 
-test('each demo event opens registration two calendar weeks before it starts at the same local time', function () {
+test('demo events open registration on Monday at nine two weeks before they start', function () {
     CarbonImmutable::setTestNow(
         CarbonImmutable::parse('2026-03-15 10:00:00', 'Europe/Amsterdam'),
     );
@@ -171,16 +176,21 @@ test('each demo event opens registration two calendar weeks before it starts at 
 
     Event::query()
         ->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)
+        ->whereNotNull('registration_opens_at')
         ->get()
         ->each(function (Event $event): void {
             expect($event->registration_opens_at?->toIso8601String())
                 ->toBe(
                     $event->starts_at
                         ->setTimezone('Europe/Amsterdam')
-                        ->subWeeks(2)
+                        ->subWeek()
+                        ->startOfWeek(CarbonImmutable::MONDAY)
+                        ->setTime(9, 0)
                         ->utc()
                         ->toIso8601String(),
-                );
+                )
+                ->and($event->registration_opens_at?->setTimezone('Europe/Amsterdam')->format('l H:i'))
+                ->toBe('Monday 09:00');
         });
 });
 
@@ -190,7 +200,7 @@ test('reset removes only unreferenced demo records and preserves real content', 
     $demoLocation = Location::query()
         ->where('slug', DevelopmentEventSeeder::LOCATION_SLUG_PREFIX.'sportpaleis-alkmaar')
         ->firstOrFail();
-    $demoSeason = Season::query()->where('name', DevelopmentEventSeeder::SEASON_NAME)->firstOrFail();
+    $demoSeason = Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->firstOrFail();
     $demoCover = MediaAsset::query()
         ->where('path', DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'pilot-at-training.jpg')
         ->firstOrFail();
@@ -214,7 +224,7 @@ test('reset removes only unreferenced demo records and preserves real content', 
     ]);
 
     $this->artisan('dds:seed-demo-events --reset')
-        ->expectsOutput('7 demo-events verwijderd; overige content is behouden.')
+        ->expectsOutput('10 demo-events verwijderd; overige content is behouden.')
         ->assertSuccessful();
 
     expect(Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
@@ -246,7 +256,7 @@ test('reset works before the optional articles migration is applied', function (
 
     try {
         $this->artisan('dds:seed-demo-events --reset')
-            ->expectsOutput('7 demo-events verwijderd; overige content is behouden.')
+            ->expectsOutput('10 demo-events verwijderd; overige content is behouden.')
             ->assertSuccessful();
 
         $queries = collect($connection->getQueryLog())->pluck('query');
@@ -336,10 +346,10 @@ function demoRecordIds(): array
         'events' => Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->oldest('id')->pluck('id')->all(),
         'locations' => Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->oldest('id')->pluck('id')->all(),
         'media' => MediaAsset::query()->whereIn('path', DevelopmentEventSeeder::MEDIA_PATHS)->oldest('id')->pluck('id')->all(),
-        'seasons' => Season::query()->where('name', DevelopmentEventSeeder::SEASON_NAME)->oldest('id')->pluck('id')->all(),
+        'seasons' => Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->oldest('id')->pluck('id')->all(),
         'seasonTickets' => SeasonTicket::query()->whereHas(
             'season',
-            fn ($query) => $query->where('name', DevelopmentEventSeeder::SEASON_NAME),
+            fn ($query) => $query->where('slug', DevelopmentEventSeeder::SEASON_SLUG),
         )->oldest('id')->pluck('id')->all(),
     ];
 }

@@ -14,8 +14,7 @@ use Carbon\CarbonInterface;
  * Public season-ticket projection.
  *
  * Season dates come from every grouped event, independently of whether a ticket is offered.
- * Cancelled events remain in the season range and cancelled eligible events remain in the
- * ticket count so presentation can mark them in context. No refund or replacement rule is inferred.
+ * When a ticket exists, every event in the season is covered by it.
  */
 final readonly class SeasonTicketSummary
 {
@@ -23,13 +22,13 @@ final readonly class SeasonTicketSummary
         public SeasonTicketSalesState $salesState,
         public ?CarbonImmutable $startsAt,
         public ?CarbonImmutable $endsAt,
-        public int $eligibleEventCount,
-        public int $cancelledEligibleEventCount,
+        public int $eventCount,
+        public int $cancelledEventCount,
     ) {}
 
     public static function fromSeason(Season $season, ?CarbonInterface $at = null): self
     {
-        $season->loadMissing(['events', 'seasonTicket.eligibleEvents']);
+        $season->loadMissing(['events', 'seasonTicket']);
         $seasonTicket = $season->seasonTicket;
 
         $startsAt = null;
@@ -52,12 +51,12 @@ final readonly class SeasonTicketSummary
                 salesState: SeasonTicketSalesState::NotOffered,
                 startsAt: $startsAt,
                 endsAt: $endsAt,
-                eligibleEventCount: 0,
-                cancelledEligibleEventCount: 0,
+                eventCount: 0,
+                cancelledEventCount: 0,
             );
         }
 
-        $cancelledEligibleEventCount = $seasonTicket->eligibleEvents
+        $cancelledEventCount = $season->events
             ->filter(
                 static fn (Event $event): bool => $event->status === EventStatus::Cancelled,
             )
@@ -67,8 +66,8 @@ final readonly class SeasonTicketSummary
             salesState: $seasonTicket->currentSalesState($at),
             startsAt: $startsAt,
             endsAt: $endsAt,
-            eligibleEventCount: $seasonTicket->eligibleEvents->count(),
-            cancelledEligibleEventCount: $cancelledEligibleEventCount,
+            eventCount: $season->events->count(),
+            cancelledEventCount: $cancelledEventCount,
         );
     }
 }

@@ -3,17 +3,21 @@ import { CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import PublicEventCard from '@/components/public/public-event-card';
 import { PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
+import { eventTypeLabels, formatSeasonDateRange } from '@/lib/event-formatting';
 import { cn } from '@/lib/utils';
 import { index as eventsIndex } from '@/routes/events';
+import { show as seasonShow } from '@/routes/seasons';
 import type {
     EventType,
     EventTypeFilter,
     PublicEventPaginator,
+    PublicSeasonContext,
     SeoMetadata,
 } from '@/types';
 
 type Props = {
     activeType: EventType | null;
+    currentSeason: PublicSeasonContext | null;
     events: PublicEventPaginator;
     seo: SeoMetadata;
     typeFilters: EventTypeFilter[];
@@ -21,6 +25,7 @@ type Props = {
 
 export default function EventsIndex({
     activeType,
+    currentSeason,
     events,
     seo,
     typeFilters,
@@ -90,6 +95,13 @@ export default function EventsIndex({
                         </nav>
                     </div>
 
+                    {currentSeason !== null && (
+                        <CurrentSeasonSummary
+                            activeType={activeType}
+                            season={currentSeason}
+                        />
+                    )}
+
                     {events.data.length > 0 ? (
                         <>
                             <ul
@@ -140,6 +152,52 @@ export default function EventsIndex({
                 </section>
             </div>
         </>
+    );
+}
+
+function CurrentSeasonSummary({
+    activeType,
+    season,
+}: {
+    activeType: EventType | null;
+    season: PublicSeasonContext;
+}) {
+    const eventLabel =
+        activeType === null
+            ? season.eventCount === 1
+                ? '1 event'
+                : `${season.eventCount} events`
+            : season.eventCount === 1
+              ? `1 ${eventTypeLabels[activeType].toLocaleLowerCase('nl-NL')}`
+              : `${season.eventCount} ${activeType === 'training' ? 'trainingen' : 'races'}`;
+
+    return (
+        <aside
+            aria-label="Seizoen op de agenda"
+            data-testid="current-season-summary"
+            className="mt-6 border-y border-l-2 border-dds-cyan/20 border-l-dds-cyan bg-dds-cyan/5 px-5 py-3 dark:bg-dds-cyan/6"
+        >
+            <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-7">
+                <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-5 sm:gap-y-1">
+                    <h2 className="min-w-0 font-public-display text-lg font-semibold tracking-[-0.025em] break-words">
+                        {season.name}
+                    </h2>
+                    <p className="shrink-0 text-sm text-signal-muted dark:text-night-400">
+                        {formatSeasonDateRange(season.startsAt, season.endsAt)}{' '}
+                        · {eventLabel}
+                    </p>
+                </div>
+
+                <Link
+                    href={seasonShow(season.slug)}
+                    prefetch
+                    className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none lg:justify-self-end dark:text-dds-cyan dark:hover:text-white"
+                >
+                    Bekijk seizoen
+                    <ChevronRight aria-hidden="true" className="size-4" />
+                </Link>
+            </div>
+        </aside>
     );
 }
 

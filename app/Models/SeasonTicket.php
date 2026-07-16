@@ -9,7 +9,6 @@ use Database\Factories\SeasonTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -48,12 +47,6 @@ final class SeasonTicket extends Model
     public function season(): BelongsTo
     {
         return $this->belongsTo(Season::class);
-    }
-
-    /** @return BelongsToMany<Event, $this> */
-    public function eligibleEvents(): BelongsToMany
-    {
-        return $this->belongsToMany(Event::class);
     }
 
     public function currentSalesState(?CarbonInterface $at = null): SeasonTicketSalesState

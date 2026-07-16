@@ -22,6 +22,7 @@ type PublicHeroProps = {
     kicker?: string;
     media: Media;
     separatorTone?: 'air' | 'paper';
+    showSeparator?: boolean;
     size?: 'default' | 'compact';
     title: ReactNode;
 };
@@ -32,6 +33,7 @@ export function PublicHero({
     kicker,
     media,
     separatorTone = 'paper',
+    showSeparator = true,
     size = 'default',
     title,
 }: PublicHeroProps) {
@@ -109,7 +111,7 @@ export function PublicHero({
                 </div>
             </section>
 
-            <HeroSeparator tone={separatorTone} />
+            {showSeparator && <HeroSeparator tone={separatorTone} />}
         </>
     );
 }
@@ -122,6 +124,7 @@ function HeroSeparator({ tone }: HeroSeparatorProps) {
     return (
         <div
             aria-hidden="true"
+            data-testid="hero-separator"
             className={cn(
                 'relative z-10 -mt-10 h-10 overflow-hidden sm:-mt-14 sm:h-14',
                 tone === 'air' ? 'text-air' : 'text-paper dark:text-night-950',

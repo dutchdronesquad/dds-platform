@@ -19,10 +19,10 @@ afterEach(function () {
     CarbonImmutable::setTestNow();
 });
 
-test('season tickets expose casts and only explicitly eligible events', function () {
+test('season tickets expose casts and cover every event in their season', function () {
     $season = Season::factory()->create();
-    $eligibleEvent = Event::factory()->for($season)->create(['capacity' => 16]);
-    $excludedEvent = Event::factory()->for($season)->create();
+    $firstEvent = Event::factory()->for($season)->create(['capacity' => 16]);
+    $secondEvent = Event::factory()->for($season)->create();
     $seasonTicket = SeasonTicket::query()->create([
         'season_id' => $season->id,
         'sales_state' => SeasonTicketSalesState::Available->value,
@@ -34,8 +34,7 @@ test('season tickets expose casts and only explicitly eligible events', function
         'capacity' => '10',
     ]);
 
-    $seasonTicket->eligibleEvents()->attach($eligibleEvent);
-    $seasonTicket->refresh()->load(['season', 'eligibleEvents']);
+    $seasonTicket->refresh()->load('season.events');
 
     $this->assertModelExists($seasonTicket);
 
@@ -46,10 +45,10 @@ test('season tickets expose casts and only explicitly eligible events', function
         ->price_cents->toBe(9_000)
         ->capacity->toBe(10)
         ->and($seasonTicket->season->is($season))->toBeTrue()
-        ->and($seasonTicket->eligibleEvents)->toHaveCount(1)
-        ->and($seasonTicket->eligibleEvents->first()?->is($eligibleEvent))->toBeTrue()
-        ->and($seasonTicket->eligibleEvents->contains($excludedEvent))->toBeFalse()
-        ->and($eligibleEvent->capacity)->toBe(16);
+        ->and($seasonTicket->season->events)->toHaveCount(2)
+        ->and($seasonTicket->season->events->contains($firstEvent))->toBeTrue()
+        ->and($seasonTicket->season->events->contains($secondEvent))->toBeTrue()
+        ->and($firstEvent->capacity)->toBe(16);
 });
 
 test('season ticket sales state values are enforced by the database', function () {
@@ -61,21 +60,11 @@ test('season ticket sales state values are enforced by the database', function (
         ->toThrow(QueryException::class);
 });
 
-test('an event can be eligible for at most one season ticket product', function () {
-    $event = Event::factory()->create();
-    $firstSeasonTicket = SeasonTicket::factory()->create();
-    $secondSeasonTicket = SeasonTicket::factory()->create();
-
-    $firstSeasonTicket->eligibleEvents()->attach($event);
-
-    expect(fn () => $secondSeasonTicket->eligibleEvents()->attach($event))
-        ->toThrow(QueryException::class);
-});
-
 test('season ticket data is stored separately from generic season grouping', function () {
     expect(Schema::hasColumn('seasons', 'price_cents'))->toBeFalse()
         ->and(Schema::hasColumn('seasons', 'ticket_capacity'))->toBeFalse()
-        ->and(Schema::hasColumns('season_tickets', ['price_cents', 'capacity']))->toBeTrue();
+        ->and(Schema::hasColumns('season_tickets', ['price_cents', 'capacity']))->toBeTrue()
+        ->and(Schema::hasTable('event_season_ticket'))->toBeFalse();
 });
 
 test('a season can have at most one ticket product', function () {
@@ -142,7 +131,7 @@ test('sales windows produce one reliable current state', function (
     ],
 ]);
 
-test('a season summary separates its grouped date range from ticket eligibility', function () {
+test('a season summary counts every grouped event when a ticket exists', function () {
     $season = Season::factory()->create();
     $firstEligibleEvent = Event::factory()->for($season)->create([
         'starts_at' => '2026-09-10 18:00:00',
@@ -157,15 +146,14 @@ test('a season summary separates its grouped date range from ticket eligibility'
         'starts_at' => '2027-05-20 09:00:00',
         'ends_at' => '2027-05-20 17:00:00',
     ]);
-    $seasonTicket = SeasonTicket::factory()->available()->for($season)->create();
-    $seasonTicket->eligibleEvents()->attach([$firstEligibleEvent->id, $cancelledEligibleEvent->id]);
+    SeasonTicket::factory()->available()->for($season)->create();
 
     $summary = SeasonTicketSummary::fromSeason($season);
 
     expect($summary)
         ->salesState->toBe(SeasonTicketSalesState::Available)
-        ->eligibleEventCount->toBe(2)
-        ->cancelledEligibleEventCount->toBe(1)
+        ->eventCount->toBe(3)
+        ->cancelledEventCount->toBe(1)
         ->and($summary->startsAt?->toDateTimeString())->toBe('2026-09-10 18:00:00')
         ->and($summary->endsAt?->toDateTimeString())->toBe('2027-05-20 17:00:00');
 });
@@ -181,16 +169,16 @@ test('a season without a ticket still exposes its grouped event range', function
 
     expect($summary)
         ->salesState->toBe(SeasonTicketSalesState::NotOffered)
-        ->eligibleEventCount->toBe(0)
+        ->eventCount->toBe(0)
         ->and($summary->startsAt?->toDateTimeString())->toBe('2028-02-10 18:00:00')
         ->and($summary->endsAt?->toDateTimeString())->toBe('2028-02-10 21:00:00');
 });
 
-test('the season ticket factory can create eligible events in the same season', function () {
-    $seasonTicket = SeasonTicket::factory()->withEligibleEvents(2)->create()->load('eligibleEvents');
+test('the season ticket factory can create events in the same season', function () {
+    $seasonTicket = SeasonTicket::factory()->withEvents(2)->create()->load('season.events');
 
-    expect($seasonTicket->eligibleEvents)->toHaveCount(2)
-        ->and($seasonTicket->eligibleEvents->every(
+    expect($seasonTicket->season->events)->toHaveCount(2)
+        ->and($seasonTicket->season->events->every(
             fn (Event $event): bool => $event->season_id === $seasonTicket->season_id,
         ))->toBeTrue();
 });

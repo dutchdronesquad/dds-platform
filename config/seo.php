@@ -32,6 +32,13 @@ return [
             'image_path' => '/images/dds/racing/indoor-track.jpg',
             'image_alt' => 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
         ],
+        'season' => [
+            'title' => 'Seizoen',
+            'description' => 'Bekijk alle events en ticketinformatie voor dit seizoen van Dutch Drone Squad.',
+            'canonical_path' => '/seasons',
+            'image_path' => '/images/dds/racing/indoor-track.jpg',
+            'image_alt' => 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
+        ],
         'projects' => [
             'title' => 'Projecten',
             'description' => 'Ontdek tooling, software, integraties en community-builds van Dutch Drone Squad.',

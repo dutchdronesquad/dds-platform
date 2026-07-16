@@ -5,6 +5,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\SeasonController;
 use App\Http\Middleware\HandleLegacyRedirects;
 use App\Support\SeoMetadata;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
+Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
 
 Route::inertia('/projects', 'public/shell', [
     'page' => $publicPages['projects'],

@@ -33,13 +33,15 @@ final class HomeController extends Controller
                 'type',
                 'price_cents',
                 'capacity',
+                'registration_opens_at',
+                'registration_deadline_at',
                 'registration_status',
             ])
             ->publiclyVisible()
             ->upcoming()
             ->with([
                 'location:id,name,city',
-                'season:id,name',
+                'season:id,name,slug',
                 'coverImage:id,disk,path,alt_text',
             ])
             ->limit(3)
