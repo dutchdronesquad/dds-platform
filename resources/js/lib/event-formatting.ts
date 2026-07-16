@@ -10,11 +10,25 @@ const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
 const shortDateFormatter = new Intl.DateTimeFormat('nl-NL', {
     day: '2-digit',
     month: 'short',
+    weekday: 'long',
+    year: 'numeric',
+});
+
+const yearFormatter = new Intl.DateTimeFormat('nl-NL', {
+    year: 'numeric',
 });
 
 const timeFormatter = new Intl.DateTimeFormat('nl-NL', {
     hour: '2-digit',
     minute: '2-digit',
+});
+
+const dateTimeFormatter = new Intl.DateTimeFormat('nl-NL', {
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    month: 'long',
+    year: 'numeric',
 });
 
 const priceFormatter = new Intl.NumberFormat('nl-NL', {
@@ -47,17 +61,29 @@ export function formatEventDate(value: string): string {
     return dateFormatter.format(new Date(value));
 }
 
-export function formatEventShortDate(value: string): {
+export function formatEventDateTime(value: string): string {
+    return dateTimeFormatter.format(new Date(value));
+}
+
+export function formatEventShortDate(
+    value: string,
+    referenceDate: Date = new Date(),
+): {
     day: string;
     month: string;
+    weekday: string;
+    year: string | null;
 } {
     const parts = shortDateFormatter.formatToParts(new Date(value));
+    const year = parts.find((part) => part.type === 'year')?.value ?? '';
 
     return {
         day: parts.find((part) => part.type === 'day')?.value ?? '',
         month: (
             parts.find((part) => part.type === 'month')?.value ?? ''
         ).replace('.', ''),
+        weekday: parts.find((part) => part.type === 'weekday')?.value ?? '',
+        year: year === yearFormatter.format(referenceDate) ? null : year,
     };
 }
 

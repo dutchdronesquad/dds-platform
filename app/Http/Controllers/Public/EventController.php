@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Location;
 use App\Support\PublicEventData;
 use App\Support\SeoMetadata;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ final class EventController extends Controller
             ->select([
                 'id',
                 'location_id',
+                'season_id',
                 'cover_image_id',
                 'title',
                 'slug',
@@ -31,12 +33,15 @@ final class EventController extends Controller
                 'ends_at',
                 'status',
                 'type',
+                'price_cents',
+                'capacity',
                 'registration_status',
             ])
             ->publiclyVisible()
             ->upcoming()
             ->with([
                 'location:id,name,city',
+                'season:id,name',
                 'coverImage:id,disk,path,alt_text',
             ]);
 
@@ -63,6 +68,7 @@ final class EventController extends Controller
 
         $event->load([
             'location',
+            'season:id,name',
             'coverImage:id,disk,path,alt_text',
         ]);
 
@@ -84,6 +90,7 @@ final class EventController extends Controller
                     'street' => $event->location->street,
                     'houseNumber' => $event->location->house_number,
                     'postalCode' => $event->location->postal_code,
+                    ...$this->googleMapsUrls($event->location),
                 ],
                 'priceCents' => $event->price_cents,
                 'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
@@ -98,6 +105,29 @@ final class EventController extends Controller
                 'image_alt' => $image['alt'],
             ]),
         ]);
+    }
+
+    /** @return array{mapEmbedUrl: string, mapUrl: string} */
+    private function googleMapsUrls(Location $location): array
+    {
+        $query = implode(', ', [
+            $location->name,
+            "{$location->street} {$location->house_number}",
+            "{$location->postal_code} {$location->city}",
+            $location->country_code,
+        ]);
+
+        return [
+            'mapEmbedUrl' => 'https://maps.google.com/maps?'.http_build_query([
+                'q' => $query,
+                'z' => 15,
+                'output' => 'embed',
+            ], encoding_type: PHP_QUERY_RFC3986),
+            'mapUrl' => 'https://www.google.com/maps/search/?'.http_build_query([
+                'api' => 1,
+                'query' => $query,
+            ], encoding_type: PHP_QUERY_RFC3986),
+        ];
     }
 
     /** @return list<array{value: string, label: string}> */

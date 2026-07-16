@@ -2,7 +2,7 @@
 
 ## Proposed Navigation
 
-The DDS-007D public hierarchy keeps the desktop header focused: the logo links home, followed by `Projecten`, `Nieuws`, `Over DDS`, `Locaties`, and `Contact`, with `Bekijk agenda` as the primary action. `Huisregels` is a practical footer-only link, while `Partners` is available in the footer and represented by verified partner logos on the homepage. Login and admin access are private operational entry points and are therefore not linked from the public shell; their direct routes remain available to authorized users.
+The DDS-007D public hierarchy keeps the desktop header focused: the logo links home, followed by `Projecten`, `Nieuws`, `Over DDS`, `Beginnen`, `Locaties`, and `Contact`, with `Bekijk agenda` as the primary action. `Beginnen` opens the curated Getting Started knowledge hub for new pilots. `Huisregels` is a practical footer-only link, while `Partners` is available in the footer and represented by verified partner logos on the homepage. Login and admin access are private operational entry points and are therefore not linked from the public shell; their direct routes remain available to authorized users.
 
 Current Dutch homepage navigation language:
 
@@ -11,9 +11,10 @@ Current Dutch homepage navigation language:
 - Projecten
 - Nieuws
 - Over DDS
+- Beginnen
 - Contact
 
-When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Projects`, `News`, `About`, and `Contact`.
+When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Projects`, `News`, `About`, `Getting Started`, and `Contact`.
 
 Secondary or footer navigation:
 
@@ -70,6 +71,8 @@ Localized URL prefixes: not in phase 1
 /events/{slug}
 /events?type=training
 /events?type=race
+/getting-started
+/getting-started/{slug}
 /projects
 /projects/{slug}
 /news
@@ -94,6 +97,8 @@ Legacy URLs that need redirects:
 /media/ -> /media or /news?category=media
 /nieuws/ -> /news
 ```
+
+The legacy training route continues to serve visitors looking for dated activities. Evergreen newcomer guidance lives in the English-based `/getting-started` route. The content hierarchy, entry points, ownership boundaries, and season-ticket explanation are specified in [Getting Started Knowledge Hub](./getting-started-knowledge-hub.md).
 
 ## Admin Routes
 
@@ -122,7 +127,7 @@ Current homepage order:
 2. Experienced-pilot introduction and participation requirements.
 3. Sportpaleis proof, track scale, timing context, and season context.
 4. Upcoming events, with the next three shown when data is available.
-5. Beginner path, clearly separated from the experienced Sportpaleis events.
+5. Beginner path with a clear link into the Getting Started hub, clearly separated from the experienced Sportpaleis events.
 6. Concise About DDS introduction.
 7. Latest news.
 8. Compact row with verified partner logos from backend content.
@@ -247,6 +252,8 @@ Fields:
 - ticket_capacity.
 
 Season dates are derived from the first and last linked events. Event capacity remains independent from the number of season tickets.
+
+A season is a named grouping and does not imply that a season ticket is offered. A season ticket is a separate participation product with its own sales state, window, capacity, registration destination, and explicit set of eligible events. Event cards, lists, and detail pages should label season context consistently, while the Getting Started hub explains the difference between seasons, single-event tickets, and season tickets. The required domain extension and public presentation rules are detailed in [Getting Started Knowledge Hub](./getting-started-knowledge-hub.md#season-and-season-ticket-model).
 
 ### MediaAsset
 

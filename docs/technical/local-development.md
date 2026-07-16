@@ -82,6 +82,24 @@ ddev npm run build
 
 If `public/hot` exists, Laravel will keep using the dev server even after a build. Stop the dev server cleanly, or remove `public/hot` before checking built assets.
 
+## Representative Event Data
+
+Create or refresh the deterministic public event dataset locally with:
+
+```bash
+ddev artisan dds:seed-demo-events
+```
+
+The command updates the same reserved demo records on every run. It includes public races and trainings with open, waitlist, full, closed, and cancelled states, plus varied pricing, cover images, and optional content.
+
+Remove only these demo events and their now-unused supporting records with:
+
+```bash
+ddev artisan dds:seed-demo-events --reset
+```
+
+Both operations refuse to run in production. Production database seeding does not call the demo-event seeder.
+
 ## Open Spike Questions
 
 Before the application is built:

@@ -5,6 +5,7 @@ export type EventStatus = 'published' | 'cancelled';
 export type EventRegistrationStatus = 'closed' | 'open' | 'waitlist' | 'full';
 
 export type PublicEventSummary = {
+    capacity: number | null;
     endsAt: string | null;
     excerpt: string | null;
     id: number;
@@ -16,7 +17,11 @@ export type PublicEventSummary = {
         city: string;
         name: string;
     };
+    priceCents: number | null;
     registrationStatus: EventRegistrationStatus;
+    season: {
+        name: string;
+    } | null;
     slug: string;
     startsAt: string;
     status: EventStatus;
@@ -25,14 +30,14 @@ export type PublicEventSummary = {
 };
 
 export type PublicEventDetail = Omit<PublicEventSummary, 'location'> & {
-    capacity: number | null;
     content: string | null;
     location: PublicEventSummary['location'] & {
         houseNumber: string;
+        mapEmbedUrl: string;
+        mapUrl: string;
         postalCode: string;
         street: string;
     };
-    priceCents: number | null;
     registrationDeadlineAt: string | null;
     registrationOpensAt: string | null;
     registrationUrl: string | null;

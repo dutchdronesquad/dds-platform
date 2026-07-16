@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import PublicEventCard from '@/components/public/public-event-card';
 import { PublicHero } from '@/components/public/public-patterns';
@@ -66,11 +66,11 @@ export default function Welcome({
 
             <PublicHero
                 title="Where racing brings pilots together."
-                description="Race door de gates, jaag op snellere rondetijden en push elkaar tot de laatste accu. Indoor FPV-racing in Alkmaar."
+                description="Race door de gates, jaag op snellere rondetijden en push elkaar tot de laatste accu. Train, race en verbeter jezelf op onze indoorbaan in Alkmaar."
                 actions={[
                     { label: 'Bekijk de agenda', href: eventsIndex.url() },
                     {
-                        label: 'Voor ervaren piloten',
+                        label: 'Bekijk hoe we racen',
                         href: '#ervaren-piloten',
                     },
                 ]}
@@ -90,7 +90,7 @@ export default function Welcome({
                     <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr] lg:items-end lg:gap-20">
                         <div>
                             <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase">
-                                Voor ervaren piloten
+                                Voor piloten die verder willen
                             </p>
                             <h2 className="mt-5 max-w-4xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.06em] text-balance sm:text-6xl lg:text-7xl">
                                 Sneller worden doe je samen.
@@ -98,9 +98,10 @@ export default function Welcome({
                         </div>
 
                         <p className="max-w-xl text-lg leading-8 text-signal-muted sm:text-xl sm:leading-9 lg:pb-2">
-                            Kun je zelfstandig een parcours vliegen en je drone
-                            na een crash repareren? Dan kun je aansluiten op de
-                            volledige track in het Sportpaleis.
+                            Wil je strakkere lijnen vliegen en snellere
+                            rondetijden neerzetten? Sluit aan op de volledige
+                            track in het Sportpaleis, vergelijk je tijden en
+                            leer van andere piloten.
                         </p>
                     </div>
 
@@ -288,12 +289,7 @@ export default function Welcome({
                         </Link>
                     </div>
 
-                    <p className="mt-9 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-dds-blue uppercase md:hidden">
-                        Veeg voor meer
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                    </p>
-
-                    <div className="-mx-public-gutter mt-4 md:mx-0 md:mt-12">
+                    <div className="-mx-public-gutter mt-10 md:mx-0 md:mt-12">
                         <ul
                             aria-label="Laatste nieuws"
                             tabIndex={0}
@@ -430,8 +426,8 @@ function UpcomingEventsSection({ events }: UpcomingEventsSectionProps) {
                             Upcoming events
                         </h2>
                         <p className="mt-5 max-w-2xl text-base leading-7 text-signal-muted">
-                            Bekijk wanneer we vliegen, hoeveel plekken nog
-                            beschikbaar zijn en meld je op tijd aan.
+                            Bekijk wanneer we vliegen, wat de capaciteit is en
+                            of aanmelden nog mogelijk is.
                         </p>
                     </div>
                     <Link
@@ -444,15 +440,8 @@ function UpcomingEventsSection({ events }: UpcomingEventsSectionProps) {
                     </Link>
                 </div>
 
-                {events.length > 0 && (
-                    <p className="mt-9 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-dds-blue uppercase md:hidden">
-                        Veeg voor meer
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                    </p>
-                )}
-
                 {events.length > 0 ? (
-                    <div className="-mx-public-gutter mt-4 md:mx-0 md:mt-12">
+                    <div className="-mx-public-gutter mt-10 md:mx-0 md:mt-12">
                         <ul
                             aria-label="Upcoming events"
                             tabIndex={0}

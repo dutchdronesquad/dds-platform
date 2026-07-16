@@ -30,10 +30,14 @@ This means 16 items in the recommended sequence are complete on `main`, DDS-007D
 Recommended next tickets:
 
 1. finish and merge the current DDS-014 / DDS-012 / DDS-009 schema cluster;
-2. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
-3. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
-4. build DDS-010 public Event pages, then validate realistic event states and responsive presentation in DDS-010A;
-5. finish DDS-007D as an independent public-shell polish task before launch.
+2. define the explicit DDS-009A season-ticket model before promoting season tickets publicly;
+3. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
+4. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
+5. complete DDS-010 and DDS-010A public Event work, then align season presentation through DDS-010B;
+6. build the public newcomer journey and all documented entry points in DDS-014L using the constrained managed-page foundation;
+7. expand the hub with the DDS-014K curated guide library when the initial content proves that separate guide pages are useful;
+8. keep DDS-011F holder and attendance handling deferred until native season-ticket registration and its business rules are approved;
+9. finish DDS-007D as an independent public-shell polish task before launch.
 
 Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
 
@@ -154,6 +158,32 @@ Acceptance criteria:
 - deferred runtime items are visible in docs;
 - Redis is not forgotten;
 - first local setup stays simple.
+
+### DDS-003B: Replace Source-String Assertions With Behavioral Test Coverage
+
+Status: planned. The current suite contains a large group of `file_get_contents()` and `toContain()` assertions against JSX, import names, Tailwind class strings, and private component structure. These checks are brittle and frequently pass or fail without proving whether the application still works for a visitor.
+
+Goal: make the test suite prove public behavior, domain rules, and user-visible interactions instead of mirroring implementation text.
+
+Tasks:
+
+- inventory tests that read application source files and classify the user behavior or architectural contract they were intended to protect;
+- replace source-string and Tailwind-class assertions with Laravel feature tests, Inertia response assertions, Pest browser tests, and focused domain tests at the appropriate layer;
+- cover public navigation, homepage content, event filtering, event states, external-link safety, empty states, and responsive interactions through rendered output or real browser behavior;
+- add representative desktop and mobile browser coverage for the highest-risk public flows, including JavaScript and console-error checks;
+- test pure formatting or presentation logic through an appropriate executable frontend test layer when it cannot be covered clearly through feature or browser tests;
+- remove obsolete implementation-coupled assertions only after equivalent behavioral coverage exists;
+- retain static or architecture assertions only when they protect a genuine architectural boundary that cannot be expressed more directly.
+
+Acceptance criteria:
+
+- `PublicStaticPagesTest` no longer reads `.tsx` or `.ts` files with `file_get_contents()`;
+- tests do not assert Tailwind class order, import strings, private component names, or arbitrary JSX fragments;
+- key public flows fail when their rendered behavior, navigation, accessibility contract, or domain outcome regresses;
+- event date, filtering, registration states, long content, empty states, and mobile presentation have executable coverage;
+- browser tests include visible focus, working links or filters, absence of JavaScript errors, and representative mobile reflow checks;
+- remaining uses of `toContain()` assert meaningful collection membership or output semantics rather than source-code text;
+- the rewritten suite remains deterministic and practical to run locally and in CI.
 
 ## Epic 2: Auth, Layouts, And Locale Baseline
 
@@ -435,6 +465,30 @@ Acceptance criteria:
 - public header/footer do not feel like starter-kit leftovers;
 - mobile navigation fits without awkward wrapping or hidden critical links.
 
+### DDS-007E: Add Sportpaleis Alkmaar As A Homepage Partner
+
+Status: planned.
+
+Goal: recognize Sportpaleis Alkmaar as a DDS partner in the homepage partner section.
+
+Tasks:
+
+- add Sportpaleis Alkmaar to the homepage partner data with `https://sportpaleis-alkmaar.nl/` as its website URL;
+- obtain and use an official Sportpaleis Alkmaar logo asset with appropriate usage permission instead of recreating or approximating the logo;
+- present the logo alongside the existing homepage partner logos with a consistent visual weight, clear spacing, and preserved aspect ratio;
+- make the logo or partner entry link to the Sportpaleis Alkmaar website with an accessible partner name and the existing external-link safety conventions;
+- verify the partner row at representative mobile and desktop widths, including wrapping, alignment, contrast, and focus states;
+- move the temporary homepage entry to the structured `Partner` domain when DDS-014D is implemented, while retaining its homepage-featured state.
+
+Acceptance criteria:
+
+- Sportpaleis Alkmaar is visibly represented as a partner on the homepage with its official logo;
+- the partner entry links to `https://sportpaleis-alkmaar.nl/`;
+- the logo is sharp, not distorted, and visually balanced with the other partner logos;
+- the partner row remains neatly aligned without overflow or awkward breaks on mobile and desktop;
+- the partner link has a meaningful accessible name, visible keyboard focus, and safe external-link behavior;
+- the implementation can migrate to the structured `Partner` model without redesigning the homepage section.
+
 ### DDS-008: Baseline SEO And Redirect Shape
 
 Status: implemented through DDS-008A and DDS-008B. Public pages now have reusable SEO metadata with stable canonical URLs and Open Graph defaults, while legacy WordPress paths are handled through database-backed redirects before the public fallback.
@@ -573,6 +627,29 @@ Acceptance criteria:
 - deleting a cover preserves the event and clears only the cover reference;
 - a location or season cannot be deleted while an event still references it.
 
+### DDS-009A: Season Ticket Product And Eligibility Model
+
+Goal: model season tickets explicitly without conflating a season grouping, event capacity, and attendance.
+
+Tasks:
+
+- define enum-backed season-ticket sales states for not offered, coming soon, available, sold out, and closed;
+- add an optional sales opening time, closing time, registration URL, explanatory copy, price, and season-ticket capacity;
+- model the events included in a season ticket explicitly instead of inferring eligibility from `season_id` alone;
+- keep season-ticket capacity separate from each included event's capacity;
+- expose the derived season date range, eligible-event count, and current sales state through a focused service or public view model;
+- document how cancellation affects presentation without encoding unstated refund or replacement rules;
+- add factories and model tests for seasons with and without a ticket offer, mixed eligible events, future years, and each sales state.
+
+Acceptance criteria:
+
+- a season can group events without offering a season ticket;
+- a season ticket covers only explicitly eligible events;
+- event capacity and season-ticket capacity cannot be mistaken for the same value in application data;
+- sales state and sales window produce one reliable public availability state;
+- current and future season date ranges derive correctly from included events;
+- the model can later add holders and attendance without reshaping the season/event relationship.
+
 ### DDS-010: Public Events Pages
 
 Goal: show published events publicly.
@@ -617,6 +694,30 @@ Acceptance criteria:
 - long or optional content does not break card or detail layouts on mobile or desktop;
 - automated tests cover public visibility, ordering, filtering, and the representative registration states;
 - demo data can be reset without affecting production seeding or real content.
+
+### DDS-010B: Public Season And Season Ticket Presentation
+
+Goal: make season context and ticket choices understandable across public event experiences.
+
+Tasks:
+
+- show a localized `Season` label and season name consistently on event cards, event list rows, and event details;
+- keep event type, season, event registration state, and cancellation state visually distinct;
+- add a compact current-season summary where it supports filtered training or race lists;
+- compare single-event registration and season-ticket options without implying that every season offers a ticket;
+- show the season-ticket sales state, covered events, price, and registration action from backend data;
+- include the calendar year wherever a future date could otherwise be ambiguous;
+- hide the sales module when no season ticket is offered while retaining useful season context;
+- verify long season names, mixed eligible events, sold-out states, and mobile layouts.
+
+Acceptance criteria:
+
+- visitors can distinguish an event from its season and understand which action buys which access;
+- season naming and labels are aligned across homepage cards, `/events`, and `/events/{slug}`;
+- an event linked to a season is not presented as season-ticket eligible unless it is explicitly included;
+- dates crossing calendar years remain unambiguous;
+- unavailable, sold-out, and closed ticket states do not show a misleading registration action;
+- focused frontend and feature tests cover the meaningful states instead of relying on broad markup fragments.
 
 ### DDS-011: Admin Event CRUD
 
@@ -748,6 +849,29 @@ Acceptance criteria:
 - destructive changes require confirmation;
 - the app avoids silent publish-state changes;
 - full audit logging is either implemented or explicitly deferred.
+
+### DDS-011F: Season Ticket Holder And Attendance Workflow
+
+Goal: support the operational season-ticket workflow if DDS chooses native registration after the public information model is established.
+
+Tasks:
+
+- define season-ticket holder, payment, cancellation, and refund states with the organization before implementation;
+- record which season-ticket product a holder purchased;
+- support per-event attendance confirmation or opt-out for eligible events;
+- make released places usable by the event registration or waitlist workflow without overselling capacity;
+- provide administrators with holder, payment, and per-event attendance overviews;
+- give authenticated holders one clear overview of their included events and required actions;
+- log important operational changes and protect personal data through policies and retention rules.
+
+Acceptance criteria:
+
+- holder access is derived from the purchased season-ticket product and its explicit eligible events;
+- administrators can distinguish season-ticket allocation from actual attendance for each event;
+- opt-outs and cancellations cannot silently corrupt event capacity;
+- holders can see which events require confirmation and which actions are complete;
+- payment and refund behavior is implemented only after the business rules are approved;
+- authorization and focused workflow tests cover administrator and holder behavior.
 
 ## Epic 5: Supporting Content Models
 
@@ -982,6 +1106,54 @@ Acceptance criteria:
 - imported articles can be reviewed through the same admin UI later;
 - empty news states are useful before content exists.
 
+### DDS-014K: Curated Guide Library And Admin Workflow
+
+Goal: manage a curated library of newcomer guides without introducing a generic page builder.
+
+Tasks:
+
+- create a `Guide` model with title, stable English slug, summary, sanitized or structured body content, category, manual order, status, and publication timestamps;
+- support optional cover media, editorial owner, last reviewed date, and update metadata;
+- decide deliberately which guide fields support English and Dutch variants and require an English base where translations are enabled;
+- create guide factories, policies, validation, and focused model tests;
+- build `/dashboard/guides` index and create/edit forms using the shared admin resource patterns;
+- support draft, published, and archived states plus preview and review-due visibility;
+- keep dates, prices, capacities, locations, and sales states out of saved guide prose when a domain model owns them.
+
+Acceptance criteria:
+
+- editors can maintain guides without changing React code;
+- published guides have stable English-based URLs and unpublished guides are not public;
+- stale safety or equipment guidance can be identified through ownership and review metadata;
+- the content structure supports accessible headings, links, lists, and media without arbitrary page layouts;
+- guide content cannot become a second source of truth for event, location, or season-ticket availability;
+- authorization, validation, publication, and locale fallback behavior are covered by focused tests.
+
+### DDS-014L: Public Getting Started Hub And Entry Points
+
+Goal: give new pilots one coherent path from first interest to a suitable DDS event.
+
+Tasks:
+
+- build `/getting-started` as a designed knowledge-hub landing page and support `/getting-started/{guide:slug}` when guide records are introduced;
+- implement the initial structure defined in [Getting Started Knowledge Hub](../product/getting-started-knowledge-hub.md);
+- render suitable upcoming events, current season context, and season-ticket availability from backend data;
+- add entry points from the main navigation, homepage newcomer section, event overview, training event detail, relevant location details, contact page, and footer;
+- use localized labels while keeping stable English routes without locale prefixes;
+- preserve `/trainingen/ -> /events?type=training` for visitors looking for dated training events;
+- add useful empty states when no beginner-suitable event or season-ticket offer is active;
+- verify navigation capacity, long-form readability, contextual links, focus order, and layouts on representative mobile and desktop viewports;
+- track entry source so DDS can learn which paths actually help newcomers.
+
+Acceptance criteria:
+
+- a new visitor can understand DDS participation and reach a suitable event or contact action without relying on the legacy site;
+- every documented primary and contextual entry point links to the relevant hub section or guide;
+- event, location, and season data is current because it comes from its source model;
+- the hub clearly distinguishes events, seasons, single-event tickets, and season tickets;
+- adding the navigation item does not create broken or crowded mobile navigation;
+- accessibility, public visibility, dynamic module, and entry-source behavior are covered by focused tests.
+
 ## Epic 6: WordPress Import Spike
 
 ### DDS-015: WordPress Export Discovery
@@ -1201,9 +1373,11 @@ Goal: verify public pages against the UX quality bar before launch.
 Tasks:
 
 - audit home, events, event detail, projects, project detail, news, article detail, locations, about, house rules, partners, and contact;
+- review every public frontend section and repeated item as its own mobile QA checkpoint, including headers, content bands, cards, lists, carousels, filters, forms, CTAs, and footers;
 - check keyboard navigation, focus order, labels, contrast, landmark structure, and heading hierarchy;
-- test common mobile viewport widths;
-- fix overlap, wrapping, and unreadable text issues;
+- test common mobile viewport widths and both short and representative long or optional content;
+- fix overlap, horizontal page overflow, awkward wrapping, inconsistent alignment, broken rhythm, cropped media, and unreadable text issues;
+- verify that carousel and overflow affordances remain understandable without instructional labels that add visual noise;
 - check empty states and error states.
 
 Acceptance criteria:
@@ -1212,7 +1386,9 @@ Acceptance criteria:
 - keyboard focus is visible and logical;
 - forms have accessible labels and errors;
 - headings follow a reasonable hierarchy;
-- no critical text overlap or layout breakage remains.
+- every audited section has an explicit mobile result or tracked follow-up;
+- repeated items remain consistently aligned when their content lengths differ;
+- no critical text overlap, unexplained interruption, horizontal page overflow, or layout breakage remains.
 
 ### DDS-026: Admin Usability Audit
 
@@ -1279,37 +1455,42 @@ Acceptance criteria:
 18. DDS-014
 19. DDS-012
 20. DDS-009
-21. DDS-013
-22. DDS-014A
-23. DDS-014D
-24. DDS-014F
-25. DDS-011A
-26. DDS-011B
-27. DDS-011C
-28. DDS-011D
-29. DDS-014H
-30. DDS-010
-31. DDS-010A
-32. DDS-011
-33. DDS-014B
-34. DDS-014C
-35. DDS-014E
-36. DDS-014I
-37. DDS-014J
-38. DDS-014G
-39. DDS-011E
-40. DDS-015
-41. DDS-017
-42. DDS-016
-43. DDS-018
-44. DDS-019
-45. DDS-020
-46. DDS-021
-47. DDS-022
-48. DDS-023
-49. DDS-024
-50. DDS-025
-51. DDS-026
-52. DDS-027
+21. DDS-009A
+22. DDS-013
+23. DDS-014A
+24. DDS-014D
+25. DDS-014F
+26. DDS-011A
+27. DDS-011B
+28. DDS-011C
+29. DDS-011D
+30. DDS-014H
+31. DDS-010
+32. DDS-010A
+33. DDS-010B
+34. DDS-011
+35. DDS-014B
+36. DDS-014C
+37. DDS-014E
+38. DDS-014I
+39. DDS-014J
+40. DDS-014L
+41. DDS-014K
+42. DDS-014G
+43. DDS-011E
+44. DDS-011F
+45. DDS-015
+46. DDS-017
+47. DDS-016
+48. DDS-018
+49. DDS-019
+50. DDS-020
+51. DDS-021
+52. DDS-022
+53. DDS-023
+54. DDS-024
+55. DDS-025
+56. DDS-026
+57. DDS-027
 
 The WordPress importer should not be treated as the next major build step after static routes. The platform needs public branding, target content models, admin review flows, media handling, redirects, and user/permission management first. Import work can start as discovery earlier, but production-grade import should wait until the target models and admin review screens exist.

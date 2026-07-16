@@ -212,13 +212,53 @@ test('public footer links to the official social channels', function () {
 
 test('public event polish keeps filtering in place and provides a simple empty state', function () {
     $eventsPage = file_get_contents(resource_path('js/pages/public/events-index.tsx'));
+    $eventCard = file_get_contents(resource_path('js/components/public/public-event-card.tsx'));
     $publicPatterns = file_get_contents(resource_path('js/components/public/public-patterns.tsx'));
     $homepage = file_get_contents(resource_path('js/pages/welcome.tsx'));
+    $eventFormatting = file_get_contents(resource_path('js/lib/event-formatting.ts'));
 
     expect($eventsPage)
         ->not->toBeFalse()
         ->not->toContain('kicker="Agenda"')
+        ->toContain('aria-live="polite"')
+        ->toContain('<ul')
+        ->toContain('<li key={event.id}')
+        ->toContain('variant="list"')
+        ->toContain('divide-y divide-paddock-rule')
+        ->toContain('items-center rounded-sm border px-4 py-2')
+        ->not->toContain('items-center rounded-full border px-4 py-2')
+        ->not->toContain('grid gap-6 md:grid-cols-2 xl:grid-cols-3')
         ->toMatch('/activeType !== null.*?<Link\s+href=\{eventsIndex\(\)\}\s+preserveScroll\s+preserveState.*?Bekijk alle events/s')
+        ->and($eventCard)
+        ->not->toBeFalse()
+        ->toContain("variant?: 'card' | 'list'")
+        ->toContain('<EventDateRail')
+        ->toContain('<EventFacts event={event} variant="card" />')
+        ->toContain('<EventFacts event={event} variant="list" />')
+        ->toContain('{date.weekday}')
+        ->toContain('date.year !== null')
+        ->toContain('event.season !== null')
+        ->toContain('{event.season.name}')
+        ->toContain('<EventCardDate date={date} event={event} />')
+        ->not->toContain('function EventCardMeta')
+        ->toContain('aria-label={formatEventDate(event.startsAt)}')
+        ->toContain('line-clamp-2')
+        ->not->toContain('line-clamp-3')
+        ->toContain('overflow-hidden rounded-sm border border-paddock-rule')
+        ->not->toContain('overflow-hidden rounded-xl border border-paddock-rule')
+        ->toContain('aspect-[5/2] w-full rounded-sm')
+        ->not->toContain('aspect-[5/2] w-full rounded-lg')
+        ->toContain('bg-deep-signal/[0.025]')
+        ->toContain('<div className="mt-auto pt-6">')
+        ->toContain('grid grid-cols-3 divide-x divide-paddock-rule')
+        ->toContain('text-[0.7rem] whitespace-nowrap')
+        ->toContain('<span className="hidden lg:inline"> totaal</span>')
+        ->toContain("event.registrationStatus === 'waitlist'")
+        ->toContain('rounded-md border px-3 py-1.5')
+        ->toContain('<StatusIcon aria-hidden="true"')
+        ->and($eventFormatting)
+        ->not->toBeFalse()
+        ->toContain('year: year === yearFormatter.format(referenceDate) ? null : year')
         ->and($publicPatterns)
         ->not->toBeFalse()
         ->toContain('max-w-2xl text-base leading-7 text-white/72')
@@ -234,6 +274,8 @@ test('public event polish keeps filtering in place and provides a simple empty s
         ->not->toContain('TBA')
         ->not->toContain('Next heat')
         ->not->toContain('--:--')
+        ->toContain('Train, race en verbeter jezelf op onze indoorbaan in Alkmaar.')
+        ->toContain("label: 'Bekijk hoe we racen'")
         ->not->toContain('Even geen startlichten.')
         ->toContain('/images/dds/racing/sportpaleis-empty-leveled.jpg')
         ->toContain('Lege sportvloer in het Sportpaleis Alkmaar')
@@ -241,7 +283,9 @@ test('public event polish keeps filtering in place and provides a simple empty s
         ->toContain('Zodra de volgende racedag vaststaat,')
         ->toContain('vind je hem hier.')
         ->toContain('absolute top-0 right-0 h-1 w-1/5 bg-dds-cyan')
-        ->toContain('events.length > 0 &&');
+        ->toContain('events.length > 0 ?')
+        ->not->toContain('Veeg voor meer')
+        ->not->toContain('ArrowRight');
 });
 
 test('homepage partner section only contains verified logos', function () {
