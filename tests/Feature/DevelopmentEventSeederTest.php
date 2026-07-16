@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use Carbon\CarbonImmutable;
 use Database\Seeders\DevelopmentEventSeeder;
 use Illuminate\Support\Facades\DB;
@@ -127,15 +128,20 @@ test('demo event dates follow the current date across calendar years', function 
 test('the dataset mirrors the published DDS training and location information', function () {
     $this->artisan('dds:seed-demo-events')->assertSuccessful();
 
-    $season = Season::query()->where('name', DevelopmentEventSeeder::SEASON_NAME)->firstOrFail();
+    $season = Season::query()
+        ->with('seasonTicket.eligibleEvents')
+        ->where('name', DevelopmentEventSeeder::SEASON_NAME)
+        ->firstOrFail();
     $sportpaleis = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[0])->firstOrFail();
     $koggenhal = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[1])->firstOrFail();
     $oosterhout = Location::query()->where('slug', DevelopmentEventSeeder::LOCATION_SLUGS[2])->firstOrFail();
     $training = Event::query()->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[0])->firstOrFail();
 
-    expect($season->price_cents)
+    expect($season->seasonTicket?->price_cents)
         ->toBe(9000)
-        ->and($season->ticket_capacity)->toBeNull()
+        ->and($season->seasonTicket?->capacity)->toBeNull()
+        ->and($season->seasonTicket?->eligibleEvents)->toHaveCount(1)
+        ->and($season->seasonTicket?->eligibleEvents->first()?->is($training))->toBeTrue()
         ->and($sportpaleis->street)->toBe('Terborchlaan')
         ->and($sportpaleis->house_number)->toBe('200')
         ->and($sportpaleis->floor_size_square_metres)->toBe(2000)
@@ -331,5 +337,9 @@ function demoRecordIds(): array
         'locations' => Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->oldest('id')->pluck('id')->all(),
         'media' => MediaAsset::query()->whereIn('path', DevelopmentEventSeeder::MEDIA_PATHS)->oldest('id')->pluck('id')->all(),
         'seasons' => Season::query()->where('name', DevelopmentEventSeeder::SEASON_NAME)->oldest('id')->pluck('id')->all(),
+        'seasonTickets' => SeasonTicket::query()->whereHas(
+            'season',
+            fn ($query) => $query->where('name', DevelopmentEventSeeder::SEASON_NAME),
+        )->oldest('id')->pluck('id')->all(),
     ];
 }

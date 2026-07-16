@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -75,6 +76,12 @@ final class Event extends Model
     public function season(): BelongsTo
     {
         return $this->belongsTo(Season::class);
+    }
+
+    /** @return BelongsToMany<SeasonTicket, $this> */
+    public function seasonTickets(): BelongsToMany
+    {
+        return $this->belongsToMany(SeasonTicket::class);
     }
 
     /** @return BelongsTo<MediaAsset, $this> */
