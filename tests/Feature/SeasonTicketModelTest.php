@@ -63,6 +63,22 @@ test('season ticket sales state values are enforced by the database', function (
         ->toThrow(QueryException::class);
 });
 
+test('an event can be explicitly eligible for multiple season ticket products', function () {
+    $event = Event::factory()->create();
+    $firstSeasonTicket = SeasonTicket::factory()->create();
+    $secondSeasonTicket = SeasonTicket::factory()->create();
+
+    $firstSeasonTicket->eligibleEvents()->attach($event);
+    $secondSeasonTicket->eligibleEvents()->attach($event);
+
+    $event->load('seasonTickets');
+
+    expect($event->seasonTickets)
+        ->toHaveCount(2)
+        ->and($event->seasonTickets->contains($firstSeasonTicket))->toBeTrue()
+        ->and($event->seasonTickets->contains($secondSeasonTicket))->toBeTrue();
+});
+
 test('season ticket data is stored separately from generic season grouping', function () {
     expect(Schema::hasColumn('seasons', 'price_cents'))->toBeFalse()
         ->and(Schema::hasColumn('seasons', 'ticket_capacity'))->toBeFalse()

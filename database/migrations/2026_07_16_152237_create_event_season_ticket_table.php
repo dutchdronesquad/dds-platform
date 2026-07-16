@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('event_season_ticket', function (Blueprint $table) {
             $table->foreignId('event_id')
-                ->unique()
                 ->constrained()
                 ->cascadeOnDelete();
             $table->foreignId('season_ticket_id')
