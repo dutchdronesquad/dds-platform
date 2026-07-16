@@ -102,7 +102,8 @@ final class Event extends Model
     {
         return $query
             ->where('starts_at', '>=', now())
-            ->oldest('starts_at');
+            ->oldest('starts_at')
+            ->oldest('id');
     }
 
     public function isPubliclyVisible(): bool

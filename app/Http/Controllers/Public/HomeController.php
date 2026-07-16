@@ -22,6 +22,7 @@ final class HomeController extends Controller
             ->select([
                 'id',
                 'location_id',
+                'season_id',
                 'cover_image_id',
                 'title',
                 'slug',
@@ -30,12 +31,15 @@ final class HomeController extends Controller
                 'ends_at',
                 'status',
                 'type',
+                'price_cents',
+                'capacity',
                 'registration_status',
             ])
             ->publiclyVisible()
             ->upcoming()
             ->with([
                 'location:id,name,city',
+                'season:id,name',
                 'coverImage:id,disk,path,alt_text',
             ])
             ->limit(3)

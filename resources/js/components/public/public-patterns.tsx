@@ -18,10 +18,11 @@ type Media = {
 
 type PublicHeroProps = {
     actions: Action[];
-    description: string;
+    description?: string;
     kicker?: string;
     media: Media;
     separatorTone?: 'air' | 'paper';
+    size?: 'default' | 'compact';
     title: ReactNode;
 };
 
@@ -31,11 +32,21 @@ export function PublicHero({
     kicker,
     media,
     separatorTone = 'paper',
+    size = 'default',
     title,
 }: PublicHeroProps) {
     return (
         <>
-            <section className="relative isolate flex min-h-[44rem] items-center overflow-hidden bg-ink text-white sm:min-h-[46rem]">
+            <section
+                className={cn(
+                    'relative isolate flex items-center overflow-hidden bg-ink text-white',
+                    size === 'compact'
+                        ? description
+                            ? 'min-h-[36rem] sm:min-h-[40rem]'
+                            : 'min-h-[32rem] sm:min-h-[36rem]'
+                        : 'min-h-[44rem] sm:min-h-[46rem]',
+                )}
+            >
                 <img
                     src={media.src}
                     alt={media.alt}
@@ -52,7 +63,14 @@ export function PublicHero({
                 />
                 <div className="absolute inset-0 -z-20 bg-linear-to-r from-ink/92 from-3% via-ink/55 via-52% to-ink/10" />
                 <div className="absolute inset-0 -z-10 bg-linear-to-t from-ink/48 via-transparent to-ink/16" />
-                <div className="mx-auto w-full max-w-7xl px-public-gutter pt-36 pb-20 sm:pt-40 sm:pb-24">
+                <div
+                    className={cn(
+                        'mx-auto w-full max-w-7xl px-public-gutter',
+                        size === 'compact'
+                            ? 'pt-32 pb-16 sm:pt-36 sm:pb-20'
+                            : 'pt-36 pb-20 sm:pt-40 sm:pb-24',
+                    )}
+                >
                     <div className="max-w-3xl">
                         {kicker && (
                             <p className="text-signal-200 mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.08em] uppercase">
@@ -60,12 +78,21 @@ export function PublicHero({
                                 {kicker}
                             </p>
                         )}
-                        <h1 className="max-w-3xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.055em] text-white sm:text-6xl sm:text-balance lg:text-7xl">
+                        <h1
+                            className={cn(
+                                'max-w-3xl font-public-display leading-[0.95] font-semibold tracking-[-0.055em] text-white sm:text-balance',
+                                size === 'compact'
+                                    ? 'text-4xl sm:text-5xl lg:text-6xl'
+                                    : 'text-5xl sm:text-6xl lg:text-7xl',
+                            )}
+                        >
                             {title}
                         </h1>
-                        <p className="mt-6 max-w-2xl text-base leading-7 text-white/72 sm:text-lg sm:leading-8">
-                            {description}
-                        </p>
+                        {description && (
+                            <p className="mt-6 max-w-2xl text-base leading-7 text-white/72 sm:text-lg sm:leading-8">
+                                {description}
+                            </p>
+                        )}
                         <div className="mt-8 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
                             {actions.map((action, index) => (
                                 <PublicButton

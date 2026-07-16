@@ -65,6 +65,7 @@ The first release should replace the current WordPress site with a Laravel app a
 In scope:
 
 - homepage;
+- Getting Started knowledge hub for new pilots, with clear entry points from the homepage, navigation, events, locations, contact, and footer;
 - events, including regular training evenings;
 - agenda or events overview;
 - news;

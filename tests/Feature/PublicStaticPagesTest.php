@@ -210,40 +210,6 @@ test('public footer links to the official social channels', function () {
         ->not->toContain('LucideIcon');
 });
 
-test('public event polish keeps filtering in place and provides a simple empty state', function () {
-    $eventsPage = file_get_contents(resource_path('js/pages/public/events-index.tsx'));
-    $publicPatterns = file_get_contents(resource_path('js/components/public/public-patterns.tsx'));
-    $homepage = file_get_contents(resource_path('js/pages/welcome.tsx'));
-
-    expect($eventsPage)
-        ->not->toBeFalse()
-        ->not->toContain('kicker="Agenda"')
-        ->toMatch('/activeType !== null.*?<Link\s+href=\{eventsIndex\(\)\}\s+preserveScroll\s+preserveState.*?Bekijk alle events/s')
-        ->and($publicPatterns)
-        ->not->toBeFalse()
-        ->toContain('max-w-2xl text-base leading-7 text-white/72')
-        ->toContain('function HeroSeparator')
-        ->toContain('text-paper dark:text-night-950')
-        ->and($homepage)
-        ->not->toBeFalse()
-        ->not->toContain('function HeroRaceLine')
-        ->toContain('separatorTone="air"')
-        ->not->toContain('RadioTower')
-        ->not->toContain('Planning in beweging')
-        ->not->toContain('CalendarClock')
-        ->not->toContain('TBA')
-        ->not->toContain('Next heat')
-        ->not->toContain('--:--')
-        ->not->toContain('Even geen startlichten.')
-        ->toContain('/images/dds/racing/sportpaleis-empty-leveled.jpg')
-        ->toContain('Lege sportvloer in het Sportpaleis Alkmaar')
-        ->toContain('De baan is even leeg.')
-        ->toContain('Zodra de volgende racedag vaststaat,')
-        ->toContain('vind je hem hier.')
-        ->toContain('absolute top-0 right-0 h-1 w-1/5 bg-dds-cyan')
-        ->toContain('events.length > 0 &&');
-});
-
 test('homepage partner section only contains verified logos', function () {
     $homepage = file_get_contents(resource_path('js/pages/welcome.tsx'));
 

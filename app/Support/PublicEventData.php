@@ -20,7 +20,10 @@ final class PublicEventData
      *     endsAt: string|null,
      *     status: string,
      *     type: string,
+     *     priceCents: int|null,
+     *     capacity: int|null,
      *     registrationStatus: string,
+     *     season: array{name: string}|null,
      *     location: array{name: string, city: string},
      *     image: array{src: string, alt: string},
      * }
@@ -38,7 +41,12 @@ final class PublicEventData
             'endsAt' => $event->ends_at?->toIso8601String(),
             'status' => $event->status->value,
             'type' => $event->type->value,
+            'priceCents' => $event->price_cents,
+            'capacity' => $event->capacity,
             'registrationStatus' => $event->registration_status->value,
+            'season' => $event->season === null
+                ? null
+                : ['name' => $event->season->name],
             'location' => [
                 'name' => $event->location->name,
                 'city' => $event->location->city,

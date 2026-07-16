@@ -51,20 +51,20 @@ export default function EventsIndex({
             <div className="bg-paper text-deep-signal dark:bg-night-950 dark:text-white">
                 <section
                     aria-labelledby="events-heading"
-                    className="mx-auto w-full max-w-7xl px-public-gutter py-16 sm:py-20 lg:py-28"
+                    className="mx-auto w-full max-w-[86rem] px-public-gutter py-16 sm:py-20"
                 >
-                    <div className="flex flex-col gap-8 border-b border-paddock-rule pb-10 lg:flex-row lg:items-end lg:justify-between dark:border-white/12">
+                    <div className="flex flex-col gap-8 border-b border-paddock-rule pb-8 lg:flex-row lg:items-end lg:justify-between dark:border-white/12">
                         <div>
-                            <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan">
-                                Upcoming
-                            </p>
                             <h2
                                 id="events-heading"
-                                className="mt-3 font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl"
+                                className="font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl"
                             >
                                 Aankomende events
                             </h2>
-                            <p className="mt-4 max-w-2xl text-base leading-7 text-signal-muted dark:text-night-400">
+                            <p
+                                aria-live="polite"
+                                className="mt-4 max-w-2xl text-base leading-7 text-signal-muted dark:text-night-400"
+                            >
                                 {events.total === 1
                                     ? '1 event staat klaar.'
                                     : `${events.total} events staan klaar.`}
@@ -92,14 +92,19 @@ export default function EventsIndex({
 
                     {events.data.length > 0 ? (
                         <>
-                            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                            <ul
+                                aria-label="Aankomende events"
+                                className="mt-6 divide-y divide-paddock-rule border-b border-paddock-rule dark:divide-white/12 dark:border-white/12"
+                            >
                                 {events.data.map((event) => (
-                                    <PublicEventCard
-                                        key={event.id}
-                                        event={event}
-                                    />
+                                    <li key={event.id}>
+                                        <PublicEventCard
+                                            event={event}
+                                            variant="list"
+                                        />
+                                    </li>
                                 ))}
-                            </div>
+                            </ul>
 
                             <Pagination
                                 activeType={activeType}
@@ -108,7 +113,7 @@ export default function EventsIndex({
                             />
                         </>
                     ) : (
-                        <div className="mt-10 flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-paddock-rule bg-paddock px-6 py-14 text-center dark:border-white/15 dark:bg-night-900">
+                        <div className="mt-10 flex min-h-80 flex-col items-center justify-center rounded-sm border border-dashed border-paddock-rule bg-paddock px-6 py-14 text-center dark:border-white/15 dark:bg-night-900">
                             <span className="flex size-14 items-center justify-center rounded-full bg-white text-dds-blue shadow-sm dark:bg-white/8 dark:text-dds-cyan">
                                 <CalendarX2 className="size-6" />
                             </span>
@@ -156,7 +161,7 @@ function FilterLink({ isActive, label, type }: FilterLinkProps) {
             preserveState
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-                'inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-night-950',
+                'inline-flex min-h-10 items-center rounded-sm border px-4 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-night-950',
                 isActive
                     ? 'border-deep-signal bg-deep-signal text-white dark:border-dds-cyan dark:bg-dds-cyan dark:text-deep-signal'
                     : 'dark:text-night-300 border-paddock-rule bg-white text-signal-muted hover:border-dds-blue hover:text-deep-signal dark:border-white/15 dark:bg-night-900 dark:hover:border-dds-cyan dark:hover:text-white',
