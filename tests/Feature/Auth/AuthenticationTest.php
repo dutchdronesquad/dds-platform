@@ -2,12 +2,16 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
-    $response = $this->get(route('login'));
-
-    $response->assertOk();
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/login')
+            ->where('canResetPassword', true),
+        );
 });
 
 test('users can authenticate using the login screen', function () {

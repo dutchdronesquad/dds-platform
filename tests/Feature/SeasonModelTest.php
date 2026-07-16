@@ -4,16 +4,19 @@ use App\Models\Event;
 use App\Models\Season;
 use Illuminate\Database\QueryException;
 
-test('seasons can define an optional price and ticket capacity', function () {
-    $season = Season::factory()->create([
-        'price_cents' => 9_000,
-        'ticket_capacity' => 10,
-    ]);
+test('seasons cast their price and ticket capacity to integers', function () {
+    $season = Season::query()
+        ->create([
+            'name' => 'Winter competition',
+            'price_cents' => '9000',
+            'ticket_capacity' => '10',
+        ])
+        ->refresh();
 
     $this->assertModelExists($season);
 
     expect($season)
-        ->name->toBeString()
+        ->name->toBe('Winter competition')
         ->price_cents->toBe(9_000)
         ->ticket_capacity->toBe(10);
 });

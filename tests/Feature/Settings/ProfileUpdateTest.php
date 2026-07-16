@@ -1,15 +1,20 @@
 <?php
 
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
-test('profile page is displayed', function () {
+test('profile page exposes the authenticated user settings', function () {
     $user = User::factory()->create();
 
-    $response = $this
+    $this
         ->actingAs($user)
-        ->get(route('profile.edit'));
-
-    $response->assertOk();
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('settings/profile')
+            ->where('auth.user.id', $user->id)
+            ->where('auth.user.email', $user->email),
+        );
 });
 
 test('profile information can be updated', function () {

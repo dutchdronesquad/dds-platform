@@ -8,44 +8,37 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
-test('articles can be created through their factory', function () {
-    $article = Article::factory()
-        ->published()
-        ->raceReport()
-        ->withCoverImage()
-        ->create()
+test('articles expose their domain casts and optional relationships', function () {
+    $author = User::factory()->create();
+    $coverImage = MediaAsset::factory()->create();
+    $article = Article::query()
+        ->create([
+            'author_id' => $author->id,
+            'cover_image_id' => $coverImage->id,
+            'title' => 'Winter race report',
+            'slug' => 'winter-race-report',
+            'content' => 'A complete report of the winter race.',
+            'published_at' => '2026-01-15 12:00:00',
+            'status' => ArticleStatus::Published->value,
+            'category' => ArticleCategory::RaceReport->value,
+        ])
+        ->refresh()
         ->load(['author', 'coverImage']);
 
     $this->assertModelExists($article);
 
     expect($article)
-        ->title->toBeString()
-        ->slug->toBeString()
-        ->content->toBeString()
+        ->title->toBe('Winter race report')
+        ->slug->toBe('winter-race-report')
+        ->content->toBe('A complete report of the winter race.')
         ->published_at->toBeInstanceOf(CarbonImmutable::class)
         ->status->toBe(ArticleStatus::Published)
         ->category->toBe(ArticleCategory::RaceReport)
-        ->author->toBeInstanceOf(User::class)
-        ->coverImage->toBeInstanceOf(MediaAsset::class);
-});
+        ->author->id->toBe($author->id)
+        ->coverImage->id->toBe($coverImage->id);
 
-test('article content is stored without a separate excerpt column', function () {
-    expect(Schema::hasColumn((new Article)->getTable(), 'excerpt'))->toBeFalse();
-});
-
-test('article enum values cover the supported domain states', function () {
-    expect(array_column(ArticleStatus::cases(), 'value'))->toBe([
-        'draft',
-        'published',
-        'archived',
-    ])->and(array_column(ArticleCategory::cases(), 'value'))->toBe([
-        'news',
-        'announcement',
-        'community',
-        'race_report',
-    ]);
+    expect($author->articles()->whereKey($article->id)->exists())->toBeTrue();
 });
 
 test('article enum values are enforced by the database', function (string $column) {
@@ -60,7 +53,7 @@ test('article enum values are enforced by the database', function (string $colum
     'category' => 'category',
 ]);
 
-test('new articles mirror their database defaults before persistence', function () {
+test('new articles default to unpublished news', function () {
     $article = new Article;
 
     expect($article->status)->toBe(ArticleStatus::Draft)

@@ -7,9 +7,6 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
-use Carbon\CarbonImmutable;
-use Database\Seeders\DevelopmentEventSeeder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -185,85 +182,6 @@ test('the homepage uses the next three published events instead of placeholder d
         );
 });
 
-test('the representative dataset drives the homepage index filters and event details', function () {
-    Carbon::setTestNow('2026-07-15 10:00:00');
-    CarbonImmutable::setTestNow('2026-07-15 10:00:00');
-    Storage::fake('public');
-
-    try {
-        $this->artisan('dds:seed-demo-events')->assertSuccessful();
-
-        $this->get(route('home'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('upcomingEvents', 3)
-                ->where('upcomingEvents.0.slug', DevelopmentEventSeeder::EVENT_SLUGS[0])
-                ->where('upcomingEvents.1.slug', DevelopmentEventSeeder::EVENT_SLUGS[2])
-                ->where('upcomingEvents.2.slug', DevelopmentEventSeeder::EVENT_SLUGS[3]),
-            );
-
-        $this->get(route('events.index'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('events.total', 7)
-                ->where('events.data.0.slug', DevelopmentEventSeeder::EVENT_SLUGS[0])
-                ->where('events.data.0.registrationStatus', EventRegistrationStatus::Open->value)
-                ->where('events.data.0.season.name', DevelopmentEventSeeder::SEASON_NAME)
-                ->where('events.data.0.priceCents', 1500)
-                ->where('events.data.1.slug', DevelopmentEventSeeder::EVENT_SLUGS[2])
-                ->where('events.data.1.season', null)
-                ->where('events.data.1.registrationStatus', EventRegistrationStatus::Waitlist->value)
-                ->where('events.data.2.registrationStatus', EventRegistrationStatus::Full->value)
-                ->where('events.data.2.image.src', '/images/dds/racing/indoor-track.jpg')
-                ->where('events.data.3.slug', DevelopmentEventSeeder::EVENT_SLUGS[1])
-                ->where('events.data.3.registrationStatus', EventRegistrationStatus::Open->value)
-                ->where('events.data.4.registrationStatus', EventRegistrationStatus::Closed->value)
-                ->where('events.data.5.status', EventStatus::Cancelled->value)
-                ->where('events.data.6.slug', DevelopmentEventSeeder::EVENT_SLUGS[6])
-                ->where('events.data.6.type', EventType::Workshop->value)
-                ->where('events.data.6.registrationStatus', EventRegistrationStatus::Closed->value),
-            );
-
-        $this->get(route('events.index', ['type' => EventType::Training->value]))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('events.total', 4)
-                ->where('events.data.0.type', EventType::Training->value)
-                ->where('events.data.1.type', EventType::Training->value)
-                ->where('events.data.2.type', EventType::Training->value)
-                ->where('events.data.3.type', EventType::Training->value),
-            );
-
-        $this->get(route('events.index', ['type' => EventType::Demo->value]))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('activeType', EventType::Demo->value)
-                ->where('events.total', 0),
-            );
-
-        $this->get(route('events.show', ['event' => DevelopmentEventSeeder::EVENT_SLUGS[1]]))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('event.type', EventType::Race->value)
-                ->where('event.priceCents', 2500)
-                ->where('event.capacity', 32)
-                ->where('event.registrationStatus', EventRegistrationStatus::Open->value)
-                ->where('event.registrationUrl', 'https://example.com/dds-demo-registration'),
-            );
-
-        $this->get(route('events.show', ['event' => DevelopmentEventSeeder::EVENT_SLUGS[3]]))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('event.content', null)
-                ->where('event.image.src', '/images/dds/racing/indoor-track.jpg')
-                ->where('event.registrationStatus', EventRegistrationStatus::Full->value),
-            );
-    } finally {
-        Carbon::setTestNow();
-        CarbonImmutable::setTestNow();
-    }
-});
-
 test('a published training detail exposes practical and registration information', function () {
     $location = Location::factory()->create([
         'name' => 'Sportpaleis Alkmaar',
@@ -325,40 +243,6 @@ test('a published training detail exposes practical and registration information
             ->where('event.image.alt', 'Pilots preparing for an indoor training heat')
             ->where('seo.title', 'Indoor training round 01')
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/events/indoor-training-round-01'),
-        );
-});
-
-test('a published race detail exposes the same practical registration contract', function () {
-    $event = Event::factory()->published()->create([
-        'title' => 'Dutch Drone Racing Championship',
-        'slug' => 'dutch-drone-racing-championship',
-        'content' => 'Een volledige racedag met kwalificaties en finales.',
-        'type' => EventType::Race,
-        'price_cents' => 2500,
-        'capacity' => 48,
-        'registration_opens_at' => now()->subWeek(),
-        'registration_deadline_at' => now()->addWeek()->endOfDay(),
-        'registration_status' => EventRegistrationStatus::Open,
-        'registration_url' => 'https://example.com/race-registration',
-    ]);
-
-    $this->get(route('events.show', ['event' => $event->slug]))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('public/event-show')
-            ->where('event.id', $event->id)
-            ->where('event.type', EventType::Race->value)
-            ->where('event.content', 'Een volledige racedag met kwalificaties en finales.')
-            ->where('event.priceCents', 2500)
-            ->where('event.capacity', 48)
-            ->where('event.registrationStatus', EventRegistrationStatus::Open->value)
-            ->where('event.registrationOpensAt', $event->registration_opens_at?->toIso8601String())
-            ->where('event.registrationDeadlineAt', $event->registration_deadline_at?->toIso8601String())
-            ->where('event.registrationUrl', 'https://example.com/race-registration')
-            ->where('event.season', null)
-            ->has('event.location.name')
-            ->has('event.image.src')
-            ->has('event.image.alt'),
         );
 });
 

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\HandleLegacyRedirects;
 use App\Models\Redirect;
+use Illuminate\Http\Request;
 
 test('active redirects match exact paths and increment their hit count', function () {
     $redirect = Redirect::factory()->create([
@@ -24,6 +26,16 @@ test('redirect targets preserve their query string', function () {
     $this->get('/training-days')
         ->assertMovedPermanently()
         ->assertRedirect('/events?type=training');
+});
+
+test('unsafe requests bypass legacy redirect lookup', function () {
+    $response = app(HandleLegacyRedirects::class)->handle(
+        Request::create('/submitted-form', 'POST'),
+        fn () => response('continued', 418),
+    );
+
+    expect($response->getStatusCode())->toBe(418)
+        ->and($response->getContent())->toBe('continued');
 });
 
 test('inactive redirects are ignored', function () {
@@ -69,6 +81,19 @@ test('multi-step redirect loops are prevented', function () {
 
     expect($firstRedirect->refresh()->hit_count)->toBe(0)
         ->and($secondRedirect->refresh()->hit_count)->toBe(0);
+});
+
+test('excessively long redirect chains are prevented', function () {
+    $redirects = collect(range(1, 11))
+        ->map(fn (int $position): Redirect => Redirect::factory()->create([
+            'source_path' => "/chain-{$position}",
+            'target_url' => $position === 11 ? '/news' : '/chain-'.($position + 1),
+        ]));
+
+    $this->get('/chain-1')->assertNotFound();
+
+    expect($redirects->sum(fn (Redirect $redirect): int => $redirect->refresh()->hit_count))
+        ->toBe(0);
 });
 
 test('external redirect targets are supported', function () {
