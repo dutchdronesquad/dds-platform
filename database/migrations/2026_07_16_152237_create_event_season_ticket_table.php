@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('event_season_ticket', function (Blueprint $table) {
             $table->foreignId('event_id')
+                ->primary()
                 ->constrained()
                 ->cascadeOnDelete();
             $table->foreignId('season_ticket_id')
                 ->index()
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->primary(['event_id', 'season_ticket_id']);
         });
     }
 

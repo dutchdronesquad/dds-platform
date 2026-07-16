@@ -36,7 +36,6 @@ test('season tickets expose casts and only explicitly eligible events', function
 
     $seasonTicket->eligibleEvents()->attach($eligibleEvent);
     $seasonTicket->refresh()->load(['season', 'eligibleEvents']);
-    $eligibleEvent->load('seasonTickets');
 
     $this->assertModelExists($seasonTicket);
 
@@ -50,7 +49,6 @@ test('season tickets expose casts and only explicitly eligible events', function
         ->and($seasonTicket->eligibleEvents)->toHaveCount(1)
         ->and($seasonTicket->eligibleEvents->first()?->is($eligibleEvent))->toBeTrue()
         ->and($seasonTicket->eligibleEvents->contains($excludedEvent))->toBeFalse()
-        ->and($eligibleEvent->seasonTickets->first()?->is($seasonTicket))->toBeTrue()
         ->and($eligibleEvent->capacity)->toBe(16);
 });
 
@@ -63,20 +61,15 @@ test('season ticket sales state values are enforced by the database', function (
         ->toThrow(QueryException::class);
 });
 
-test('an event can be explicitly eligible for multiple season ticket products', function () {
+test('an event can be eligible for at most one season ticket product', function () {
     $event = Event::factory()->create();
     $firstSeasonTicket = SeasonTicket::factory()->create();
     $secondSeasonTicket = SeasonTicket::factory()->create();
 
     $firstSeasonTicket->eligibleEvents()->attach($event);
-    $secondSeasonTicket->eligibleEvents()->attach($event);
 
-    $event->load('seasonTickets');
-
-    expect($event->seasonTickets)
-        ->toHaveCount(2)
-        ->and($event->seasonTickets->contains($firstSeasonTicket))->toBeTrue()
-        ->and($event->seasonTickets->contains($secondSeasonTicket))->toBeTrue();
+    expect(fn () => $secondSeasonTicket->eligibleEvents()->attach($event))
+        ->toThrow(QueryException::class);
 });
 
 test('season ticket data is stored separately from generic season grouping', function () {
