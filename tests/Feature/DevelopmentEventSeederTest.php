@@ -8,7 +8,6 @@ use App\Models\MediaAsset;
 use App\Models\Season;
 use Carbon\CarbonImmutable;
 use Database\Seeders\DevelopmentEventSeeder;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -230,22 +229,29 @@ test('reset removes only unreferenced demo records and preserves real content', 
 test('reset works before the optional articles migration is applied', function () {
     $this->artisan('dds:seed-demo-events')->assertSuccessful();
 
-    $queries = [];
-    DB::listen(static function (QueryExecuted $query) use (&$queries): void {
-        $queries[] = $query->sql;
-    });
+    $connection = DB::connection();
+    $connection->flushQueryLog();
+    $connection->enableQueryLog();
+
     Schema::shouldReceive('hasTable')
         ->once()
         ->with('articles')
         ->andReturnFalse();
 
-    $this->artisan('dds:seed-demo-events --reset')
-        ->expectsOutput('7 demo-events verwijderd; overige content is behouden.')
-        ->assertSuccessful();
+    try {
+        $this->artisan('dds:seed-demo-events --reset')
+            ->expectsOutput('7 demo-events verwijderd; overige content is behouden.')
+            ->assertSuccessful();
+
+        $queries = collect($connection->getQueryLog())->pluck('query');
+    } finally {
+        $connection->disableQueryLog();
+        $connection->flushQueryLog();
+    }
 
     expect(Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->count())
         ->toBe(0)
-        ->and(collect($queries)->contains(
+        ->and($queries->contains(
             static fn (string $query): bool => Str::contains($query, 'articles'),
         ))
         ->toBeFalse();

@@ -82,7 +82,6 @@ final class EventController extends Controller
         return Inertia::render('public/event-show', [
             'event' => [
                 ...$this->eventData->summary($event),
-                'capacity' => $event->capacity,
                 'content' => $event->content,
                 'location' => [
                     'name' => $event->location->name,
@@ -92,7 +91,6 @@ final class EventController extends Controller
                     'postalCode' => $event->location->postal_code,
                     ...$this->googleMapsUrls($event->location),
                 ],
-                'priceCents' => $event->price_cents,
                 'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
                 'registrationOpensAt' => $event->registration_opens_at?->toIso8601String(),
                 'registrationUrl' => $event->registration_url,

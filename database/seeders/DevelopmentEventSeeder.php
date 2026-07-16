@@ -462,10 +462,9 @@ final class DevelopmentEventSeeder extends Seeder
 
     private function recurringEventTitle(string $name, CarbonImmutable $startsAt): string
     {
-        $monthAndYear = $startsAt
-            ->setTimezone('Europe/Amsterdam')
-            ->locale('nl')
-            ->translatedFormat('F Y');
+        $localizedStartsAt = $startsAt->setTimezone('Europe/Amsterdam');
+        $localizedStartsAt->locale('nl');
+        $monthAndYear = $localizedStartsAt->translatedFormat('F Y');
 
         return "{$name} - {$monthAndYear}";
     }

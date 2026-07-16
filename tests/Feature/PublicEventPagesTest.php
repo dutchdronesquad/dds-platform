@@ -133,7 +133,18 @@ test('the event index provides a useful empty result contract', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->where('activeType', EventType::Training->value)
             ->where('events.total', 0)
-            ->has('events.data', 0),
+            ->where('events.current_page', 1)
+            ->where('events.last_page', 1)
+            ->has('events.data', 0)
+            ->where('typeFilters', [
+                ['value' => EventType::Training->value, 'label' => 'Trainingen'],
+                ['value' => EventType::Race->value, 'label' => 'Races'],
+                ['value' => EventType::Demo->value, 'label' => 'Demo’s'],
+                ['value' => EventType::Workshop->value, 'label' => 'Workshops'],
+                ['value' => EventType::Other->value, 'label' => 'Overig'],
+            ])
+            ->has('seo.title')
+            ->has('seo.description'),
         );
 });
 
