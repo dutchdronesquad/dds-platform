@@ -13,8 +13,21 @@ test('a season can group events without offering a season ticket', function () {
 
     expect($season)
         ->name->toBe('Winter training series')
+        ->slug->toBe('winter-training-series')
         ->events->toHaveCount(3)
         ->seasonTicket->toBeNull();
+});
+
+test('season slugs are unique and remain stable when names change', function () {
+    $firstSeason = Season::factory()->create(['name' => 'Winter training series']);
+    $secondSeason = Season::factory()->create(['name' => 'Winter training series']);
+
+    $firstSeason->update(['name' => 'Winter training series updated']);
+
+    expect($firstSeason->refresh())
+        ->slug->toBe('winter-training-series')
+        ->getRouteKeyName()->toBe('slug')
+        ->and($secondSeason->slug)->toBe('winter-training-series-2');
 });
 
 test('a season can have one optional ticket product', function () {

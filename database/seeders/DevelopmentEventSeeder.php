@@ -23,13 +23,17 @@ use RuntimeException;
 
 final class DevelopmentEventSeeder extends Seeder
 {
+    private const EVENT_INTERVAL_WEEKS = 4;
+
+    private const SEASON_EVENT_COUNT = 8;
+
     public const EVENT_SLUG_PREFIX = 'dds-demo-';
 
     public const LOCATION_SLUG_PREFIX = 'dds-demo-location-';
 
     public const MEDIA_PATH_PREFIX = 'demo/events/';
 
-    public const SEASON_NAME = 'DDS demo seizoen';
+    public const SEASON_SLUG = 'dds-demo-seizoen';
 
     /**
      * @var list<string>
@@ -42,6 +46,9 @@ final class DevelopmentEventSeeder extends Seeder
         'dds-demo-club-race-inschrijving-gesloten',
         'dds-demo-geannuleerde-zomer-race',
         'dds-demo-workshop-volgend-seizoen',
+        'dds-demo-vliegavond-augustus',
+        'dds-demo-vliegavond-september',
+        'dds-demo-vliegavond-oktober-los-ticket',
     ];
 
     /** @var list<string> */
@@ -62,19 +69,27 @@ final class DevelopmentEventSeeder extends Seeder
     {
         $this->ensureDevelopmentEnvironment();
 
-        $referenceDate = CarbonImmutable::today('Europe/Amsterdam');
+        $referenceDate = CarbonImmutable::now('Europe/Amsterdam');
 
         DB::transaction(function () use ($referenceDate): void {
             $covers = $this->seedCovers();
             $locations = $this->seedLocations();
+            $seasonStart = $this->demoSeasonStart($referenceDate);
             $season = Season::query()->updateOrCreate(
-                ['name' => self::SEASON_NAME],
+                ['slug' => self::SEASON_SLUG],
                 Season::factory()->make([
-                    'name' => self::SEASON_NAME,
+                    'name' => $this->demoSeasonName($seasonStart),
+                    'slug' => self::SEASON_SLUG,
                 ])->toArray(),
             );
 
-            $this->seedEvents($referenceDate, $locations, $covers, $season);
+            $this->seedEvents(
+                $referenceDate,
+                $seasonStart,
+                $locations,
+                $covers,
+                $season,
+            );
             $this->seedSeasonTicket($referenceDate, $season);
         });
     }
@@ -109,7 +124,7 @@ final class DevelopmentEventSeeder extends Seeder
                 ->delete();
 
             Season::query()
-                ->where('name', self::SEASON_NAME)
+                ->where('slug', self::SEASON_SLUG)
                 ->whereDoesntHave('events')
                 ->delete();
 
@@ -261,6 +276,7 @@ final class DevelopmentEventSeeder extends Seeder
      */
     private function seedEvents(
         CarbonImmutable $referenceDate,
+        CarbonImmutable $seasonStart,
         array $locations,
         array $covers,
         Season $season,
@@ -273,23 +289,23 @@ final class DevelopmentEventSeeder extends Seeder
                 'factory' => Event::factory()->published()->training(),
                 'title' => $this->recurringEventTitle(
                     'FPV vliegavond',
-                    $this->scheduledDate($nextSunday, 0, 18),
+                    $this->demoSeasonDate($seasonStart, 0, 18),
                 ),
                 'slug' => self::EVENT_SLUGS[0],
                 'content' => "Op deze zondagavond bouwen we in het Sportpaleis een nieuw indoorparcours op. Je vliegt vrije heats, terwijl de racetimers je rondetijden registreren voor FPV Scores.\n\nNeem je eigen quad, goggles, radio, voldoende geladen accu’s en eventueel een stekkerdoos mee. Zet je VTX op 25 mW en gebruik bij digitaal vliegen een bitrate van 25 Mbit. We waarderen hulp bij het opbouwen en afbreken.",
-                'starts_at' => $this->scheduledDate($nextSunday, 0, 18),
-                'ends_at' => $this->scheduledDate($nextSunday, 0, 21),
+                'starts_at' => $this->demoSeasonDate($seasonStart, 0, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 0, 21),
                 'location_id' => $locations['alkmaar']->id,
                 'season_id' => $season->id,
                 'cover_image_id' => $covers['training']->id,
                 'status' => EventStatus::Published,
                 'type' => EventType::Training,
-                'price_cents' => 1500,
+                'price_cents' => null,
                 'capacity' => 16,
-                'registration_opens_at' => $this->registrationOpensAt($this->scheduledDate($nextSunday, 0, 18)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->scheduledDate($nextSunday, 0, 18)),
-                'registration_status' => EventRegistrationStatus::Open,
-                'registration_url' => $registrationUrl,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
+                'registration_status' => EventRegistrationStatus::Closed,
+                'registration_url' => null,
             ],
             [
                 'factory' => Event::factory()->published(),
@@ -314,56 +330,59 @@ final class DevelopmentEventSeeder extends Seeder
                 'factory' => Event::factory()->published()->training(),
                 'title' => 'Blacklight FPV-oefenavond',
                 'slug' => self::EVENT_SLUGS[2],
-                'content' => "Een rustige oefenavond voor beginners en piloten die door obstakels willen leren vliegen. Als de zaal wordt verduisterd, lichten de vaste UV-installatie, het parcours en drones met leds op.\n\nDe reguliere plaatsen zijn vergeven. Aanmelden voor de wachtlijst is nog mogelijk; deze avond gaat door bij voldoende belangstelling.",
-                'starts_at' => $this->eventDate($nextSunday, 2, 18),
-                'ends_at' => $this->eventDate($nextSunday, 2, 21),
+                'content' => "Een rustige oefenavond voor beginners en piloten die door obstakels willen leren vliegen. Als de zaal wordt verduisterd, lichten de vaste UV-installatie, het parcours en drones met leds op.\n\nDeze avond maakt deel uit van het doorlopende demo-seizoen en is ook als losse vliegavond te boeken zodra de inschrijving opent.",
+                'starts_at' => $this->demoSeasonDate($seasonStart, 1, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 1, 21),
                 'location_id' => $locations['de-goorn']->id,
-                'season_id' => null,
+                'season_id' => $season->id,
                 'cover_image_id' => $covers['track']->id,
                 'status' => EventStatus::Published,
                 'type' => EventType::Training,
                 'price_cents' => null,
                 'capacity' => 12,
-                'registration_opens_at' => $this->registrationOpensAt($this->eventDate($nextSunday, 2, 18)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->eventDate($nextSunday, 2, 18)),
-                'registration_status' => EventRegistrationStatus::Waitlist,
-                'registration_url' => $registrationUrl,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
+                'registration_status' => EventRegistrationStatus::Closed,
+                'registration_url' => null,
             ],
             [
                 'factory' => Event::factory()->published()->training(),
                 'title' => 'FPV-kennismakingsavond',
                 'slug' => self::EVENT_SLUGS[3],
                 'content' => null,
-                'starts_at' => $this->eventDate($nextSunday, 4, 18),
-                'ends_at' => $this->eventDate($nextSunday, 4, 21),
+                'starts_at' => $this->demoSeasonDate($seasonStart, 2, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 2, 21),
                 'location_id' => $locations['de-goorn']->id,
-                'season_id' => null,
+                'season_id' => $season->id,
                 'cover_image_id' => null,
                 'status' => EventStatus::Published,
                 'type' => EventType::Training,
-                'price_cents' => 0,
+                'price_cents' => null,
                 'capacity' => 10,
-                'registration_opens_at' => $this->registrationOpensAt($this->eventDate($nextSunday, 4, 18)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->eventDate($nextSunday, 4, 18)),
-                'registration_status' => EventRegistrationStatus::Full,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
+                'registration_status' => EventRegistrationStatus::Closed,
                 'registration_url' => null,
             ],
             [
-                'factory' => Event::factory()->published(),
-                'title' => 'Indoor FPV-clubrace',
+                'factory' => Event::factory()->published()->training(),
+                'title' => $this->recurringEventTitle(
+                    'FPV vliegavond',
+                    $this->demoSeasonDate($seasonStart, 3, 18),
+                ),
                 'slug' => self::EVENT_SLUGS[4],
-                'content' => 'Omdat het Sportpaleis deze dag niet beschikbaar is, wijkt deze compacte clubrace eenmalig uit naar Sporthal Oosterhout. We bouwen een technisch parcours op en gebruiken de DDS-racetimers. De inschrijving is gesloten; bezoekers zijn welkom.',
-                'starts_at' => $this->scheduledDate($nextSunday, 4, 10),
-                'ends_at' => $this->scheduledDate($nextSunday, 4, 16, 30),
-                'location_id' => $locations['oosterhout']->id,
-                'season_id' => null,
-                'cover_image_id' => null,
+                'content' => 'Een indoor vliegavond met een toegankelijk parcours en vrije heats voor alle deelnemers aan het DDS-demo-seizoen.',
+                'starts_at' => $this->demoSeasonDate($seasonStart, 3, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 3, 21),
+                'location_id' => $locations['alkmaar']->id,
+                'season_id' => $season->id,
+                'cover_image_id' => $covers['training']->id,
                 'status' => EventStatus::Published,
-                'type' => EventType::Race,
-                'price_cents' => 1750,
-                'capacity' => 32,
-                'registration_opens_at' => $this->registrationOpensAt($this->scheduledDate($nextSunday, 4, 10)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->scheduledDate($nextSunday, 4, 10)),
+                'type' => EventType::Training,
+                'price_cents' => null,
+                'capacity' => 16,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
                 'registration_status' => EventRegistrationStatus::Closed,
                 'registration_url' => null,
             ],
@@ -371,21 +390,21 @@ final class DevelopmentEventSeeder extends Seeder
                 'factory' => Event::factory()->cancelled()->training(),
                 'title' => $this->recurringEventTitle(
                     'FPV uitwijkavond',
-                    $this->scheduledDate($nextSunday, 5, 18),
+                    $this->demoSeasonDate($seasonStart, 4, 18),
                 ),
                 'slug' => self::EVENT_SLUGS[5],
                 'content' => 'Deze uitwijkvliegavond was gepland omdat het Sportpaleis niet beschikbaar was, maar gaat niet door. Houd de agenda in de gaten voor een volgende zondagavond.',
-                'starts_at' => $this->scheduledDate($nextSunday, 5, 18),
-                'ends_at' => $this->scheduledDate($nextSunday, 5, 21),
+                'starts_at' => $this->demoSeasonDate($seasonStart, 4, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 4, 21),
                 'location_id' => $locations['oosterhout']->id,
-                'season_id' => null,
+                'season_id' => $season->id,
                 'cover_image_id' => $covers['training']->id,
                 'status' => EventStatus::Cancelled,
                 'type' => EventType::Training,
-                'price_cents' => 1500,
+                'price_cents' => null,
                 'capacity' => 16,
-                'registration_opens_at' => $this->registrationOpensAt($this->scheduledDate($nextSunday, 5, 18)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->scheduledDate($nextSunday, 5, 18)),
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
                 'registration_status' => EventRegistrationStatus::Closed,
                 'registration_url' => null,
             ],
@@ -394,8 +413,8 @@ final class DevelopmentEventSeeder extends Seeder
                 'title' => 'Workshop FPV-racevoorbereiding',
                 'slug' => self::EVENT_SLUGS[6],
                 'content' => 'Een technische workshop over betrouwbare builds, VTX-instellingen, 25 mW zendvermogen, digitale bitrate, kanaalindeling en racevoorbereiding voor het volgende indoorseizoen.',
-                'starts_at' => $this->eventDate($referenceDate, 365, 13),
-                'ends_at' => $this->eventDate($referenceDate, 365, 17),
+                'starts_at' => $this->scheduledDate($nextSunday, 16, 13),
+                'ends_at' => $this->scheduledDate($nextSunday, 16, 17),
                 'location_id' => $locations['alkmaar']->id,
                 'season_id' => null,
                 'cover_image_id' => $covers['track']->id,
@@ -403,8 +422,74 @@ final class DevelopmentEventSeeder extends Seeder
                 'type' => EventType::Workshop,
                 'price_cents' => 1250,
                 'capacity' => 24,
-                'registration_opens_at' => $this->registrationOpensAt($this->eventDate($referenceDate, 365, 13)),
-                'registration_deadline_at' => $this->registrationDeadlineAt($this->eventDate($referenceDate, 365, 13)),
+                'registration_opens_at' => $this->registrationOpensAt($this->scheduledDate($nextSunday, 16, 13)),
+                'registration_deadline_at' => $this->registrationDeadlineAt($this->scheduledDate($nextSunday, 16, 13)),
+                'registration_status' => EventRegistrationStatus::Closed,
+                'registration_url' => null,
+            ],
+            [
+                'factory' => Event::factory()->published()->training(),
+                'title' => $this->recurringEventTitle(
+                    'FPV vliegavond',
+                    $this->demoSeasonDate($seasonStart, 5, 18),
+                ),
+                'slug' => self::EVENT_SLUGS[7],
+                'content' => 'Een volgende vliegavond binnen het DDS-seizoen. We bouwen een technisch maar toegankelijk indoorparcours op met ruimte voor vrije heats, rondetijden en begeleiding voor nieuwe piloten.',
+                'starts_at' => $this->demoSeasonDate($seasonStart, 5, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 5, 21),
+                'location_id' => $locations['alkmaar']->id,
+                'season_id' => $season->id,
+                'cover_image_id' => $covers['training']->id,
+                'status' => EventStatus::Published,
+                'type' => EventType::Training,
+                'price_cents' => null,
+                'capacity' => 16,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
+                'registration_status' => EventRegistrationStatus::Closed,
+                'registration_url' => null,
+            ],
+            [
+                'factory' => Event::factory()->published()->training(),
+                'title' => $this->recurringEventTitle(
+                    'FPV vliegavond',
+                    $this->demoSeasonDate($seasonStart, 6, 18),
+                ),
+                'slug' => self::EVENT_SLUGS[8],
+                'content' => 'Een volgende vliegavond in het demo-seizoen met vrije heats, rondetijden en ruimte voor begeleiding van nieuwe piloten.',
+                'starts_at' => $this->demoSeasonDate($seasonStart, 6, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 6, 21),
+                'location_id' => $locations['alkmaar']->id,
+                'season_id' => $season->id,
+                'cover_image_id' => $covers['track']->id,
+                'status' => EventStatus::Published,
+                'type' => EventType::Training,
+                'price_cents' => null,
+                'capacity' => 16,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
+                'registration_status' => EventRegistrationStatus::Closed,
+                'registration_url' => null,
+            ],
+            [
+                'factory' => Event::factory()->published()->training(),
+                'title' => $this->recurringEventTitle(
+                    'FPV vliegavond',
+                    $this->demoSeasonDate($seasonStart, 7, 18),
+                ),
+                'slug' => self::EVENT_SLUGS[9],
+                'content' => 'De afsluitende vliegavond van het DDS-indoorseizoen. We combineren vrije heats met een ontspannen seizoensafsluiting en bouwen daarna samen het parcours af.',
+                'starts_at' => $this->demoSeasonDate($seasonStart, 7, 18),
+                'ends_at' => $this->demoSeasonDate($seasonStart, 7, 21),
+                'location_id' => $locations['alkmaar']->id,
+                'season_id' => $season->id,
+                'cover_image_id' => $covers['training']->id,
+                'status' => EventStatus::Published,
+                'type' => EventType::Training,
+                'price_cents' => null,
+                'capacity' => 16,
+                'registration_opens_at' => null,
+                'registration_deadline_at' => null,
                 'registration_status' => EventRegistrationStatus::Closed,
                 'registration_url' => null,
             ],
@@ -413,6 +498,36 @@ final class DevelopmentEventSeeder extends Seeder
         foreach ($fixtures as $fixture) {
             $factory = $fixture['factory'];
             unset($fixture['factory']);
+
+            if ($fixture['season_id'] === $season->id) {
+                $fixture['price_cents'] = 1500;
+
+                if ($fixture['status'] === EventStatus::Published) {
+                    $fixture['registration_opens_at'] = $this->registrationOpensAt(
+                        $fixture['starts_at'],
+                    );
+                    $fixture['registration_deadline_at'] = $this->registrationDeadlineAt(
+                        $fixture['starts_at'],
+                    );
+                }
+            }
+
+            if (
+                $fixture['status'] === EventStatus::Published
+                && $fixture['registration_opens_at'] instanceof CarbonImmutable
+                && $fixture['registration_deadline_at'] instanceof CarbonImmutable
+            ) {
+                $registrationIsOpen = $referenceDate->betweenIncluded(
+                    $fixture['registration_opens_at'],
+                    $fixture['registration_deadline_at'],
+                );
+                $fixture['registration_status'] = $registrationIsOpen
+                    ? EventRegistrationStatus::Open
+                    : EventRegistrationStatus::Closed;
+                $fixture['registration_url'] = $registrationIsOpen
+                    ? $registrationUrl
+                    : null;
+            }
 
             $attributes = $factory->make([
                 ...$fixture,
@@ -428,7 +543,7 @@ final class DevelopmentEventSeeder extends Seeder
 
     private function seedSeasonTicket(CarbonImmutable $referenceDate, Season $season): void
     {
-        $seasonTicket = SeasonTicket::query()->updateOrCreate(
+        SeasonTicket::query()->updateOrCreate(
             ['season_id' => $season->id],
             SeasonTicket::factory()->available()->make([
                 'season_id' => $season->id,
@@ -436,26 +551,45 @@ final class DevelopmentEventSeeder extends Seeder
                 'sales_opens_at' => $referenceDate->subMonth()->utc(),
                 'sales_closes_at' => $referenceDate->addYear()->utc(),
                 'registration_url' => 'https://example.com/dds-demo-season-ticket',
-                'copy' => 'Met dit seizoenskaartje kun je deelnemen aan de geselecteerde DDS-trainingsavonden.',
+                'copy' => 'Met één seizoensticket neem je deel aan alle acht indoor vliegavonden in dit demo-seizoen.',
                 'price_cents' => 9000,
                 'capacity' => null,
             ])->toArray(),
         );
-
-        $eligibleEvent = Event::query()
-            ->where('slug', self::EVENT_SLUGS[0])
-            ->firstOrFail();
-
-        $seasonTicket->eligibleEvents()->sync([$eligibleEvent->id]);
     }
 
-    private function eventDate(
-        CarbonImmutable $referenceDate,
-        int $days,
+    private function demoSeasonStart(CarbonImmutable $referenceDate): CarbonImmutable
+    {
+        return $referenceDate
+            ->setTimezone('Europe/Amsterdam')
+            ->subWeeks(self::EVENT_INTERVAL_WEEKS)
+            ->next(CarbonInterface::SUNDAY)
+            ->startOfDay();
+    }
+
+    private function demoSeasonName(CarbonImmutable $seasonStart): string
+    {
+        $seasonEnd = $seasonStart->addWeeks(
+            (self::SEASON_EVENT_COUNT - 1) * self::EVENT_INTERVAL_WEEKS,
+        );
+
+        if ($seasonStart->year === $seasonEnd->year) {
+            return "DDS indoorseizoen {$seasonStart->year}";
+        }
+
+        return "DDS indoorseizoen {$seasonStart->year}/{$seasonEnd->year}";
+    }
+
+    private function demoSeasonDate(
+        CarbonImmutable $seasonStart,
+        int $eventOffset,
         int $hour,
         int $minute = 0,
     ): CarbonImmutable {
-        return $referenceDate->addDays($days)->setTime($hour, $minute)->utc();
+        return $seasonStart
+            ->addWeeks($eventOffset * self::EVENT_INTERVAL_WEEKS)
+            ->setTime($hour, $minute)
+            ->utc();
     }
 
     private function scheduledDate(
@@ -471,7 +605,9 @@ final class DevelopmentEventSeeder extends Seeder
     {
         return $startsAt
             ->setTimezone('Europe/Amsterdam')
-            ->subWeeks(2)
+            ->subWeek()
+            ->startOfWeek(CarbonInterface::MONDAY)
+            ->setTime(9, 0)
             ->utc();
     }
 

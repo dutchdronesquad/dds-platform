@@ -3,10 +3,12 @@
 use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
+use App\Enums\SeasonTicketSalesState;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -53,13 +55,21 @@ test('the event index lists only published upcoming events in chronological orde
         ->assertInertia(fn (Assert $page) => $page
             ->component('public/events-index')
             ->where('activeType', null)
+            ->where('currentSeason.id', $nextEvent->season_id)
+            ->where('currentSeason.slug', $nextEvent->season?->slug)
+            ->where('currentSeason.name', 'Seizoen 2026/27')
+            ->where('currentSeason.eventCount', 1)
+            ->where('currentSeason.ticket', null)
             ->where('events.total', 3)
             ->has('events.data', 3)
             ->where('events.data.0.id', $nextEvent->id)
             ->where('events.data.0.priceCents', 1500)
             ->where('events.data.0.capacity', 16)
+            ->where('events.data.0.registrationOpensAt', $nextEvent->registration_opens_at?->toIso8601String())
+            ->where('events.data.0.registrationDeadlineAt', $nextEvent->registration_deadline_at?->toIso8601String())
             ->where('events.data.0.registrationStatus', EventRegistrationStatus::Open->value)
             ->where('events.data.0.season.name', 'Seizoen 2026/27')
+            ->where('events.data.0.season.slug', $nextEvent->season?->slug)
             ->where('events.data.0.location.name', $nextEvent->location->name)
             ->where('events.data.1.id', $cancelledEvent->id)
             ->where('events.data.1.status', EventStatus::Cancelled->value)
@@ -89,6 +99,104 @@ test('the event index filters upcoming events by type', function () {
             ->where('events.data.0.id', $training->id)
             ->where('events.data.0.type', EventType::Training->value),
         );
+});
+
+test('training and race filters expose a compact public season summary', function () {
+    $season = Season::factory()->create([
+        'name' => 'Wintercompetitie voor indoorpiloten 2026/27',
+    ]);
+    $previousTraining = Event::factory()->published()->training()->for($season)->create([
+        'starts_at' => now()->subMonth(),
+        'ends_at' => now()->subMonth()->addHours(3),
+    ]);
+    $upcomingTraining = Event::factory()->published()->training()->for($season)->create([
+        'starts_at' => now()->addMonth(),
+        'ends_at' => now()->addMonth()->addHours(3),
+    ]);
+    Event::factory()->published()->for($season)->create([
+        'starts_at' => now()->addMonths(2),
+        'type' => EventType::Race,
+    ]);
+    Event::factory()->training()->for($season)->create([
+        'starts_at' => now()->addMonths(3),
+    ]);
+    SeasonTicket::factory()->available()->for($season)->create([
+        'price_cents' => 9_000,
+        'registration_url' => 'https://example.com/season-ticket',
+    ]);
+
+    $this->get(route('events.index', ['type' => EventType::Training->value]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('currentSeason.name', 'Wintercompetitie voor indoorpiloten 2026/27')
+            ->where('currentSeason.startsAt', $previousTraining->starts_at->toIso8601String())
+            ->where('currentSeason.endsAt', $upcomingTraining->ends_at?->toIso8601String())
+            ->where('currentSeason.eventCount', 2)
+            ->where('currentSeason.ticket.salesState', SeasonTicketSalesState::Available->value)
+            ->where('currentSeason.ticket.priceCents', 9_000)
+            ->where('currentSeason.ticket.registrationUrl', 'https://example.com/season-ticket'),
+        );
+});
+
+test('a public season page shows one ticket for all published events', function () {
+    $season = Season::factory()->create([
+        'name' => 'Wintercompetitie 2026/27',
+    ]);
+    $openingEvent = Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Openingsavond',
+        'starts_at' => now()->addMonth(),
+        'price_cents' => 1500,
+        'registration_opens_at' => now()->subWeek(),
+        'registration_deadline_at' => now()->addMonth()->subDay(),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    $finalEvent = Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Finaleavond',
+        'starts_at' => now()->addMonths(2),
+        'price_cents' => 1750,
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    $draftEvent = Event::factory()->training()->for($season)->create([
+        'title' => 'Nog niet aangekondigd',
+        'starts_at' => now()->addMonths(3),
+    ]);
+    SeasonTicket::factory()->available()->for($season)->create([
+        'copy' => 'Toegang tot alle competitierondes.',
+        'price_cents' => 9_000,
+        'registration_url' => 'https://example.com/season-ticket',
+    ]);
+
+    $this->get(route('seasons.show', ['season' => $season]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('public/season-show')
+            ->where('season.id', $season->id)
+            ->where('season.slug', $season->slug)
+            ->where('season.name', 'Wintercompetitie 2026/27')
+            ->where('season.eventCount', 2)
+            ->where('season.ticket.salesState', SeasonTicketSalesState::Available->value)
+            ->where('season.ticket.priceCents', 9_000)
+            ->where('season.ticket.registrationUrl', 'https://example.com/season-ticket')
+            ->has('season.events', 2)
+            ->where('season.events.0.id', $openingEvent->id)
+            ->where('season.events.0.priceCents', 1500)
+            ->where('season.events.0.registrationStatus', EventRegistrationStatus::Open->value)
+            ->where('season.events.0.registrationOpensAt', $openingEvent->registration_opens_at?->toIso8601String())
+            ->where('season.events.0.registrationDeadlineAt', $openingEvent->registration_deadline_at?->toIso8601String())
+            ->where('season.events.1.id', $finalEvent->id)
+            ->where('season.events.1.priceCents', 1750)
+            ->where('season.events', fn ($events): bool => collect($events)->doesntContain('id', $draftEvent->id))
+            ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/')."/seasons/{$season->slug}"),
+        );
+
+    $this->get("/seasons/{$season->id}")->assertNotFound();
+});
+
+test('a season without public events has no public detail page', function () {
+    $season = Season::factory()->create();
+    Event::factory()->for($season)->create();
+
+    $this->get(route('seasons.show', ['season' => $season]))->assertNotFound();
 });
 
 test('events with the same start time keep a deterministic creation order', function () {
@@ -245,6 +353,90 @@ test('a published training detail exposes practical and registration information
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/events/indoor-training-round-01'),
         );
 });
+
+test('an event detail exposes the ticket that covers its entire season', function () {
+    $season = Season::factory()->create([
+        'name' => 'DDS Wintercompetitie voor gevorderde indoorpiloten 2026/2027',
+    ]);
+    $event = Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Openingsavond',
+        'slug' => 'openingsavond',
+        'starts_at' => '2026-09-15 18:00:00',
+        'ends_at' => '2026-09-15 22:00:00',
+        'price_cents' => 1500,
+    ]);
+    $finalEvent = Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Finaleavond',
+        'slug' => 'finaleavond',
+        'starts_at' => '2027-05-20 18:00:00',
+        'ends_at' => '2027-05-20 22:00:00',
+    ]);
+    Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Tussenronde',
+        'starts_at' => '2027-01-10 18:00:00',
+    ]);
+    Event::factory()->training()->for($season)->create([
+        'title' => 'Nog niet aangekondigde ronde',
+        'starts_at' => '2027-03-10 18:00:00',
+    ]);
+    SeasonTicket::factory()->available()->for($season)->create([
+        'copy' => 'Toegang tot alle competitierondes.',
+        'price_cents' => 9_000,
+        'capacity' => 12,
+        'registration_url' => 'https://example.com/buy-season-ticket',
+    ]);
+    $this->get(route('events.show', ['event' => $event->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.seasonContext.name', 'DDS Wintercompetitie voor gevorderde indoorpiloten 2026/2027')
+            ->where('event.seasonContext.startsAt', $event->starts_at->toIso8601String())
+            ->where('event.seasonContext.endsAt', $finalEvent->ends_at?->toIso8601String())
+            ->where('event.seasonContext.eventCount', 3)
+            ->where('event.priceCents', 1500)
+            ->where('event.seasonContext.ticket.salesState', SeasonTicketSalesState::Available->value)
+            ->where('event.seasonContext.ticket.registrationUrl', 'https://example.com/buy-season-ticket')
+            ->where('event.seasonContext.ticket.copy', 'Toegang tot alle competitierondes.')
+            ->where('event.seasonContext.ticket.priceCents', 9_000)
+            ->where('event.seasonContext.ticket.capacity', 12),
+        );
+});
+
+test('a season without a ticket offer keeps context without a sales module', function () {
+    $season = Season::factory()->create(['name' => 'Trainingsseizoen 2027']);
+    SeasonTicket::factory()->notOffered()->for($season)->create();
+    $event = Event::factory()->published()->training()->for($season)->create();
+
+    $this->get(route('events.show', ['event' => $event->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.seasonContext.name', 'Trainingsseizoen 2027')
+            ->where('event.seasonContext.eventCount', 1)
+            ->where('event.seasonContext.ticket', null),
+        );
+});
+
+test('unavailable season tickets expose state without a registration action', function (
+    string $factoryState,
+    SeasonTicketSalesState $salesState,
+) {
+    $season = Season::factory()->create();
+    $event = Event::factory()->published()->training()->for($season)->create();
+    Event::factory()->published()->training()->for($season)->create();
+    SeasonTicket::factory()->{$factoryState}()->for($season)->create([
+        'registration_url' => 'https://example.com/misleading-action',
+    ]);
+
+    $this->get(route('events.show', ['event' => $event->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.seasonContext.ticket.salesState', $salesState->value)
+            ->where('event.seasonContext.ticket.registrationUrl', null),
+        );
+})->with([
+    'coming soon' => ['comingSoon', SeasonTicketSalesState::ComingSoon],
+    'sold out' => ['soldOut', SeasonTicketSalesState::SoldOut],
+    'closed' => ['closed', SeasonTicketSalesState::Closed],
+]);
 
 test('a previously published cancelled event remains public with its state', function () {
     $event = Event::factory()->cancelled()->create([

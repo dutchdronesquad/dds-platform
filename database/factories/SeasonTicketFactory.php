@@ -81,15 +81,13 @@ class SeasonTicketFactory extends Factory
         ]);
     }
 
-    public function withEligibleEvents(int $count = 3): static
+    public function withEvents(int $count = 3): static
     {
         return $this->afterCreating(function (SeasonTicket $seasonTicket) use ($count): void {
-            $events = Event::factory()
+            Event::factory()
                 ->count($count)
                 ->for($seasonTicket->season)
                 ->create();
-
-            $seasonTicket->eligibleEvents()->attach($events);
         });
     }
 }

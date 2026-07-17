@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Location;
 use App\Support\PublicEventData;
+use App\Support\PublicSeasonData;
 use App\Support\SeoMetadata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,7 +16,10 @@ use Inertia\Response;
 
 final class EventController extends Controller
 {
-    public function __construct(private PublicEventData $eventData) {}
+    public function __construct(
+        private PublicEventData $eventData,
+        private PublicSeasonData $seasonData,
+    ) {}
 
     public function index(Request $request, SeoMetadata $seoMetadata): Response
     {
@@ -35,18 +39,38 @@ final class EventController extends Controller
                 'type',
                 'price_cents',
                 'capacity',
+                'registration_opens_at',
+                'registration_deadline_at',
                 'registration_status',
             ])
             ->publiclyVisible()
             ->upcoming()
             ->with([
                 'location:id,name,city',
-                'season:id,name',
+                'season:id,name,slug',
                 'coverImage:id,disk,path,alt_text',
             ]);
 
         if ($activeType !== null) {
             $eventsQuery->where('type', $activeType);
+        }
+
+        $currentSeason = null;
+
+        if (
+            $activeType === null
+            || in_array($activeType, [EventType::Training, EventType::Race], true)
+        ) {
+            $firstSeasonEvent = (clone $eventsQuery)
+                ->whereNotNull('season_id')
+                ->first();
+
+            if ($firstSeasonEvent?->season !== null) {
+                $currentSeason = $this->seasonData->summary(
+                    $firstSeasonEvent->season,
+                    $activeType,
+                );
+            }
         }
 
         $events = $eventsQuery
@@ -56,6 +80,7 @@ final class EventController extends Controller
 
         return Inertia::render('public/events-index', [
             'activeType' => $activeType?->value,
+            'currentSeason' => $currentSeason,
             'events' => $events,
             'seo' => $seoMetadata->forPage('events'),
             'typeFilters' => $this->typeFilters(),
@@ -68,11 +93,14 @@ final class EventController extends Controller
 
         $event->load([
             'location',
-            'season:id,name',
+            'season:id,name,slug',
             'coverImage:id,disk,path,alt_text',
         ]);
 
         $image = $this->eventData->image($event);
+        $seasonContext = $event->season === null
+            ? null
+            : $this->seasonData->summary($event->season);
         $description = Str::limit(
             Str::squish($event->content ?? ''),
             155,
@@ -91,9 +119,8 @@ final class EventController extends Controller
                     'postalCode' => $event->location->postal_code,
                     ...$this->googleMapsUrls($event->location),
                 ],
-                'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
-                'registrationOpensAt' => $event->registration_opens_at?->toIso8601String(),
                 'registrationUrl' => $event->registration_url,
+                'seasonContext' => $seasonContext,
             ],
             'seo' => $seoMetadata->forPage('event', [
                 'title' => $event->title,

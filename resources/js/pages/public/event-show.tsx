@@ -1,26 +1,30 @@
+import { Link } from '@inertiajs/react';
 import {
     ArrowUpRight,
     CalendarDays,
+    CalendarRange,
+    ChevronRight,
     Clock3,
     MapPin,
     Ticket,
-    Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { PublicEventRegistrationStatus } from '@/components/public/public-event-card';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import {
-    eventRegistrationLabels,
     eventTypeLabels,
     formatEventDate,
     formatEventDateTime,
+    formatEventLocation,
     formatEventPrice,
     formatEventTimeRange,
+    getEventRegistrationDetail,
+    getEventRegistrationLabel,
+    isEventRegistrationUpcoming,
 } from '@/lib/event-formatting';
-import { cn } from '@/lib/utils';
 import { index as eventsIndex } from '@/routes/events';
+import { show as seasonShow } from '@/routes/seasons';
 import type { PublicEventDetail, SeoMetadata } from '@/types';
 
 type Props = {
@@ -32,16 +36,13 @@ export default function EventShow({ event, seo }: Props) {
     const isCancelled = event.status === 'cancelled';
     const registrationLabel = getRegistrationLabel(event, isCancelled);
     const canRegister = canRegisterForEvent(event, isCancelled);
-    const heroKicker = [eventTypeLabels[event.type], event.season?.name]
-        .filter(Boolean)
-        .join(' · ');
 
     return (
         <>
             <PublicSeoHead metadata={seo} />
 
             <PublicHero
-                kicker={heroKicker}
+                kicker={eventTypeLabels[event.type]}
                 title={event.title}
                 actions={[
                     {
@@ -50,7 +51,7 @@ export default function EventShow({ event, seo }: Props) {
                             : canRegister
                               ? event.registrationStatus === 'waitlist'
                                   ? 'Bekijk de wachtlijst'
-                                  : 'Tickets & aanmelden'
+                                  : 'Aanmelden'
                               : 'Bekijk praktische info',
                         href: canRegister ? '#tickets' : '#praktische-info',
                     },
@@ -61,6 +62,7 @@ export default function EventShow({ event, seo }: Props) {
                 ]}
                 media={event.image}
                 separatorTone="paper"
+                showSeparator={false}
                 size="compact"
             />
 
@@ -68,64 +70,50 @@ export default function EventShow({ event, seo }: Props) {
                 <section
                     id="praktische-info"
                     aria-label="Event in het kort"
-                    className="scroll-mt-24"
+                    className="scroll-mt-24 border-y border-paddock-rule bg-paddock dark:border-white/12 dark:bg-night-900"
                 >
                     <div className="mx-auto w-full max-w-7xl px-public-gutter">
-                        <div className="relative overflow-hidden border-x border-y border-deep-signal bg-deep-signal shadow-xl shadow-deep-signal/12 dark:border-white/12">
-                            <span
-                                aria-hidden="true"
-                                className="absolute top-0 left-0 z-10 h-1 w-24 bg-dds-orange sm:w-36"
+                        <dl
+                            data-testid="event-quick-facts"
+                            className="grid gap-px bg-paddock-rule sm:grid-cols-2 lg:grid-cols-4 dark:bg-white/12"
+                        >
+                            <EventQuickFact
+                                icon={CalendarDays}
+                                label="Datum"
+                                value={formatEventDate(event.startsAt)}
                             />
-                            <span
-                                aria-hidden="true"
-                                className="absolute top-0 right-0 z-10 h-1 w-16 bg-dds-cyan sm:w-24"
+                            <EventQuickFact
+                                icon={Clock3}
+                                label="Tijd"
+                                value={formatEventTimeRange(
+                                    event.startsAt,
+                                    event.endsAt,
+                                )}
                             />
-
-                            <dl className="grid gap-px bg-white/12 sm:grid-cols-2 lg:grid-cols-[1.08fr_0.85fr_1.27fr_1.1fr]">
-                                <EventQuickFact
-                                    icon={CalendarDays}
-                                    label="Datum"
-                                    value={formatEventDate(event.startsAt)}
-                                />
-                                <EventQuickFact
-                                    icon={Clock3}
-                                    label="Tijd"
-                                    value={formatEventTimeRange(
-                                        event.startsAt,
-                                        event.endsAt,
-                                    )}
-                                />
-                                <EventQuickFact
-                                    icon={MapPin}
-                                    label="Locatie"
-                                    value={`${event.location.name}, ${event.location.city}`}
-                                />
-                                <EventQuickFact
-                                    icon={Ticket}
-                                    label={
-                                        isCancelled
-                                            ? 'Eventstatus'
-                                            : 'Aanmelding'
-                                    }
-                                >
-                                    <PublicEventRegistrationStatus
-                                        event={event}
-                                        label={registrationLabel}
-                                        className="rounded-sm"
-                                    />
-                                </EventQuickFact>
-                            </dl>
-                        </div>
+                            <EventQuickFact
+                                icon={MapPin}
+                                label="Locatie"
+                                value={formatEventLocation(
+                                    event.location.name,
+                                    event.location.city,
+                                )}
+                            />
+                            <EventQuickFact
+                                icon={Ticket}
+                                label={
+                                    event.seasonContext?.ticket != null
+                                        ? 'Los ticket'
+                                        : 'Prijs'
+                                }
+                                value={formatEventPrice(event.priceCents)}
+                            />
+                        </dl>
                     </div>
                 </section>
 
                 <section
                     aria-labelledby="briefing-heading"
-                    className={cn(
-                        'mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-16 sm:py-20 lg:items-start lg:gap-20 lg:py-28',
-                        !isCancelled &&
-                            'lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.72fr)]',
-                    )}
+                    className="mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-16 sm:py-20 lg:grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.62fr)] lg:items-start lg:gap-20 lg:py-28"
                 >
                     <div className="lg:pt-4">
                         <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan">
@@ -143,12 +131,14 @@ export default function EventShow({ event, seo }: Props) {
                         </div>
                     </div>
 
-                    {!isCancelled && (
+                    <div className="min-w-0 lg:sticky lg:top-28">
                         <RegistrationPanel
-                            event={event}
                             canRegister={canRegister}
+                            event={event}
+                            isCancelled={isCancelled}
+                            registrationLabel={registrationLabel}
                         />
-                    )}
+                    </div>
                 </section>
 
                 <section className="border-t border-paddock-rule bg-paddock dark:border-white/12 dark:bg-night-900">
@@ -213,29 +203,23 @@ export default function EventShow({ event, seo }: Props) {
 }
 
 type EventQuickFactProps = {
-    children?: ReactNode;
     icon: LucideIcon;
     label: string;
-    value?: string;
+    value: string;
 };
 
-function EventQuickFact({
-    children,
-    icon: Icon,
-    label,
-    value,
-}: EventQuickFactProps) {
+function EventQuickFact({ icon: Icon, label, value }: EventQuickFactProps) {
     return (
-        <div className="flex min-h-24 min-w-0 items-center gap-4 bg-deep-signal px-5 py-5 text-white sm:min-h-28 sm:px-6 sm:py-6">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border border-white/12 bg-white/6 text-dds-cyan">
+        <div className="flex min-h-20 min-w-0 items-center gap-4 bg-paddock px-5 py-4 text-deep-signal sm:min-h-24 sm:px-6 sm:py-5 dark:bg-night-900 dark:text-white">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border border-deep-signal/10 bg-white/70 text-dds-blue dark:border-white/12 dark:bg-white/6 dark:text-dds-cyan">
                 <Icon aria-hidden="true" className="size-5" />
             </span>
             <div className="min-w-0">
-                <dt className="font-mono text-[0.66rem] font-semibold tracking-[0.12em] text-white/45 uppercase">
+                <dt className="font-mono text-[0.66rem] font-semibold tracking-[0.12em] text-signal-muted uppercase dark:text-night-400">
                     {label}
                 </dt>
-                <dd className="mt-2 text-sm leading-5 font-semibold text-white sm:text-[0.94rem]">
-                    {children ?? value}
+                <dd className="mt-1.5 text-sm leading-5 font-semibold text-deep-signal sm:text-[0.94rem] dark:text-white">
+                    {value}
                 </dd>
             </div>
         </div>
@@ -245,34 +229,71 @@ function EventQuickFact({
 type RegistrationPanelProps = {
     canRegister: boolean;
     event: PublicEventDetail;
+    isCancelled: boolean;
+    registrationLabel: string;
 };
 
-function RegistrationPanel({ canRegister, event }: RegistrationPanelProps) {
+function RegistrationPanel({
+    canRegister,
+    event,
+    isCancelled,
+    registrationLabel,
+}: RegistrationPanelProps) {
+    const registrationDetail = getEventRegistrationDetail(event);
+    const registrationIsUpcoming = isEventRegistrationUpcoming(event);
+    const hasSeasonTicket = event.seasonContext?.ticket != null;
+
     return (
-        <aside
+        <section
             id="tickets"
-            aria-label="Tickets en inschrijving"
-            className="relative order-first scroll-mt-24 overflow-hidden rounded-sm bg-deep-signal text-white shadow-lg shadow-deep-signal/10 lg:sticky lg:top-28 lg:order-last"
+            aria-labelledby="registration-heading"
+            className="relative scroll-mt-24 overflow-hidden rounded-sm border border-paddock-rule bg-white shadow-sm dark:border-white/12 dark:bg-night-900"
         >
             <span
                 aria-hidden="true"
                 className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange"
             />
-
             <div className="p-6 sm:p-8">
-                <p className="text-xs font-semibold tracking-[0.12em] text-dds-cyan uppercase">
-                    Tickets & inschrijving
-                </p>
-                <h2 className="mt-4 font-public-display text-3xl font-semibold tracking-[-0.045em]">
-                    {canRegister ? 'Klaar voor de start?' : 'Plan je bezoek.'}
+                <div className="flex items-start justify-between gap-4">
+                    <p
+                        data-testid="registration-panel-kicker"
+                        className="flex min-h-8 items-center font-mono text-[0.66rem] font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan"
+                    >
+                        Aanmelden
+                    </p>
+                    <div
+                        data-testid="registration-panel-status"
+                        className="shrink-0"
+                    >
+                        <PublicEventRegistrationStatus
+                            event={event}
+                            label={registrationLabel}
+                        />
+                    </div>
+                </div>
+                <h2
+                    id="registration-heading"
+                    className="mt-3 font-public-display text-3xl font-semibold tracking-[-0.045em] text-deep-signal dark:text-white"
+                >
+                    {isCancelled
+                        ? 'Dit event is geannuleerd.'
+                        : canRegister
+                          ? 'Aanmelden voor dit event.'
+                          : 'Inschrijving voor dit event.'}
                 </h2>
-
+                <p className="mt-4 text-sm leading-6 text-signal-muted dark:text-night-400">
+                    {isCancelled
+                        ? 'Aanmelden is niet meer mogelijk. De overige eventinformatie blijft beschikbaar.'
+                        : canRegister
+                          ? `Je meldt je hiermee aan voor ${event.title}.`
+                          : registrationDetail.note}
+                </p>
                 {canRegister && (
                     <a
                         href={event.registrationUrl ?? undefined}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-sm bg-dds-orange px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-flight-400 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:ring-offset-deep-signal focus-visible:outline-none"
+                        className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-dds-orange px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-flight-400 focus-visible:ring-2 focus-visible:ring-dds-blue focus-visible:ring-offset-3 focus-visible:outline-none dark:focus-visible:ring-dds-cyan dark:focus-visible:ring-offset-night-900"
                     >
                         {event.registrationStatus === 'waitlist'
                             ? 'Meld je aan voor de wachtlijst'
@@ -284,42 +305,85 @@ function RegistrationPanel({ canRegister, event }: RegistrationPanelProps) {
                     </a>
                 )}
             </div>
+            {!isCancelled && (
+                <dl className="divide-y divide-paddock-rule border-t border-paddock-rule bg-paddock px-6 dark:divide-white/12 dark:border-white/12 dark:bg-night-950">
+                    <RegistrationDetail
+                        label="Capaciteit"
+                        value={
+                            event.capacity === null
+                                ? 'Wordt bekendgemaakt'
+                                : `${event.capacity} plekken totaal`
+                        }
+                    />
+                    {event.registrationOpensAt !== null &&
+                        !registrationIsUpcoming && (
+                            <RegistrationDetail
+                                label="Aanmelden vanaf"
+                                value={formatEventDateTime(
+                                    event.registrationOpensAt,
+                                )}
+                            />
+                        )}
+                    <RegistrationDetail
+                        label={registrationDetail.label}
+                        value={registrationDetail.value}
+                    />
+                </dl>
+            )}
 
-            <dl className="grid grid-cols-2 gap-px border-t border-white/12 bg-white/12">
-                <RegistrationFact
-                    icon={Ticket}
-                    label="Ticket"
-                    value={formatEventPrice(event.priceCents)}
-                />
-                <RegistrationFact
-                    icon={Users}
-                    label="Capaciteit"
-                    value={
-                        event.capacity === null
-                            ? 'Wordt bekendgemaakt'
-                            : `${event.capacity} plekken totaal`
-                    }
-                />
-                <RegistrationFact
-                    icon={CalendarDays}
-                    label="Aanmelden vanaf"
-                    value={
-                        event.registrationOpensAt === null
-                            ? 'Nog niet bekend'
-                            : formatEventDate(event.registrationOpensAt)
-                    }
-                />
-                <RegistrationFact
-                    icon={Clock3}
-                    label="Deadline"
-                    value={
-                        event.registrationDeadlineAt === null
-                            ? 'Geen deadline vermeld'
-                            : formatEventDateTime(event.registrationDeadlineAt)
-                    }
-                />
-            </dl>
-        </aside>
+            {event.season !== null && (
+                <Link
+                    href={seasonShow(event.season.slug)}
+                    prefetch
+                    aria-label={`Bekijk seizoen ${event.season.name}`}
+                    data-testid="event-season-context"
+                    className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-paddock-rule px-5 py-4 transition-colors hover:bg-paddock focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:border-white/12 dark:hover:bg-white/5"
+                >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-dds-blue/8 text-dds-blue dark:bg-dds-cyan/10 dark:text-dds-cyan">
+                        <CalendarRange aria-hidden="true" className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-semibold tracking-[0.08em] text-signal-muted uppercase dark:text-night-400">
+                                {isCancelled ? 'Seizoenprogramma' : 'Seizoen'}
+                            </span>
+                            {hasSeasonTicket && (
+                                <span className="rounded-sm bg-emerald-50 px-2 py-1 text-[0.68rem] leading-none font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                                    Ook in seizoensticket
+                                </span>
+                            )}
+                        </span>
+                        <span className="mt-1.5 block text-sm leading-5 font-semibold break-words text-deep-signal transition-colors group-hover:text-dds-blue dark:text-white dark:group-hover:text-dds-cyan">
+                            {event.season.name}
+                        </span>
+                    </span>
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-sm text-dds-blue transition-colors group-hover:bg-dds-blue/8 dark:text-dds-cyan dark:group-hover:bg-dds-cyan/10">
+                        <span className="sr-only">Bekijk seizoen</span>
+                        <ChevronRight
+                            aria-hidden="true"
+                            className="size-5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                        />
+                    </span>
+                </Link>
+            )}
+        </section>
+    );
+}
+
+function RegistrationDetail({
+    label,
+    value,
+}: {
+    label: string;
+    value: string;
+}) {
+    return (
+        <div className="flex items-baseline justify-between gap-4 py-4 text-sm">
+            <dt className="text-signal-muted dark:text-night-400">{label}</dt>
+            <dd className="text-right font-semibold text-deep-signal dark:text-white">
+                {value}
+            </dd>
+        </div>
     );
 }
 
@@ -338,7 +402,7 @@ function getRegistrationLabel(
         return 'Aanmeldlink volgt';
     }
 
-    return eventRegistrationLabels[event.registrationStatus];
+    return getEventRegistrationLabel(event);
 }
 
 function canRegisterForEvent(
@@ -349,25 +413,5 @@ function canRegisterForEvent(
         !isCancelled &&
         event.registrationUrl !== null &&
         ['open', 'waitlist'].includes(event.registrationStatus)
-    );
-}
-
-type RegistrationFactProps = {
-    icon: LucideIcon;
-    label: string;
-    value: string;
-};
-
-function RegistrationFact({ icon: Icon, label, value }: RegistrationFactProps) {
-    return (
-        <div className="bg-deep-signal p-5 sm:p-6">
-            <Icon className="size-5 text-dds-cyan" />
-            <dt className="mt-5 font-mono text-[0.68rem] tracking-[0.1em] text-white/52 uppercase">
-                {label}
-            </dt>
-            <dd className="mt-2 font-public-display text-xl font-semibold tracking-[-0.025em]">
-                {value}
-            </dd>
-        </div>
     );
 }

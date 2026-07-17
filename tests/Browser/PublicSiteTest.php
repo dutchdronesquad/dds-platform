@@ -4,6 +4,8 @@ use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Location;
+use App\Models\Season;
+use App\Models\SeasonTicket;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Vite;
 
@@ -95,7 +97,11 @@ test('mobile navigation opens, reflows, and follows public links', function () {
 });
 
 test('visitors can filter rendered event states and recover from an empty result', function () {
-    Event::factory()->published()->training()->create([
+    $season = Season::factory()->create([
+        'name' => 'Indoor trainingsseizoen 2026/2027',
+    ]);
+    SeasonTicket::factory()->available()->for($season)->create();
+    Event::factory()->published()->training()->for($season)->create([
         'title' => 'Open training',
         'starts_at' => '2026-10-15 17:00:00',
         'registration_status' => EventRegistrationStatus::Open,
@@ -112,6 +118,12 @@ test('visitors can filter rendered event states and recover from an empty result
         'type' => EventType::Workshop,
         'registration_status' => EventRegistrationStatus::Waitlist,
     ]);
+    Event::factory()->published()->create([
+        'title' => 'Inschrijving opent later',
+        'starts_at' => '2026-11-01 17:00:00',
+        'registration_opens_at' => '2026-10-19 07:00:00',
+        'registration_status' => EventRegistrationStatus::Closed,
+    ]);
     Event::factory()->cancelled()->create([
         'title' => 'Geannuleerde race',
         'starts_at' => '2026-11-05 17:00:00',
@@ -126,11 +138,28 @@ test('visitors can filter rendered event states and recover from an empty result
     $page->assertSee('Open training')
         ->assertSee('Volle race')
         ->assertSee('Wachtlijst workshop')
+        ->assertSee('Inschrijving opent later')
         ->assertSee('Geannuleerde race')
+        ->assertDontSee('Actief seizoen')
+        ->assertDontSee('Seizoen op de agenda')
+        ->assertDontSee('Seizoensticket')
+        ->assertDontSee('Verkoop open')
+        ->assertSee('Indoor trainingsseizoen 2026/2027')
+        ->assertSee('1 event')
+        ->assertAttribute(
+            "a[href=\"/seasons/{$season->slug}\"]",
+            'href',
+            "/seasons/{$season->slug}",
+        )
         ->assertSee('Aanmelden mogelijk')
         ->assertSee('Vol')
         ->assertSee('Wachtlijst')
-        ->assertSee('Dit event gaat niet door')
+        ->assertSee('Nog niet geopend')
+        ->assertDontSee('Aanmelding gesloten')
+        ->assertSee('Geannuleerd')
+        ->assertScript(
+            "[...document.querySelectorAll('[data-testid=\"event-list-registration\"]')].every((container) => { const status = container.querySelector('span'); return status !== null && Math.round(status.getBoundingClientRect().height) <= 34 && status.scrollWidth <= status.clientWidth; })",
+        )
         ->click('Trainingen')
         ->assertQueryStringHas('type', 'training')
         ->assertAriaAttribute(
@@ -140,6 +169,9 @@ test('visitors can filter rendered event states and recover from an empty result
         )
         ->assertSee('Open training')
         ->assertDontSee('Volle race')
+        ->assertDontSee('Actief seizoen')
+        ->assertSee('Indoor trainingsseizoen 2026/2027')
+        ->assertSee('1 training')
         ->click('Demo’s')
         ->assertQueryStringHas('type', 'demo')
         ->assertSee('Geen events gevonden')
@@ -158,7 +190,10 @@ test('event details render long content, dates, registration, and safe links on 
         'postal_code' => '1816 LE',
         'city' => 'Alkmaar',
     ]);
-    $event = Event::factory()->for($location)->published()->training()->create([
+    $season = Season::factory()->create([
+        'name' => 'DDS Wintercompetitie voor gevorderde indoorpiloten 2026/2027',
+    ]);
+    $event = Event::factory()->for($location)->for($season)->published()->training()->create([
         'title' => 'Lange indoor briefing',
         'slug' => 'lange-indoor-briefing',
         'content' => 'Start van de briefing. '.str_repeat(
@@ -174,6 +209,34 @@ test('event details render long content, dates, registration, and safe links on 
         'registration_status' => EventRegistrationStatus::Open,
         'registration_url' => 'https://example.com/registration',
     ]);
+    $seasonFinale = Event::factory()->for($location)->for($season)->published()->training()->create([
+        'title' => 'Finale van de wintercompetitie',
+        'slug' => 'finale-wintercompetitie',
+        'starts_at' => '2027-05-20 17:00:00',
+        'ends_at' => '2027-05-20 20:30:00',
+    ]);
+    $springEvent = Event::factory()->for($location)->for($season)->published()->training()->create([
+        'title' => 'Voorjaarsronde van de wintercompetitie',
+        'slug' => 'voorjaarsronde-wintercompetitie',
+        'starts_at' => '2027-03-18 17:00:00',
+        'ends_at' => '2027-03-18 20:30:00',
+        'price_cents' => 2500,
+        'registration_status' => EventRegistrationStatus::Open,
+        'registration_url' => 'https://example.com/spring-registration',
+    ]);
+    SeasonTicket::factory()->available()->for($season)->create([
+        'copy' => 'Toegang tot alle competitierondes.',
+        'price_cents' => 9_000,
+        'registration_url' => 'https://example.com/season-ticket',
+    ]);
+
+    $desktopPage = visit("/events/{$event->slug}")
+        ->on()->desktop()
+        ->withTimezone('Europe/Amsterdam');
+
+    $desktopPage->assertScript(
+        "(() => { const items = [...document.querySelectorAll('[data-testid=\"event-quick-facts\"] > div')]; const widths = items.map((item) => Math.round(item.getBoundingClientRect().width)); return items.length === 4 && new Set(widths).size === 1; })()",
+    );
 
     $page = visit("/events/{$event->slug}")
         ->on()->iPhone14Pro()
@@ -181,10 +244,42 @@ test('event details render long content, dates, registration, and safe links on 
 
     $page->assertSee('Lange indoor briefing')
         ->assertSee('donderdag 15 oktober 2026')
+        ->assertSee('Sportpaleis Alkmaar')
+        ->assertDontSee('Sportpaleis Alkmaar, Alkmaar')
         ->assertSee('Start van de briefing.')
         ->assertSee('Einde van de briefing.')
         ->assertSee('Aanmelden mogelijk')
+        ->assertScript(
+            '(document.body.innerText.match(/Aanmelden mogelijk/g) ?? []).length === 1',
+        )
+        ->assertScript(
+            "document.querySelector('#praktische-info').textContent.includes('Los ticket') && document.querySelector('#praktische-info').textContent.includes('15,00') && !document.querySelector('#tickets').textContent.includes('15,00')",
+        )
         ->assertSee('16 plekken totaal')
+        ->assertSee('Aanmelden vanaf')
+        ->assertScript(
+            '(document.body.innerText.match(/Aanmelden vanaf/g) ?? []).length === 1',
+        )
+        ->assertSee('Aanmelden tot')
+        ->assertSee('Aanmelden voor dit event.')
+        ->assertSee('Je meldt je hiermee aan voor Lange indoor briefing.')
+        ->assertDontSee('Deze inschrijving geldt alleen voor')
+        ->assertSee('Seizoen')
+        ->assertSee('DDS Wintercompetitie voor gevorderde indoorpiloten 2026/2027')
+        ->assertSee('Ook in seizoensticket')
+        ->assertSee('Bekijk seizoen')
+        ->assertDontSee('Onderdeel van het seizoen')
+        ->assertDontSee('Inbegrepen bij het seizoensticket')
+        ->assertDontSee('Koop seizoensticket')
+        ->assertScript(
+            "document.querySelector('#briefing-heading').getBoundingClientRect().top < document.querySelector('#tickets').getBoundingClientRect().top",
+        )
+        ->assertScript(
+            "document.querySelector('[data-testid=\"registration-panel-status\"]').getBoundingClientRect().top < document.querySelector('#registration-heading').getBoundingClientRect().top && document.querySelector('#tickets').getBoundingClientRect().right - document.querySelector('[data-testid=\"registration-panel-status\"]').getBoundingClientRect().right < 40 && Math.abs((document.querySelector('[data-testid=\"registration-panel-status\"]').getBoundingClientRect().top + document.querySelector('[data-testid=\"registration-panel-status\"]').getBoundingClientRect().height / 2) - (document.querySelector('[data-testid=\"registration-panel-kicker\"]').getBoundingClientRect().top + document.querySelector('[data-testid=\"registration-panel-kicker\"]').getBoundingClientRect().height / 2)) < 2",
+        )
+        ->assertScript(
+            "document.querySelector('[data-testid=\"hero-separator\"]') === null && Math.abs(document.querySelector('[data-testid=\"event-quick-facts\"]').getBoundingClientRect().top - document.querySelector('main > section').getBoundingClientRect().bottom) < 3",
+        )
         ->assertAttribute(
             'a[href="https://example.com/registration"]',
             'target',
@@ -206,6 +301,102 @@ test('event details render long content, dates, registration, and safe links on 
             'noopener noreferrer',
         )
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->click('Bekijk seizoen')
+        ->assertPathIs("/seasons/{$season->slug}")
+        ->assertSee('Events in dit seizoen.')
+        ->assertSee('Finale van de wintercompetitie')
+        ->assertSee('Voorjaarsronde van de wintercompetitie')
+        ->assertDontSee('Los ticket')
+        ->assertSee('Koop seizoensticket')
+        ->assertSee('Verkoop open')
+        ->assertScript(
+            "document.querySelector('a[href=\"/events/{$event->slug}\"]').textContent.includes('€ 15,00')",
+        )
+        ->assertScript(
+            "document.querySelector('a[href=\"/events/{$event->slug}\"]').textContent.includes('Aanmelden mogelijk')",
+        )
+        ->assertScript(
+            "document.querySelector('a[href=\"/events/{$springEvent->slug}\"]').textContent.includes('€ 25,00') && document.querySelector('a[href=\"/events/{$springEvent->slug}\"]').textContent.includes('Aanmelden mogelijk')",
+        )
+        ->assertDontSee('Sportpaleis Alkmaar, Alkmaar')
+        ->assertAttribute(
+            'a[href="https://example.com/season-ticket"]',
+            'target',
+            '_blank',
+        )
+        ->assertAttribute(
+            'a[href="https://example.com/season-ticket"]',
+            'rel',
+            'noopener noreferrer',
+        )
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
+});
+
+test('season context without a ticket offer stays informative without sales controls', function () {
+    $season = Season::factory()->create([
+        'name' => 'Vrij trainingsseizoen 2027',
+    ]);
+    SeasonTicket::factory()->notOffered()->for($season)->create();
+    $event = Event::factory()->published()->training()->for($season)->create([
+        'slug' => 'vrije-training',
+        'starts_at' => '2027-02-15 18:00:00',
+        'price_cents' => 1750,
+        'registration_opens_at' => '2027-02-01 10:00:00',
+        'registration_deadline_at' => '2027-02-14 23:59:00',
+        'registration_status' => EventRegistrationStatus::Closed,
+        'registration_url' => null,
+    ]);
+    Event::factory()->published()->training()->for($season)->create([
+        'title' => 'Training met verlopen inschrijving',
+        'slug' => 'training-inschrijving-verlopen',
+        'starts_at' => '2026-08-15 18:00:00',
+        'price_cents' => 1750,
+        'registration_opens_at' => '2026-06-01 10:00:00',
+        'registration_deadline_at' => '2026-07-10 21:59:00',
+        'registration_status' => EventRegistrationStatus::Closed,
+        'registration_url' => null,
+    ]);
+
+    $page = visit("/events/{$event->slug}")
+        ->on()->iPhone14Pro()
+        ->withTimezone('Europe/Amsterdam');
+
+    $page->assertSee('Vrij trainingsseizoen 2027')
+        ->assertSee('Seizoen')
+        ->assertSee('Nog niet geopend')
+        ->assertDontSee('Aanmelding gesloten')
+        ->assertSee('Inschrijving voor dit event.')
+        ->assertSee('Nog niet geopend · inschrijving opent op')
+        ->assertSee('Aanmelden vanaf')
+        ->assertScript(
+            '(document.body.innerText.match(/Aanmelden vanaf/g) ?? []).length === 1',
+        )
+        ->assertDontSee('Onderdeel van het seizoen')
+        ->assertDontSee('Voor dit seizoen wordt geen seizoensticket aangeboden.')
+        ->click('Bekijk seizoen')
+        ->assertPathIs("/seasons/{$season->slug}")
+        ->assertSee('Per event aanmelden.')
+        ->assertSee('€ 17,50')
+        ->assertSee('Nog niet geopend')
+        ->assertSee('Inschrijving gesloten')
+        ->assertDontSee('Aanmelding gesloten')
+        ->assertScript(
+            "document.querySelectorAll('[data-testid=\"season-event-registration-note\"]').length === 0 && [...document.querySelectorAll('[data-testid=\"season-event-registration-tooltip\"]')].every((tooltip) => getComputedStyle(tooltip).visibility === 'hidden')",
+        )
+        ->assertDontSee('Koop seizoensticket')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
+
+    visit("/seasons/{$season->slug}")
+        ->on()->desktop()
+        ->withTimezone('Europe/Amsterdam')
+        ->hover(
+            '#season-events li:first-child [data-testid="season-event-registration-status"]',
+        )
+        ->assertScript(
+            "getComputedStyle(document.querySelector('#season-events li:first-child [data-testid=\"season-event-registration-tooltip\"]')).visibility === 'visible'",
+        )
         ->assertNoJavaScriptErrors();
 });
 

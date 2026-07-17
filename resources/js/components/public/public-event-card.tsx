@@ -12,12 +12,14 @@ import {
     Users,
 } from 'lucide-react';
 import {
-    eventRegistrationLabels,
     eventTypeLabels,
     formatEventDate,
+    formatEventLocation,
     formatEventPrice,
     formatEventShortDate,
     formatEventTimeRange,
+    getEventRegistrationLabel,
+    isEventRegistrationUpcoming,
 } from '@/lib/event-formatting';
 import { cn } from '@/lib/utils';
 import { show as eventShow } from '@/routes/events';
@@ -87,7 +89,7 @@ function PublicEventListItem({ event }: Pick<Props, 'event'>) {
         <Link
             href={eventShow(event.slug)}
             prefetch
-            className="group grid gap-5 px-1 py-6 transition-colors hover:bg-white/65 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset sm:px-4 lg:grid-cols-[5.25rem_11rem_minmax(0,1fr)_10.5rem_10rem] lg:items-center lg:gap-6 lg:py-5 xl:grid-cols-[5.5rem_14rem_minmax(0,1fr)_11rem_10.5rem] xl:gap-7 dark:hover:bg-white/4"
+            className="group grid gap-5 px-1 py-6 transition-colors hover:bg-white/65 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset sm:px-4 lg:grid-cols-[5.25rem_11rem_minmax(0,1fr)_10.5rem_11.5rem] lg:items-center lg:gap-6 lg:py-5 xl:grid-cols-[5.5rem_14rem_minmax(0,1fr)_11rem_11.5rem] xl:gap-7 dark:hover:bg-white/4"
         >
             <EventDateRail date={date} event={event} />
 
@@ -119,10 +121,13 @@ function PublicEventListItem({ event }: Pick<Props, 'event'>) {
 
             <EventFacts event={event} variant="list" />
 
-            <div className="flex items-center justify-between gap-4 border-t border-paddock-rule pt-4 lg:min-h-28 lg:flex-col lg:items-stretch lg:justify-center lg:border-t-0 lg:border-l lg:px-4 lg:pt-0 lg:text-center dark:border-white/12">
+            <div
+                data-testid="event-list-registration"
+                className="flex items-center justify-between gap-4 border-t border-paddock-rule pt-4 lg:min-h-28 lg:flex-col lg:items-stretch lg:justify-center lg:gap-3 lg:border-t-0 lg:border-l lg:px-3 lg:pt-0 lg:text-center dark:border-white/12"
+            >
                 <PublicEventRegistrationStatus
                     event={event}
-                    className="lg:w-full"
+                    className="lg:w-full lg:whitespace-nowrap"
                 />
                 <span className="inline-flex items-center gap-2 text-sm font-semibold text-dds-blue lg:justify-center dark:text-dds-cyan">
                     Bekijk event
@@ -151,8 +156,7 @@ function EventCardDate({
             </span>
             <span className="flex min-w-0 flex-col">
                 <span className="font-mono text-[0.68rem] leading-4 font-semibold tracking-[0.09em] text-deep-signal uppercase dark:text-white">
-                    {date.month}
-                    {date.year !== null ? ` ${date.year}` : ''}
+                    {date.month} {date.year}
                 </span>
                 <span className="mt-0.5 text-xs leading-4 font-medium text-signal-muted capitalize dark:text-night-400">
                     {date.weekday}
@@ -184,11 +188,9 @@ function EventDateRail({
                 <span className="mt-2 font-mono text-[0.58rem] tracking-[0.08em] text-signal-muted uppercase dark:text-night-400">
                     {date.weekday}
                 </span>
-                {date.year !== null && (
-                    <span className="mt-1 font-mono text-[0.62rem] font-semibold text-signal-muted dark:text-night-400">
-                        {date.year}
-                    </span>
-                )}
+                <span className="mt-1 font-mono text-[0.62rem] font-semibold text-signal-muted dark:text-night-400">
+                    {date.year}
+                </span>
             </time>
             <Circle
                 aria-hidden="true"
@@ -247,7 +249,9 @@ function EventEyebrow({
                 className,
             )}
         >
-            <span>{eventTypeLabels[event.type]}</span>
+            <span className="rounded-sm bg-dds-blue/8 px-2 py-1 text-dds-blue dark:bg-dds-cyan/10 dark:text-dds-cyan">
+                {eventTypeLabels[event.type]}
+            </span>
             {showDate && (
                 <span
                     className={cn('contents', hideDateOnDesktop && 'lg:hidden')}
@@ -259,8 +263,7 @@ function EventEyebrow({
                         dateTime={event.startsAt}
                         className="tracking-[0.04em] text-signal-muted dark:text-night-400"
                     >
-                        {date.day} {date.month}
-                        {date.year !== null ? ` ${date.year}` : ''}
+                        {date.day} {date.month} {date.year}
                     </time>
                 </span>
             )}
@@ -269,8 +272,13 @@ function EventEyebrow({
                     <span aria-hidden="true" className="text-dds-orange">
                         •
                     </span>
-                    <span className="tracking-[0.04em] text-signal-muted dark:text-night-400">
-                        {event.season.name}
+                    <span className="tracking-normal text-signal-muted normal-case dark:text-night-400">
+                        <span className="mr-1 tracking-[0.08em] uppercase">
+                            Seizoen
+                        </span>
+                        <span className="font-sans font-medium">
+                            {event.season.name}
+                        </span>
                     </span>
                 </>
             )}
@@ -294,7 +302,7 @@ function EventLocation({
         >
             <MapPin className="mt-0.5 size-4 shrink-0 text-dds-blue dark:text-dds-cyan" />
             <span>
-                {event.location.name}, {event.location.city}
+                {formatEventLocation(event.location.name, event.location.city)}
             </span>
         </p>
     );
@@ -378,15 +386,18 @@ export function PublicEventRegistrationStatus({
     label,
 }: Pick<Props, 'event'> & { className?: string; label?: string }) {
     const isCancelled = event.status === 'cancelled';
+    const registrationIsUpcoming = isEventRegistrationUpcoming(event);
     const StatusIcon = isCancelled
         ? CircleX
-        : event.registrationStatus === 'open'
-          ? CircleCheck
-          : event.registrationStatus === 'waitlist'
-            ? Clock3
-            : event.registrationStatus === 'full'
-              ? CircleMinus
-              : LockKeyhole;
+        : registrationIsUpcoming
+          ? Clock3
+          : event.registrationStatus === 'open'
+            ? CircleCheck
+            : event.registrationStatus === 'waitlist'
+              ? Clock3
+              : event.registrationStatus === 'full'
+                ? CircleMinus
+                : LockKeyhole;
 
     return (
         <span
@@ -394,6 +405,9 @@ export function PublicEventRegistrationStatus({
                 'inline-flex min-h-8 w-fit items-center justify-center gap-2 rounded-md border px-3 py-1.5 text-xs leading-4 font-semibold',
                 isCancelled &&
                     'border-red-200 bg-red-50/70 text-red-700 dark:border-red-400/25 dark:bg-red-500/10 dark:text-red-300',
+                !isCancelled &&
+                    registrationIsUpcoming &&
+                    'border-dds-blue/20 bg-dds-blue/6 text-dds-blue dark:border-dds-cyan/25 dark:bg-dds-cyan/10 dark:text-dds-cyan',
                 !isCancelled &&
                     event.registrationStatus === 'open' &&
                     'border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300',
@@ -404,16 +418,14 @@ export function PublicEventRegistrationStatus({
                     event.registrationStatus === 'full' &&
                     'border-orange-200 bg-orange-50/70 text-orange-800 dark:border-orange-400/25 dark:bg-orange-500/10 dark:text-orange-200',
                 !isCancelled &&
+                    !registrationIsUpcoming &&
                     event.registrationStatus === 'closed' &&
                     'dark:text-night-300 border-slate-200 bg-slate-50/80 text-slate-700 dark:border-white/15 dark:bg-white/6',
                 className,
             )}
         >
             <StatusIcon aria-hidden="true" className="size-3.5 shrink-0" />
-            {label ??
-                (isCancelled
-                    ? 'Dit event gaat niet door'
-                    : eventRegistrationLabels[event.registrationStatus])}
+            {label ?? getEventRegistrationLabel(event)}
         </span>
     );
 }
