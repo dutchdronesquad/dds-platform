@@ -167,7 +167,6 @@ function RedirectFilterBar({
             only: ['redirects', 'facets', 'filters'],
             preserveScroll: true,
             preserveState: true,
-            replace: true,
             onStart: () => setIsFiltering(true),
             onFinish: () => {
                 if (requestId === requestIdRef.current) {

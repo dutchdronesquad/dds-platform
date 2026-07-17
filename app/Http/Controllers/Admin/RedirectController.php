@@ -18,7 +18,7 @@ final class RedirectController extends Controller
         $filters = $this->filters($request);
 
         return Inertia::render('admin/redirects/index', [
-            'redirects' => fn (): LengthAwarePaginator => $this->redirects($filters),
+            'redirects' => fn () => $this->redirects($filters),
             'filters' => $filters,
             'facets' => fn (): array => $this->facets($filters['search']),
             'summary' => fn (): array => $this->summary(),
@@ -28,7 +28,7 @@ final class RedirectController extends Controller
     /** @return array{search: string, status: 'active'|'all'|'inactive'} */
     private function filters(Request $request): array
     {
-        $search = $request->string('search')->trim()->limit(100)->toString();
+        $search = Str::substr($request->string('search')->trim()->toString(), 0, 100);
         $status = $request->string('status')->toString();
 
         if (! in_array($status, ['active', 'inactive'], true)) {
@@ -43,7 +43,16 @@ final class RedirectController extends Controller
 
     /**
      * @param  array{search: string, status: 'active'|'all'|'inactive'}  $filters
-     * @return LengthAwarePaginator<int, array<string, bool|int|string|null>>
+     * @return LengthAwarePaginator<int, covariant array{
+     *     id: int,
+     *     sourcePath: string,
+     *     targetUrl: string,
+     *     statusCode: int,
+     *     isActive: bool,
+     *     hitCount: int,
+     *     notes: string|null,
+     *     updatedAt: string
+     * }>
      */
     private function redirects(array $filters): LengthAwarePaginator
     {
@@ -70,7 +79,10 @@ final class RedirectController extends Controller
                 ->where('is_active', $filters['status'] === 'active'))
             ->latest('updated_at')
             ->paginate(50)
-            ->appends(array_filter($queryParameters))
+            ->appends(array_filter(
+                $queryParameters,
+                fn (?string $value): bool => $value !== null,
+            ))
             ->through(fn (Redirect $redirect): array => [
                 'id' => $redirect->id,
                 'sourcePath' => $redirect->source_path,
@@ -102,6 +114,7 @@ final class RedirectController extends Controller
         ];
     }
 
+    /** @param Builder<Redirect> $query */
     private function applySearch(Builder $query, string $search): void
     {
         if ($search === '') {

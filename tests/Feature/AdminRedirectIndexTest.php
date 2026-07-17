@@ -115,6 +115,36 @@ test('admins can search redirects without changing the overall summary', functio
         );
 });
 
+test('redirect searches are hard limited without changing the search term', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+    $search = str_repeat('a', 120);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['search' => $search]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', str_repeat('a', 100))
+            ->where('redirects.total', 0),
+        );
+});
+
+test('zero remains a valid search value in pagination links', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->count(51)->create(['target_url' => '/0']);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['search' => '0']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', '0')
+            ->where('redirects.total', 51)
+            ->where('redirects.next_page_url', fn (string $url): bool => str_contains($url, 'search=0')),
+        );
+});
+
 test('admins can filter redirects by active status and keep filters in pagination links', function () {
     $user = User::factory()->create();
     $user->assignRole(RoleEnum::Admin->value);
