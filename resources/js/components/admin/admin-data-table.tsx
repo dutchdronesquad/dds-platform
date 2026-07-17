@@ -5,6 +5,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -28,15 +29,31 @@ export type ServerPagination<TData> = {
     total: number;
 };
 
-type DataTableProps<TData, TValue> = {
+type AdminDataTableProps<TData, TValue> = {
+    bulkActions?: ReactNode;
+    caption: string;
     columns: ColumnDef<TData, TValue>[];
+    emptyDescription?: string;
+    emptyTitle: string;
     pagination: ServerPagination<TData>;
+    resourceLabel: string;
+    selectedCount?: number;
+    toolbar?: ReactNode;
 };
 
-export function DataTable<TData, TValue>({
+export function AdminDataTable<TData, TValue>({
+    bulkActions,
+    caption,
     columns,
+    emptyDescription,
+    emptyTitle,
     pagination,
-}: DataTableProps<TData, TValue>) {
+    resourceLabel,
+    selectedCount = 0,
+    toolbar,
+}: AdminDataTableProps<TData, TValue>) {
+    // TanStack Table's callback API is intentionally excluded from React Compiler memoization.
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         columns,
         data: pagination.data,
@@ -52,11 +69,26 @@ export function DataTable<TData, TValue>({
     });
 
     return (
-        <div className="overflow-hidden rounded-lg border border-sidebar-border/70 bg-white shadow-xs dark:border-sidebar-border dark:bg-neutral-950">
+        <section className="overflow-hidden rounded-lg border border-sidebar-border/70 bg-white shadow-xs dark:border-sidebar-border dark:bg-neutral-950">
+            {toolbar && (
+                <div className="border-b border-neutral-200 p-4 dark:border-neutral-800">
+                    {toolbar}
+                </div>
+            )}
+
+            {selectedCount > 0 && bulkActions && (
+                <div className="flex flex-col gap-3 border-b border-red-200 bg-red-50/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-red-500/30 dark:bg-red-500/5">
+                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                        {selectedCount} geselecteerd
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {bulkActions}
+                    </div>
+                </div>
+            )}
+
             <Table className="min-w-5xl">
-                <TableCaption className="sr-only">
-                    Overzicht van legacy redirects
-                </TableCaption>
+                <TableCaption className="sr-only">{caption}</TableCaption>
                 <TableHeader className="bg-neutral-50 text-xs tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/70 dark:text-neutral-400">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -97,9 +129,16 @@ export function DataTable<TData, TValue>({
                         <TableRow>
                             <TableCell
                                 colSpan={columns.length}
-                                className="h-28 text-center text-neutral-600 dark:text-neutral-400"
+                                className="h-32 text-center"
                             >
-                                Geen redirects gevonden.
+                                <p className="font-medium text-neutral-950 dark:text-white">
+                                    {emptyTitle}
+                                </p>
+                                {emptyDescription && (
+                                    <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                                        {emptyDescription}
+                                    </p>
+                                )}
                             </TableCell>
                         </TableRow>
                     )}
@@ -110,10 +149,10 @@ export function DataTable<TData, TValue>({
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {pagination.from !== null && pagination.to !== null
                         ? `${pagination.from}–${pagination.to} van ${pagination.total}`
-                        : `${pagination.total} redirects`}
+                        : `${pagination.total} ${resourceLabel}`}
                 </p>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <PaginationButton
                         disabled={!table.getCanPreviousPage()}
                         href={pagination.prev_page_url}
@@ -130,7 +169,7 @@ export function DataTable<TData, TValue>({
                     />
                 </div>
             </div>
-        </div>
+        </section>
     );
 }
 
@@ -151,7 +190,7 @@ function PaginationButton({ disabled, href, label }: PaginationButtonProps) {
 
     return (
         <Button asChild size="sm" variant="outline">
-            <Link href={href} preserveScroll>
+            <Link href={href} preserveScroll preserveState>
                 {label}
             </Link>
         </Button>
