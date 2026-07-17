@@ -257,6 +257,9 @@ test('event details render long content, dates, registration, and safe links on 
         )
         ->assertSee('16 plekken totaal')
         ->assertSee('Aanmelden vanaf')
+        ->assertScript(
+            '(document.body.innerText.match(/Aanmelden vanaf/g) ?? []).length === 1',
+        )
         ->assertSee('Aanmelden tot')
         ->assertSee('Aanmelden voor dit event.')
         ->assertSee('Je meldt je hiermee aan voor Lange indoor briefing.')
@@ -366,6 +369,9 @@ test('season context without a ticket offer stays informative without sales cont
         ->assertSee('Inschrijving voor dit event.')
         ->assertSee('Nog niet geopend · inschrijving opent op')
         ->assertSee('Aanmelden vanaf')
+        ->assertScript(
+            '(document.body.innerText.match(/Aanmelden vanaf/g) ?? []).length === 1',
+        )
         ->assertDontSee('Onderdeel van het seizoen')
         ->assertDontSee('Voor dit seizoen wordt geen seizoensticket aangeboden.')
         ->click('Bekijk seizoen')

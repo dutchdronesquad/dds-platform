@@ -21,6 +21,7 @@ import {
     formatEventTimeRange,
     getEventRegistrationDetail,
     getEventRegistrationLabel,
+    isEventRegistrationUpcoming,
 } from '@/lib/event-formatting';
 import { index as eventsIndex } from '@/routes/events';
 import { show as seasonShow } from '@/routes/seasons';
@@ -239,6 +240,7 @@ function RegistrationPanel({
     registrationLabel,
 }: RegistrationPanelProps) {
     const registrationDetail = getEventRegistrationDetail(event);
+    const registrationIsUpcoming = isEventRegistrationUpcoming(event);
     const hasSeasonTicket = event.seasonContext?.ticket != null;
 
     return (
@@ -314,7 +316,7 @@ function RegistrationPanel({
                         }
                     />
                     {event.registrationOpensAt !== null &&
-                        registrationDetail.label !== 'Aanmelden vanaf' && (
+                        !registrationIsUpcoming && (
                             <RegistrationDetail
                                 label="Aanmelden vanaf"
                                 value={formatEventDateTime(
