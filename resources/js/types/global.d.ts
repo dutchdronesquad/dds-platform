@@ -14,6 +14,9 @@ declare module '@inertiajs/core' {
             name: string;
             locale: LocaleProps;
             auth: Auth;
+            management: {
+                canViewRedirects: boolean;
+            } | null;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };
