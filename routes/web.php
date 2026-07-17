@@ -2,6 +2,7 @@
 
 use App\Enums\Permission;
 use App\Enums\Role;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
@@ -62,7 +63,7 @@ Route::middleware([
     'verified',
     RoleMiddleware::using([Role::Admin, Role::Editor]),
 ])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('dashboard/redirects', [RedirectController::class, 'index'])
         ->middleware('can:'.Permission::ViewRedirects->value)
