@@ -4,6 +4,7 @@ use App\Enums\Role as RoleEnum;
 use App\Models\Redirect;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -42,6 +43,8 @@ test('admins can review redirect status and usage', function () {
             ->where('summary.total', 1)
             ->where('summary.active', 1)
             ->where('summary.hits', 12)
+            ->where('facets.active', 1)
+            ->where('facets.inactive', 0)
             ->where('redirects.current_page', 1)
             ->where('redirects.total', 1)
             ->has('redirects.data', 1)
@@ -71,7 +74,114 @@ test('redirect review is paginated while its summary covers every record', funct
             ->where('redirects.current_page', 2)
             ->where('redirects.last_page', 2)
             ->where('redirects.total', 51)
+            ->where('redirects.prev_page_url', fn (string $url): bool => ! str_contains($url, 'search=') && ! str_contains($url, 'status='))
             ->has('redirects.data', 1),
+        );
+});
+
+test('admins can search redirects without changing the overall summary', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->create([
+        'source_path' => '/oude-kalender',
+        'target_url' => '/events',
+        'notes' => 'Belangrijke migratie',
+    ]);
+    Redirect::factory()->create([
+        'source_path' => '/oude-contactpagina',
+        'target_url' => '/contact',
+    ]);
+    Redirect::factory()->inactive()->create([
+        'source_path' => '/kalender-archief',
+        'target_url' => '/archive',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['search' => 'KALENDER']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', 'KALENDER')
+            ->where('filters.status', 'all')
+            ->where('summary.total', 3)
+            ->where('facets.active', 1)
+            ->where('facets.inactive', 1)
+            ->where('redirects.total', 2)
+            ->where('redirects.data', fn (Collection $redirects): bool => $redirects
+                ->pluck('sourcePath')
+                ->sort()
+                ->values()
+                ->all() === ['/kalender-archief', '/oude-kalender']),
+        );
+});
+
+test('redirect searches are hard limited without changing the search term', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+    $search = str_repeat('a', 120);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['search' => $search]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', str_repeat('a', 100))
+            ->where('redirects.total', 0),
+        );
+});
+
+test('zero remains a valid search value in pagination links', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->count(51)->create(['target_url' => '/0']);
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['search' => '0']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', '0')
+            ->where('redirects.total', 51)
+            ->where('redirects.next_page_url', fn (string $url): bool => str_contains($url, 'search=0')),
+        );
+});
+
+test('admins can filter redirects by active status and keep filters in pagination links', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->count(51)->create();
+    Redirect::factory()->inactive()->create();
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['status' => 'active']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', '')
+            ->where('filters.status', 'active')
+            ->where('summary.total', 52)
+            ->where('summary.active', 51)
+            ->where('facets.active', 51)
+            ->where('facets.inactive', 1)
+            ->where('redirects.total', 51)
+            ->where('redirects.last_page', 2)
+            ->where('redirects.next_page_url', fn (string $url): bool => str_contains($url, 'status=active')),
+        );
+});
+
+test('unknown redirect statuses fall back to the unfiltered list', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->count(51)->create();
+    Redirect::factory()->inactive()->create();
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['status' => 'unknown']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.status', 'all')
+            ->where('redirects.total', 52)
+            ->where('redirects.next_page_url', fn (string $url): bool => ! str_contains($url, 'status=')),
         );
 });
 

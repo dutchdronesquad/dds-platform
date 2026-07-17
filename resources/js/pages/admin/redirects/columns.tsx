@@ -1,4 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
+import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
 import { Badge } from '@/components/ui/badge';
 
 export type RedirectRecord = {
@@ -42,16 +43,9 @@ export const redirectColumns: ColumnDef<RedirectRecord>[] = [
         cell: ({ row }) => (
             <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{row.original.statusCode}</Badge>
-                <Badge
-                    variant="outline"
-                    className={
-                        row.original.isActive
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
-                            : 'border-neutral-200 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400'
-                    }
-                >
-                    {row.original.isActive ? 'Actief' : 'Inactief'}
-                </Badge>
+                <AdminStatusBadge
+                    status={row.original.isActive ? 'active' : 'inactive'}
+                />
             </div>
         ),
     },
