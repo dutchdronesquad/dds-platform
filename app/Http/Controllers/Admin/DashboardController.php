@@ -13,6 +13,7 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Redirect;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,15 +28,17 @@ final class DashboardController extends Controller
         $isAdmin = $user->hasRole(Role::Admin->value);
         $canViewEvents = $user->can(Permission::ViewEvents->value);
         $canViewRedirects = $user->can(Permission::ViewRedirects->value);
+        $referenceTime = now();
+        $recentCutoff = $referenceTime->copy()->subDays(7);
 
         $eventSummary = $canViewEvents
-            ? $this->eventSummary()
+            ? $this->eventSummary($referenceTime, $recentCutoff)
             : $this->emptySummary();
         $articleSummary = $isAdmin
-            ? $this->articleSummary()
+            ? $this->articleSummary($recentCutoff)
             : $this->emptySummary();
         $redirectSummary = $canViewRedirects
-            ? $this->recordSummary(Redirect::query())
+            ? $this->recordSummary(Redirect::query(), $recentCutoff)
             : $this->emptySummary();
 
         $managedRecords = $eventSummary['total']
@@ -70,14 +73,14 @@ final class DashboardController extends Controller
     }
 
     /** @return array{total: int, drafts: int, upcoming: int, recent: int} */
-    private function eventSummary(): array
+    private function eventSummary(CarbonInterface $referenceTime, CarbonInterface $recentCutoff): array
     {
         $summary = Event::query()
             ->toBase()
             ->selectRaw('count(*) as total')
             ->selectRaw('count(case when status = ? then 1 end) as drafts', [EventStatus::Draft->value])
-            ->selectRaw('count(case when starts_at >= ? and status != ? then 1 end) as upcoming', [now(), EventStatus::Cancelled->value])
-            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [now()->subDays(7)])
+            ->selectRaw('count(case when starts_at >= ? and status != ? then 1 end) as upcoming', [$referenceTime, EventStatus::Cancelled->value])
+            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [$recentCutoff])
             ->first();
 
         return [
@@ -89,13 +92,13 @@ final class DashboardController extends Controller
     }
 
     /** @return array{total: int, drafts: int, upcoming: int, recent: int} */
-    private function articleSummary(): array
+    private function articleSummary(CarbonInterface $recentCutoff): array
     {
         $summary = Article::query()
             ->toBase()
             ->selectRaw('count(*) as total')
             ->selectRaw('count(case when status = ? then 1 end) as drafts', [ArticleStatus::Draft->value])
-            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [now()->subDays(7)])
+            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [$recentCutoff])
             ->first();
 
         return [
@@ -110,12 +113,12 @@ final class DashboardController extends Controller
      * @param  Builder<Redirect>  $query
      * @return array{total: int, drafts: int, upcoming: int, recent: int}
      */
-    private function recordSummary(Builder $query): array
+    private function recordSummary(Builder $query, CarbonInterface $recentCutoff): array
     {
         $summary = $query
             ->toBase()
             ->selectRaw('count(*) as total')
-            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [now()->subDays(7)])
+            ->selectRaw('count(case when created_at >= ? then 1 end) as recent', [$recentCutoff])
             ->first();
 
         return [
