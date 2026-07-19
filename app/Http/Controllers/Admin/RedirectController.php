@@ -25,15 +25,14 @@ final class RedirectController extends Controller
         ]);
     }
 
-    /** @return array{search: string, status: 'active'|'all'|'inactive'} */
+    /** @return array{search: string, status: list<'active'|'inactive'>} */
     private function filters(Request $request): array
     {
         $search = Str::substr($request->string('search')->trim()->toString(), 0, 100);
-        $status = $request->string('status')->toString();
-
-        if (! in_array($status, ['active', 'inactive'], true)) {
-            $status = 'all';
-        }
+        $status = array_values(array_intersect(
+            ['active', 'inactive'],
+            $request->array('status'),
+        ));
 
         return [
             'search' => $search,
@@ -42,7 +41,7 @@ final class RedirectController extends Controller
     }
 
     /**
-     * @param  array{search: string, status: 'active'|'all'|'inactive'}  $filters
+     * @param  array{search: string, status: list<'active'|'inactive'>}  $filters
      * @return LengthAwarePaginator<int, covariant array{
      *     id: int,
      *     sourcePath: string,
@@ -58,7 +57,7 @@ final class RedirectController extends Controller
     {
         $queryParameters = [
             'search' => $filters['search'] !== '' ? $filters['search'] : null,
-            'status' => $filters['status'] !== 'all' ? $filters['status'] : null,
+            'status' => $filters['status'] !== [] ? $filters['status'] : null,
         ];
 
         $query = Redirect::query()->select([
@@ -75,13 +74,16 @@ final class RedirectController extends Controller
         $this->applySearch($query, $filters['search']);
 
         return $query
-            ->when($filters['status'] !== 'all', fn (Builder $query): Builder => $query
-                ->where('is_active', $filters['status'] === 'active'))
+            ->when($filters['status'] !== [], fn (Builder $query): Builder => $query
+                ->whereIn('is_active', array_map(
+                    fn (string $status): bool => $status === 'active',
+                    $filters['status'],
+                )))
             ->latest('updated_at')
             ->paginate(50)
             ->appends(array_filter(
                 $queryParameters,
-                fn (?string $value): bool => $value !== null,
+                fn (mixed $value): bool => $value !== null,
             ))
             ->through(fn (Redirect $redirect): array => [
                 'id' => $redirect->id,

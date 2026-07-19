@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\Permission;
+use App\Models\Season;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,6 +51,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'management' => fn (): ?array => $request->user() ? [
+                'canViewEvents' => $request->user()->can(Permission::ViewEvents->value),
+                'canManageSeasons' => $request->user()->can('viewAny', Season::class),
                 'canViewRedirects' => $request->user()->can(Permission::ViewRedirects->value),
             ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

@@ -3,7 +3,10 @@
 use App\Enums\Permission;
 use App\Enums\Role;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\EventStatusController;
 use App\Http\Controllers\Admin\RedirectController;
+use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\SeasonController;
@@ -64,6 +67,17 @@ Route::middleware([
     RoleMiddleware::using([Role::Admin, Role::Editor]),
 ])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    Route::prefix('dashboard')->name('admin.')->group(function () {
+        Route::patch('events/{event}/publish', [EventStatusController::class, 'publish'])
+            ->name('events.publish');
+        Route::patch('events/{event}/unpublish', [EventStatusController::class, 'unpublish'])
+            ->name('events.unpublish');
+        Route::patch('events/{event}/cancel', [EventStatusController::class, 'cancel'])
+            ->name('events.cancel');
+        Route::resource('events', AdminEventController::class)->except('show');
+        Route::resource('seasons', AdminSeasonController::class)->except('show');
+    });
 
     Route::get('dashboard/redirects', [RedirectController::class, 'index'])
         ->middleware('can:'.Permission::ViewRedirects->value)

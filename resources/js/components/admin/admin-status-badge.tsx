@@ -2,12 +2,14 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export type AdminStatus =
-    'active' | 'archived' | 'draft' | 'inactive' | 'published';
+    'active' | 'archived' | 'cancelled' | 'draft' | 'inactive' | 'published';
 
 const statusStyles: Record<AdminStatus, string> = {
     active: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
     archived:
         'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300',
+    cancelled:
+        'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300',
     draft: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
     inactive:
         'border-neutral-200 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400',
@@ -18,6 +20,7 @@ const statusStyles: Record<AdminStatus, string> = {
 const statusLabels: Record<AdminStatus, string> = {
     active: 'Actief',
     archived: 'Gearchiveerd',
+    cancelled: 'Geannuleerd',
     draft: 'Concept',
     inactive: 'Inactief',
     published: 'Gepubliceerd',

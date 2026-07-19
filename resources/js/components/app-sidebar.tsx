@@ -1,5 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Home, LayoutDashboard, Route as RouteIcon } from 'lucide-react';
+import {
+    CalendarDays,
+    Home,
+    LayoutDashboard,
+    Route as RouteIcon,
+    Tags,
+} from 'lucide-react';
+import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
+import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -27,29 +35,53 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { management } = usePage().props;
-    const mainNavItems: NavItem[] = [
+    const workspaceItems: NavItem[] = [
         {
             title: 'Overzicht',
             href: dashboard(),
             icon: LayoutDashboard,
         },
-        ...(management?.canViewRedirects
+    ];
+    const contentItems: NavItem[] = [
+        ...(management?.canViewEvents
             ? [
                   {
-                      title: 'Redirects',
-                      href: redirectsIndex(),
-                      icon: RouteIcon,
+                      title: 'Events',
+                      href: eventsIndex(),
+                      icon: CalendarDays,
+                  },
+              ]
+            : []),
+        ...(management?.canManageSeasons
+            ? [
+                  {
+                      title: 'Seizoenen',
+                      href: seasonsIndex(),
+                      icon: Tags,
                   },
               ]
             : []),
     ];
+    const systemItems: NavItem[] = management?.canViewRedirects
+        ? [
+              {
+                  title: 'Redirects',
+                  href: redirectsIndex(),
+                  icon: RouteIcon,
+              },
+          ]
+        : [];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+            <SidebarHeader className="border-b border-sidebar-border/70 pb-3">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            className="h-auto py-2 focus-visible:ring-signal-500/50"
+                        >
                             <Link href={dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
@@ -58,11 +90,25 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
+            <SidebarContent className="gap-0 pt-1.5">
+                <NavMain label="Werkruimte" items={workspaceItems} exact />
+                {contentItems.length > 0 && (
+                    <NavMain
+                        label="Content"
+                        items={contentItems}
+                        exact={false}
+                    />
+                )}
+                {systemItems.length > 0 && (
+                    <NavMain
+                        label="Systeem"
+                        items={systemItems}
+                        exact={false}
+                    />
+                )}
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="gap-1 pt-2">
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>

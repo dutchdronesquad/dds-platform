@@ -51,6 +51,8 @@ test('admins can visit the dashboard', function () {
             ->where('stats.upcomingEvents', 0)
             ->where('stats.recentActivity', 0)
             ->where('isEmpty', true)
+            ->where('management.canViewEvents', true)
+            ->where('management.canManageSeasons', true)
             ->where('management.canViewRedirects', true),
         );
 });
@@ -72,6 +74,8 @@ test('editors can visit the dashboard', function () {
             ->where('resources.media', false)
             ->where('resources.users', false)
             ->where('resources.redirects', true)
+            ->where('management.canViewEvents', true)
+            ->where('management.canManageSeasons', false)
             ->where('management.canViewRedirects', true),
         );
 });

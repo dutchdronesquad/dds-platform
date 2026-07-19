@@ -15,6 +15,8 @@ declare module '@inertiajs/core' {
             locale: LocaleProps;
             auth: Auth;
             management: {
+                canManageSeasons: boolean;
+                canViewEvents: boolean;
                 canViewRedirects: boolean;
             } | null;
             sidebarOpen: boolean;
