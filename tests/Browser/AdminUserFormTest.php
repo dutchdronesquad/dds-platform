@@ -36,3 +36,27 @@ test('the user form displays and changes the locale with an aligned desktop layo
         )
         ->assertNoJavaScriptErrors();
 });
+
+test('the user search follows the active filters through browser history', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    User::factory()->create(['name' => 'Alpha gebruiker']);
+    User::factory()->create(['name' => 'Beta gebruiker']);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/users')
+        ->fill('#user-search', 'Alpha')
+        ->assertDontSee('Beta gebruiker')
+        ->assertQueryStringHas('search', 'Alpha')
+        ->assertValue('#user-search', 'Alpha')
+        ->fill('#user-search', 'Beta')
+        ->assertDontSee('Alpha gebruiker')
+        ->assertQueryStringHas('search', 'Beta')
+        ->assertValue('#user-search', 'Beta')
+        ->back()
+        ->assertDontSee('Beta gebruiker')
+        ->assertQueryStringHas('search', 'Alpha')
+        ->assertValue('#user-search', 'Alpha')
+        ->assertNoJavaScriptErrors();
+});

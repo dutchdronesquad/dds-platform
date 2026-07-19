@@ -7,8 +7,8 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FormEvent, KeyboardEvent } from 'react';
 import { index } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { AdminDataTable } from '@/components/admin/admin-data-table';
 import type { ServerPagination } from '@/components/admin/admin-data-table';
@@ -17,6 +17,7 @@ import { AdminListSummary } from '@/components/admin/admin-list-summary';
 import { AdminResourcePage } from '@/components/admin/admin-resource-page';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { dashboard } from '@/routes';
 import { userColumns } from './columns';
 import type { UserRecord } from './types';
@@ -51,54 +52,107 @@ type Props = {
 
 export default function UsersIndex({ users, filters, facets, summary }: Props) {
     const [search, setSearch] = useState(filters.search);
+    const [isFiltering, setIsFiltering] = useState(false);
+    const appliedFiltersRef = useRef(normalizeFilters(filters));
+    const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const lastSubmittedFiltersRef = useRef<UserFilters>(undefined);
+    const requestIdRef = useRef(0);
+
+    useEffect(() => {
+        const normalizedFilters = normalizeFilters(filters);
+        appliedFiltersRef.current = normalizedFilters;
+
+        if (
+            lastSubmittedFiltersRef.current &&
+            filtersAreEqual(lastSubmittedFiltersRef.current, normalizedFilters)
+        ) {
+            lastSubmittedFiltersRef.current = undefined;
+
+            return;
+        }
+
+        setSearch(normalizedFilters.search);
+    }, [filters]);
+
+    const applyFilters = useCallback((nextFilters: UserFilters): void => {
+        const normalizedFilters = normalizeFilters(nextFilters);
+
+        if (filtersAreEqual(normalizedFilters, appliedFiltersRef.current)) {
+            return;
+        }
+
+        const requestId = ++requestIdRef.current;
+        lastSubmittedFiltersRef.current = normalizedFilters;
+
+        router.visit(usersRoute(normalizedFilters), {
+            only: ['users', 'filters', 'facets'],
+            preserveScroll: true,
+            preserveState: true,
+            onStart: () => setIsFiltering(true),
+            onFinish: () => {
+                if (requestId === requestIdRef.current) {
+                    setIsFiltering(false);
+                }
+            },
+        });
+    }, []);
+
+    useEffect(() => {
+        clearTimeout(debounceTimeoutRef.current);
+
+        if (search.trim() === appliedFiltersRef.current.search) {
+            return;
+        }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            applyFilters({
+                ...appliedFiltersRef.current,
+                search,
+            });
+        }, 400);
+
+        return () => clearTimeout(debounceTimeoutRef.current);
+    }, [applyFilters, search]);
+
+    const normalizedSearch = search.trim();
+    const isUpdating = isFiltering || normalizedSearch !== filters.search;
+
     const hasFilters =
-        filters.search !== '' ||
+        normalizedSearch !== '' ||
         filters.role.length > 0 ||
         filters.verification.length > 0 ||
         filters.account.length > 0 ||
         filters.activity.length > 0;
 
-    function visit(nextFilters: UserFilters): void {
-        router.visit(
-            index({
-                query: {
-                    search: nextFilters.search || undefined,
-                    role: nextFilters.role.length
-                        ? nextFilters.role
-                        : undefined,
-                    verification: nextFilters.verification.length
-                        ? nextFilters.verification
-                        : undefined,
-                    account: nextFilters.account.length
-                        ? nextFilters.account
-                        : undefined,
-                    activity: nextFilters.activity.length
-                        ? nextFilters.activity
-                        : undefined,
-                },
-            }),
-            {
-                only: ['users', 'filters', 'facets'],
-                preserveScroll: true,
-                preserveState: true,
-            },
-        );
-    }
-
     function submit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        visit({ ...filters, search: search.trim() });
+        clearTimeout(debounceTimeoutRef.current);
+        applyFilters({ ...appliedFiltersRef.current, search });
+    }
+
+    function clearSearch(): void {
+        clearTimeout(debounceTimeoutRef.current);
+        setSearch('');
+        applyFilters({ ...appliedFiltersRef.current, search: '' });
     }
 
     function resetFilters(): void {
+        clearTimeout(debounceTimeoutRef.current);
         setSearch('');
-        visit({
+        applyFilters({
             search: '',
             role: [],
             verification: [],
             account: [],
             activity: [],
         });
+    }
+
+    function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
+        if (event.key === 'Escape' && search !== '') {
+            event.preventDefault();
+            clearSearch();
+        }
     }
 
     return (
@@ -146,7 +200,13 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                     resourceLabel="gebruikers"
                     tableClassName="min-w-0 lg:min-w-5xl"
                     toolbar={
-                        <form onSubmit={submit} className="flex flex-col gap-3">
+                        <form
+                            action={index.url()}
+                            method="get"
+                            onSubmit={submit}
+                            aria-busy={isUpdating}
+                            className="flex flex-col gap-3"
+                        >
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                 <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                                     <div className="relative w-full sm:w-80">
@@ -159,22 +219,32 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-500" />
                                         <Input
                                             id="user-search"
+                                            name="search"
                                             value={search}
                                             onChange={(event) =>
                                                 setSearch(event.target.value)
                                             }
+                                            onKeyDown={handleSearchKeyDown}
                                             maxLength={100}
                                             placeholder="Zoek naam of e-mail…"
-                                            className="h-9 pr-20 pl-9"
+                                            autoComplete="off"
+                                            className="h-9 pr-18 pl-9"
                                         />
-                                        <Button
-                                            type="submit"
-                                            size="sm"
-                                            variant="ghost"
-                                            className="absolute top-1/2 right-1 h-7 -translate-y-1/2 px-2"
-                                        >
-                                            Zoek
-                                        </Button>
+                                        {isUpdating && (
+                                            <Spinner className="absolute top-1/2 right-10 -translate-y-1/2 text-neutral-500" />
+                                        )}
+                                        {search !== '' && (
+                                            <Button
+                                                type="button"
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={clearSearch}
+                                                aria-label="Zoekopdracht wissen"
+                                                className="absolute top-1/2 right-1 size-7 -translate-y-1/2 text-neutral-500 hover:text-neutral-950 dark:hover:text-white"
+                                            >
+                                                <X className="size-4" />
+                                            </Button>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-wrap items-center gap-2">
@@ -202,13 +272,16 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                                         facets.roles.none ?? 0,
                                                 },
                                             ]}
-                                            onChange={(role) =>
-                                                visit({
-                                                    ...filters,
-                                                    search: search.trim(),
+                                            onChange={(role) => {
+                                                clearTimeout(
+                                                    debounceTimeoutRef.current,
+                                                );
+                                                applyFilters({
+                                                    ...appliedFiltersRef.current,
+                                                    search,
                                                     role,
-                                                })
-                                            }
+                                                });
+                                            }}
                                         />
                                         <AdminDataTableFacetFilter
                                             title="E-mail"
@@ -225,13 +298,16 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                                     count: facets.unverified,
                                                 },
                                             ]}
-                                            onChange={(verification) =>
-                                                visit({
-                                                    ...filters,
-                                                    search: search.trim(),
+                                            onChange={(verification) => {
+                                                clearTimeout(
+                                                    debounceTimeoutRef.current,
+                                                );
+                                                applyFilters({
+                                                    ...appliedFiltersRef.current,
+                                                    search,
                                                     verification,
-                                                })
-                                            }
+                                                });
+                                            }}
                                         />
                                         <AdminDataTableFacetFilter
                                             title="Account"
@@ -248,13 +324,16 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                                     count: facets.inactive,
                                                 },
                                             ]}
-                                            onChange={(account) =>
-                                                visit({
-                                                    ...filters,
-                                                    search: search.trim(),
+                                            onChange={(account) => {
+                                                clearTimeout(
+                                                    debounceTimeoutRef.current,
+                                                );
+                                                applyFilters({
+                                                    ...appliedFiltersRef.current,
+                                                    search,
                                                     account,
-                                                })
-                                            }
+                                                });
+                                            }}
                                         />
                                         <AdminDataTableFacetFilter
                                             title="Activiteit"
@@ -271,13 +350,16 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                                     count: facets.never,
                                                 },
                                             ]}
-                                            onChange={(activity) =>
-                                                visit({
-                                                    ...filters,
-                                                    search: search.trim(),
+                                            onChange={(activity) => {
+                                                clearTimeout(
+                                                    debounceTimeoutRef.current,
+                                                );
+                                                applyFilters({
+                                                    ...appliedFiltersRef.current,
+                                                    search,
                                                     activity,
-                                                })
-                                            }
+                                                });
+                                            }}
                                         />
                                         {hasFilters && (
                                             <Button
@@ -295,11 +377,9 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                                     aria-live="polite"
                                     className="shrink-0 text-xs text-neutral-500"
                                 >
-                                    {users.total}{' '}
-                                    {users.total === 1
-                                        ? 'gebruiker'
-                                        : 'gebruikers'}{' '}
-                                    gevonden
+                                    {isUpdating
+                                        ? 'Resultaten worden bijgewerkt…'
+                                        : `${users.total} ${users.total === 1 ? 'gebruiker' : 'gebruikers'} gevonden`}
                                 </p>
                             </div>
                         </form>
@@ -308,6 +388,49 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
             </AdminResourcePage>
         </>
     );
+}
+
+function normalizeFilters(filters: UserFilters): UserFilters {
+    return {
+        search: filters.search.trim(),
+        role: [...filters.role],
+        verification: [...filters.verification],
+        account: [...filters.account],
+        activity: [...filters.activity],
+    };
+}
+
+function filtersAreEqual(first: UserFilters, second: UserFilters): boolean {
+    return (
+        first.search === second.search &&
+        valuesAreEqual(first.role, second.role) &&
+        valuesAreEqual(first.verification, second.verification) &&
+        valuesAreEqual(first.account, second.account) &&
+        valuesAreEqual(first.activity, second.activity)
+    );
+}
+
+function valuesAreEqual(first: string[], second: string[]): boolean {
+    return (
+        first.length === second.length &&
+        first.every((value, index) => value === second[index])
+    );
+}
+
+function usersRoute(filters: UserFilters) {
+    return index({
+        query: {
+            search: filters.search !== '' ? filters.search : undefined,
+            role: filters.role.length > 0 ? filters.role : undefined,
+            verification:
+                filters.verification.length > 0
+                    ? filters.verification
+                    : undefined,
+            account: filters.account.length > 0 ? filters.account : undefined,
+            activity:
+                filters.activity.length > 0 ? filters.activity : undefined,
+        },
+    });
 }
 
 UsersIndex.layout = {
