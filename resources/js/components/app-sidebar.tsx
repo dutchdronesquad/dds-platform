@@ -5,9 +5,11 @@ import {
     LayoutDashboard,
     Route as RouteIcon,
     Tags,
+    Users,
 } from 'lucide-react';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
+import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -62,15 +64,26 @@ export function AppSidebar() {
               ]
             : []),
     ];
-    const systemItems: NavItem[] = management?.canViewRedirects
-        ? [
-              {
-                  title: 'Redirects',
-                  href: redirectsIndex(),
-                  icon: RouteIcon,
-              },
-          ]
-        : [];
+    const systemItems: NavItem[] = [
+        ...(management?.canViewUsers
+            ? [
+                  {
+                      title: 'Gebruikers',
+                      href: usersIndex(),
+                      icon: Users,
+                  },
+              ]
+            : []),
+        ...(management?.canViewRedirects
+            ? [
+                  {
+                      title: 'Redirects',
+                      href: redirectsIndex(),
+                      icon: RouteIcon,
+                  },
+              ]
+            : []),
+    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">

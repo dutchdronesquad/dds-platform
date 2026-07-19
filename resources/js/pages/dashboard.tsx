@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
+import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { Button } from '@/components/ui/button';
 import { dashboard, home } from '@/routes';
 import { index as redirectsIndex } from '@/routes/redirects';
@@ -110,6 +111,7 @@ const managementAreas: ManagementArea[] = [
         title: 'Gebruikers',
         description: 'Beheer accounts, rollen en toegang tot het platform.',
         icon: Users,
+        href: usersIndex(),
     },
 ];
 

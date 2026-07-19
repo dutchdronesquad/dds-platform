@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\SeasonController;
@@ -77,6 +79,11 @@ Route::middleware([
             ->name('events.cancel');
         Route::resource('events', AdminEventController::class)->except('show');
         Route::resource('seasons', AdminSeasonController::class)->except('show');
+        Route::patch('users/{user}/block', [UserStatusController::class, 'block'])
+            ->name('users.block');
+        Route::patch('users/{user}/unblock', [UserStatusController::class, 'unblock'])
+            ->name('users.unblock');
+        Route::resource('users', AdminUserController::class)->only(['index', 'edit', 'update', 'destroy']);
     });
 
     Route::get('dashboard/redirects', [RedirectController::class, 'index'])
