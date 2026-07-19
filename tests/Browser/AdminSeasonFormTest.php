@@ -56,6 +56,24 @@ test('season forms use one main surface without nested section cards', function 
         );
 });
 
+test('dirty season forms register a compatible browser unload warning', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/seasons/create')
+        ->on()->desktop()
+        ->fill('#name', 'Wintercompetitie')
+        ->assertScript(
+            "document.querySelector('[data-testid=\"admin-form-save-status\"]')?.dataset.state === 'dirty'",
+        )
+        ->assertScript(
+            "(() => { const event = new Event('beforeunload', { cancelable: true }); let assignedReturnValue; Object.defineProperty(event, 'returnValue', { configurable: true, get: () => assignedReturnValue, set: (value) => { assignedReturnValue = value; } }); window.dispatchEvent(event); return event.defaultPrevented && assignedReturnValue === ''; })()",
+        )
+        ->assertNoJavaScriptErrors();
+});
+
 test('season ticket fields use a balanced layout and combined date time controls', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

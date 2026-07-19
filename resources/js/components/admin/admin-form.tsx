@@ -478,6 +478,7 @@ export function AdminFormNavigationGuard({ isDirty }: { isDirty: boolean }) {
             }
 
             event.preventDefault();
+            event.returnValue = '';
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
