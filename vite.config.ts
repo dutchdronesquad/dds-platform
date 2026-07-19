@@ -42,7 +42,11 @@ export default defineConfig({
             ? {
                   origin: `${ddevPrimaryUrl}:${vitePort}`,
                   cors: {
-                      origin: [ddevPrimaryUrl],
+                      origin: [
+                          ddevPrimaryUrl,
+                          /^http:\/\/127\.0\.0\.1:\d+$/,
+                          /^http:\/\/localhost:\d+$/,
+                      ],
                   },
                   hmr: {
                       host: ddevHostname,

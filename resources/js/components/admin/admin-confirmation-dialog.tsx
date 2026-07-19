@@ -18,7 +18,8 @@ type MutationForm = {
     method: 'delete' | 'patch' | 'post' | 'put';
 };
 
-type ConfirmationIntent = 'archive' | 'delete' | 'publish' | 'unpublish';
+type ConfirmationIntent =
+    'archive' | 'cancel' | 'delete' | 'publish' | 'unpublish';
 
 const confirmationCopy: Record<
     ConfirmationIntent,
@@ -34,6 +35,13 @@ const confirmationCopy: Record<
         description: (subject) =>
             `${subject} verdwijnt uit de actieve overzichten, maar blijft bewaard.`,
         title: 'Archiveren?',
+        variant: 'destructive',
+    },
+    cancel: {
+        confirmLabel: 'Event annuleren',
+        description: (subject) =>
+            `${subject} blijft zichtbaar als geannuleerd event. Bezoekers kunnen zich niet meer inschrijven.`,
+        title: 'Event annuleren?',
         variant: 'destructive',
     },
     delete: {
@@ -63,23 +71,36 @@ type AdminConfirmationDialogProps = {
     description?: string;
     form: MutationForm;
     intent: ConfirmationIntent;
+    onOpenChange?: (open: boolean) => void;
+    open?: boolean;
     subject: string;
-    trigger: ReactNode;
+    trigger?: ReactNode;
 };
 
 export function AdminConfirmationDialog({
     description,
     form,
     intent,
+    onOpenChange,
+    open: controlledOpen,
     subject,
     trigger,
 }: AdminConfirmationDialogProps) {
-    const [open, setOpen] = useState(false);
+    const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
     const copy = confirmationCopy[intent];
+    const open = controlledOpen ?? uncontrolledOpen;
+
+    function setOpen(nextOpen: boolean): void {
+        if (controlledOpen === undefined) {
+            setUncontrolledOpen(nextOpen);
+        }
+
+        onOpenChange?.(nextOpen);
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{copy.title}</DialogTitle>

@@ -102,7 +102,7 @@ test('admins can search redirects without changing the overall summary', functio
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('filters.search', 'KALENDER')
-            ->where('filters.status', 'all')
+            ->where('filters.status', [])
             ->where('summary.total', 3)
             ->where('facets.active', 1)
             ->where('facets.inactive', 1)
@@ -157,14 +157,34 @@ test('admins can filter redirects by active status and keep filters in paginatio
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('filters.search', '')
-            ->where('filters.status', 'active')
+            ->where('filters.status', ['active'])
             ->where('summary.total', 52)
             ->where('summary.active', 51)
             ->where('facets.active', 51)
             ->where('facets.inactive', 1)
             ->where('redirects.total', 51)
             ->where('redirects.last_page', 2)
-            ->where('redirects.next_page_url', fn (string $url): bool => str_contains($url, 'status=active')),
+            ->where('redirects.next_page_url', function (string $url): bool {
+                parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $query);
+
+                return $query['status'] === ['active'];
+            }),
+        );
+});
+
+test('admins can combine multiple redirect status facets', function () {
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::Admin->value);
+
+    Redirect::factory()->create();
+    Redirect::factory()->inactive()->create();
+
+    $this->actingAs($user)
+        ->get(route('redirects.index', ['status' => ['active', 'inactive']]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.status', ['active', 'inactive'])
+            ->where('redirects.total', 2),
         );
 });
 
@@ -179,7 +199,7 @@ test('unknown redirect statuses fall back to the unfiltered list', function () {
         ->get(route('redirects.index', ['status' => 'unknown']))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('filters.status', 'all')
+            ->where('filters.status', [])
             ->where('redirects.total', 52)
             ->where('redirects.next_page_url', fn (string $url): bool => ! str_contains($url, 'status=')),
         );

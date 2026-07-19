@@ -7,7 +7,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { toUrl } from '@/lib/utils';
+import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
 export function NavFooter({
@@ -23,7 +23,10 @@ export function NavFooter({
     return (
         <SidebarGroup
             {...props}
-            className={`group-data-[collapsible=icon]:p-0 ${className || ''}`}
+            className={cn(
+                'border-t border-sidebar-border/70 px-2 pt-2 pb-0 group-data-[collapsible=icon]:p-0',
+                className,
+            )}
         >
             <SidebarGroupContent>
                 <SidebarMenu>
@@ -31,7 +34,8 @@ export function NavFooter({
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
-                                className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
+                                tooltip={{ children: item.title }}
+                                className="hover:text-signal-800 dark:hover:text-signal-200 h-9 px-3 text-[13px] text-neutral-500 hover:bg-signal-50/70 focus-visible:ring-signal-500/50 dark:text-neutral-400 dark:hover:bg-signal-500/10"
                             >
                                 {isExternal(item.href) ? (
                                     <a
@@ -45,7 +49,7 @@ export function NavFooter({
                                         <span>{item.title}</span>
                                     </a>
                                 ) : (
-                                    <Link href={item.href}>
+                                    <Link href={item.href} prefetch>
                                         {item.icon && (
                                             <item.icon className="h-5 w-5" />
                                         )}

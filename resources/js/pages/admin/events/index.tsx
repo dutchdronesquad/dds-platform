@@ -1,16 +1,22 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
-    Activity,
-    CheckCircle2,
-    RefreshCw,
-    Route as RouteIcon,
+    Ban,
+    CalendarDays,
+    FilePenLine,
+    Plus,
     Search,
+    Send,
+    Tags,
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
+import {
+    create,
+    index,
+} from '@/actions/App/Http/Controllers/Admin/EventController';
+import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { AdminDataTable } from '@/components/admin/admin-data-table';
-import type { ServerPagination } from '@/components/admin/admin-data-table';
 import { AdminDataTableFacetFilter } from '@/components/admin/admin-data-table-facet-filter';
 import { AdminListSummary } from '@/components/admin/admin-list-summary';
 import { AdminResourcePage } from '@/components/admin/admin-resource-page';
@@ -18,90 +24,105 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { dashboard } from '@/routes';
-import { index as redirectsIndex } from '@/routes/redirects';
-import { redirectColumns } from './columns';
-import type { RedirectRecord } from './columns';
+import { eventColumns } from './columns';
+import type {
+    AdminEventStatus,
+    AdminEventType,
+    EventIndexProps,
+} from './types';
 
-type RedirectStatus = 'active' | 'inactive';
+type EventFiltersState = EventIndexProps['filters'];
 
-type RedirectFilters = {
-    search: string;
-    status: RedirectStatus[];
-};
-
-type Props = {
-    facets: {
-        active: number;
-        inactive: number;
-    };
-    filters: RedirectFilters;
-    redirects: ServerPagination<RedirectRecord>;
-    summary: {
-        active: number;
-        hits: number;
-        total: number;
-    };
-};
-
-export default function RedirectsIndex({
-    facets,
+export default function EventsIndex({
+    canCreate,
+    canManageSeasons,
+    events,
     filters,
-    redirects,
+    statusOptions,
     summary,
-}: Props) {
+    typeOptions,
+}: EventIndexProps) {
     const hasFilters =
-        filters.search !== '' || filterValues(filters.status).length > 0;
+        filters.search !== '' ||
+        filterValues(filters.status).length > 0 ||
+        filterValues(filters.type).length > 0;
 
     return (
         <>
-            <Head title="Redirects" />
+            <Head title="Events beheren" />
 
             <AdminResourcePage
-                eyebrow="SEO-beheer"
-                title="Legacy redirects"
-                description="Controleer welke oude WordPress-paden actief doorverwijzen, waar ze uitkomen en hoe vaak ze zijn gebruikt."
-                actions={<RefreshRedirectsButton />}
+                eyebrow="Eventbeheer"
+                title="Events"
+                description="Plan events, bewaak inschrijvingen en bepaal precies wat zichtbaar is op de publieke kalender."
+                actions={
+                    <>
+                        {canManageSeasons && (
+                            <Button asChild variant="outline">
+                                <Link href={seasonsIndex()}>
+                                    <Tags />
+                                    Seizoenen
+                                </Link>
+                            </Button>
+                        )}
+                        {canCreate && (
+                            <Button asChild>
+                                <Link href={create()}>
+                                    <Plus />
+                                    Nieuw event
+                                </Link>
+                            </Button>
+                        )}
+                    </>
+                }
             >
                 <AdminListSummary
-                    label="Redirectsamenvatting"
+                    label="Eventsamenvatting"
                     metrics={[
                         {
-                            label: 'Totaal',
+                            label: 'Alle events',
                             value: summary.total,
-                            icon: RouteIcon,
+                            icon: CalendarDays,
                         },
                         {
-                            label: 'Actief',
-                            value: summary.active,
-                            icon: CheckCircle2,
+                            label: 'Concept',
+                            value: summary.drafts,
+                            icon: FilePenLine,
+                            tone: 'amber',
+                        },
+                        {
+                            label: 'Gepubliceerd',
+                            value: summary.published,
+                            icon: Send,
                             tone: 'blue',
                         },
                         {
-                            label: 'Doorkliks',
-                            value: summary.hits,
-                            icon: Activity,
-                            tone: 'amber',
+                            label: 'Geannuleerd',
+                            value: summary.cancelled,
+                            icon: Ban,
+                            tone: 'red',
                         },
                     ]}
                 />
 
                 <AdminDataTable
-                    caption="Overzicht van legacy redirects"
-                    columns={redirectColumns}
-                    emptyTitle="Geen redirects gevonden"
+                    caption="Overzicht van events"
+                    columns={eventColumns}
+                    emptyTitle="Geen events gevonden"
                     emptyDescription={
                         hasFilters
-                            ? 'Pas de zoekopdracht of het statusfilter aan.'
-                            : 'Er zijn nog geen legacy redirects vastgelegd.'
+                            ? 'Pas de zoekopdracht of filters aan.'
+                            : 'Maak het eerste event aan om de kalender te vullen.'
                     }
-                    pagination={redirects}
-                    resourceLabel="redirects"
-                    tableClassName="min-w-0 lg:min-w-5xl"
+                    pagination={events}
+                    resourceLabel="events"
+                    tableClassName="min-w-0 md:min-w-[58rem] lg:min-w-[68rem]"
                     toolbar={
-                        <RedirectFilterBar
-                            facets={facets}
+                        <EventFilterBar
                             filters={filters}
-                            resultCount={redirects.total}
+                            resultCount={events.total}
+                            statusOptions={statusOptions}
+                            typeOptions={typeOptions}
                         />
                     }
                 />
@@ -110,56 +131,26 @@ export default function RedirectsIndex({
     );
 }
 
-function RefreshRedirectsButton() {
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    function refresh(): void {
-        router.reload({
-            fresh: true,
-            only: ['redirects', 'facets', 'summary'],
-            onStart: () => setIsRefreshing(true),
-            onFinish: () => setIsRefreshing(false),
-        });
-    }
-
-    return (
-        <Button
-            type="button"
-            variant="outline"
-            onClick={refresh}
-            disabled={isRefreshing}
-        >
-            <RefreshCw
-                className={isRefreshing ? 'size-4 animate-spin' : 'size-4'}
-            />
-            {isRefreshing ? 'Vernieuwen…' : 'Vernieuwen'}
-        </Button>
-    );
-}
-
-function RedirectFilterBar({
-    facets,
+function EventFilterBar({
     filters,
     resultCount,
-}: {
-    facets: Props['facets'];
-    filters: RedirectFilters;
+    statusOptions,
+    typeOptions,
+}: Pick<EventIndexProps, 'filters' | 'statusOptions' | 'typeOptions'> & {
     resultCount: number;
 }) {
     const [search, setSearch] = useState(filters.search);
-    const [status, setStatus] = useState<RedirectStatus[]>(() =>
-        filterValues(filters.status).filter(isRedirectStatus),
-    );
+    const [status, setStatus] = useState(() => filterValues(filters.status));
+    const [type, setType] = useState(() => filterValues(filters.type));
     const [isFiltering, setIsFiltering] = useState(false);
     const appliedFiltersRef = useRef(normalizeFilters(filters));
     const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-    const lastSubmittedFiltersRef = useRef<RedirectFilters>(undefined);
+    const lastSubmittedFiltersRef = useRef<EventFiltersState>(undefined);
     const requestIdRef = useRef(0);
-    const statusRef = useRef<RedirectStatus[]>(
-        filterValues(filters.status).filter(isRedirectStatus),
-    );
+    const statusRef = useRef(filterValues(filters.status));
+    const typeRef = useRef(filterValues(filters.type));
 
-    const applyFilters = useCallback((nextFilters: RedirectFilters): void => {
+    const applyFilters = useCallback((nextFilters: EventFiltersState): void => {
         const normalizedFilters = normalizeFilters(nextFilters);
 
         if (filtersAreEqual(normalizedFilters, appliedFiltersRef.current)) {
@@ -169,8 +160,8 @@ function RedirectFilterBar({
         const requestId = ++requestIdRef.current;
         lastSubmittedFiltersRef.current = normalizedFilters;
 
-        router.visit(redirectsRoute(normalizedFilters), {
-            only: ['redirects', 'facets', 'filters'],
+        router.visit(eventsRoute(normalizedFilters), {
+            only: ['events', 'filters'],
             preserveScroll: true,
             preserveState: true,
             onStart: () => setIsFiltering(true),
@@ -197,7 +188,9 @@ function RedirectFilterBar({
 
         setSearch(filters.search);
         setStatus(normalizedFilters.status);
+        setType(normalizedFilters.type);
         statusRef.current = normalizedFilters.status;
+        typeRef.current = normalizedFilters.type;
     }, [filters]);
 
     useEffect(() => {
@@ -208,7 +201,11 @@ function RedirectFilterBar({
         }
 
         debounceTimeoutRef.current = setTimeout(() => {
-            applyFilters({ search, status: statusRef.current });
+            applyFilters({
+                search,
+                status: statusRef.current,
+                type: typeRef.current,
+            });
         }, 400);
 
         return () => clearTimeout(debounceTimeoutRef.current);
@@ -218,25 +215,19 @@ function RedirectFilterBar({
     const isUpdating =
         isFiltering ||
         normalizedSearch !== filters.search ||
-        !valuesAreEqual(status, filters.status);
-    const hasFilters = normalizedSearch !== '' || status.length > 0;
-    const statusOptions: Array<{
-        count: number;
-        label: string;
-        value: RedirectStatus;
-    }> = [
-        { value: 'active', label: 'Actief', count: facets.active },
-        { value: 'inactive', label: 'Inactief', count: facets.inactive },
-    ];
+        !valuesAreEqual(status, filters.status) ||
+        !valuesAreEqual(type, filters.type);
+    const hasFilters =
+        normalizedSearch !== '' || status.length > 0 || type.length > 0;
 
     function submit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
         clearTimeout(debounceTimeoutRef.current);
-        applyFilters({ search, status });
+        applyFilters({ search, status, type });
     }
 
     function changeStatus(values: string[]): void {
-        const nextStatus = values.filter(isRedirectStatus);
+        const nextStatus = values.filter(isEventStatus);
 
         if (valuesAreEqual(nextStatus, status)) {
             return;
@@ -245,21 +236,36 @@ function RedirectFilterBar({
         clearTimeout(debounceTimeoutRef.current);
         statusRef.current = nextStatus;
         setStatus(nextStatus);
-        applyFilters({ search, status: nextStatus });
+        applyFilters({ search, status: nextStatus, type });
+    }
+
+    function changeType(values: string[]): void {
+        const nextType = values.filter(isEventType);
+
+        if (valuesAreEqual(nextType, type)) {
+            return;
+        }
+
+        clearTimeout(debounceTimeoutRef.current);
+        typeRef.current = nextType;
+        setType(nextType);
+        applyFilters({ search, status, type: nextType });
     }
 
     function clearSearch(): void {
         clearTimeout(debounceTimeoutRef.current);
         setSearch('');
-        applyFilters({ search: '', status });
+        applyFilters({ search: '', status, type });
     }
 
     function resetFilters(): void {
         clearTimeout(debounceTimeoutRef.current);
         statusRef.current = [];
+        typeRef.current = [];
         setSearch('');
         setStatus([]);
-        applyFilters({ search: '', status: [] });
+        setType([]);
+        applyFilters({ search: '', status: [], type: [] });
     }
 
     function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
@@ -271,7 +277,7 @@ function RedirectFilterBar({
 
     return (
         <form
-            action={redirectsIndex.url()}
+            action={index.url()}
             method="get"
             onSubmit={submit}
             aria-busy={isUpdating}
@@ -285,22 +291,25 @@ function RedirectFilterBar({
                     value={value}
                 />
             ))}
+            {type.map((value) => (
+                <input key={value} type="hidden" name="type[]" value={value} />
+            ))}
 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="relative w-full sm:w-96">
-                        <label htmlFor="redirect-search" className="sr-only">
-                            Redirects zoeken
+                    <div className="relative w-full sm:w-80 lg:w-96 xl:w-md">
+                        <label htmlFor="event-search" className="sr-only">
+                            Events zoeken
                         </label>
                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-500" />
                         <Input
-                            id="redirect-search"
+                            id="event-search"
                             name="search"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             onKeyDown={handleSearchKeyDown}
                             maxLength={100}
-                            placeholder="Zoek redirects…"
+                            placeholder="Zoek events…"
                             autoComplete="off"
                             className="h-9 pr-18 pl-9"
                         />
@@ -328,6 +337,12 @@ function RedirectFilterBar({
                             options={statusOptions}
                             onChange={changeStatus}
                         />
+                        <AdminDataTableFacetFilter
+                            title="Type"
+                            selected={type}
+                            options={typeOptions}
+                            onChange={changeType}
+                        />
 
                         {hasFilters && (
                             <Button
@@ -350,41 +365,48 @@ function RedirectFilterBar({
                 >
                     {isUpdating
                         ? 'Resultaten worden bijgewerkt…'
-                        : `${resultCount} ${resultCount === 1 ? 'redirect' : 'redirects'} gevonden`}
+                        : `${resultCount} ${resultCount === 1 ? 'event' : 'events'} gevonden`}
                 </p>
             </div>
         </form>
     );
 }
 
-function normalizeFilters(filters: RedirectFilters): RedirectFilters {
+function normalizeFilters(filters: EventFiltersState): EventFiltersState {
     return {
         search: filters.search.trim(),
-        status: filterValues(filters.status).filter(isRedirectStatus),
+        status: filterValues(filters.status),
+        type: filterValues(filters.type),
     };
 }
 
 function filtersAreEqual(
-    first: RedirectFilters,
-    second: RedirectFilters,
+    first: EventFiltersState,
+    second: EventFiltersState,
 ): boolean {
     return (
         first.search === second.search &&
-        valuesAreEqual(first.status, second.status)
+        valuesAreEqual(first.status, second.status) &&
+        valuesAreEqual(first.type, second.type)
     );
 }
 
-function redirectsRoute(filters: RedirectFilters) {
-    return redirectsIndex({
+function eventsRoute(filters: EventFiltersState) {
+    return index({
         query: {
             search: filters.search !== '' ? filters.search : undefined,
             status: filters.status.length > 0 ? filters.status : undefined,
+            type: filters.type.length > 0 ? filters.type : undefined,
         },
     });
 }
 
-function isRedirectStatus(value: string): value is RedirectStatus {
-    return ['active', 'inactive'].includes(value);
+function isEventStatus(value: string): value is AdminEventStatus {
+    return ['cancelled', 'draft', 'published'].includes(value);
+}
+
+function isEventType(value: string): value is AdminEventType {
+    return ['demo', 'other', 'race', 'training', 'workshop'].includes(value);
 }
 
 function filterValues<TValue extends string>(
@@ -410,15 +432,15 @@ function valuesAreEqual(
     );
 }
 
-RedirectsIndex.layout = {
+EventsIndex.layout = {
     breadcrumbs: [
         {
             title: 'Beheer',
             href: dashboard(),
         },
         {
-            title: 'Redirects',
-            href: redirectsIndex(),
+            title: 'Events',
+            href: index(),
         },
     ],
 };
