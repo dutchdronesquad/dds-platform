@@ -20,10 +20,16 @@ test('event management requires a management role and event permission', functio
     $this->get(route('admin.events.index'))->assertRedirect(route('login'));
 
     $user = User::factory()->create();
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $event = Event::factory()->create();
 
     $this->actingAs($user)
         ->get(route('admin.events.index'))
         ->assertForbidden();
+
+    expect($user->can('view', $event))->toBeFalse()
+        ->and($editor->can('view', $event))->toBeTrue();
 });
 
 test('admins can review events with operational status and actions', function () {
@@ -56,6 +62,81 @@ test('admins can review events with operational status and actions', function ()
             ->where('events.data.0.capabilities.delete', true)
             ->where('events.data.0.capabilities.publish', true)
             ->where('events.data.0.capabilities.cancel', true),
+        );
+});
+
+test('admins can open event forms with complete options and editable values', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $firstLocation = Location::factory()->create([
+        'name' => 'Alpha Hal',
+        'city' => 'Alkmaar',
+    ]);
+    Location::factory()->create([
+        'name' => 'Zulu Hal',
+        'city' => 'Zwolle',
+    ]);
+    $season = Season::factory()->create(['name' => 'Wintercompetitie']);
+    $event = Event::factory()->published()->create([
+        'location_id' => $firstLocation->id,
+        'season_id' => $season->id,
+        'title' => 'Finalerace',
+        'slug' => 'finalerace',
+        'price_cents' => 1234,
+        'registration_status' => EventRegistrationStatus::Waitlist,
+        'registration_url' => 'https://example.com/wachtlijst',
+    ]);
+    $eventWithoutOptionalValues = Event::factory()->create([
+        'location_id' => $firstLocation->id,
+        'ends_at' => null,
+        'price_cents' => null,
+        'capacity' => null,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.events.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/events/create')
+            ->where('canManageSeasons', true)
+            ->has('options.locations', 2)
+            ->where('options.locations.0.label', 'Alpha Hal — Alkmaar')
+            ->where('options.locations.1.label', 'Zulu Hal — Zwolle')
+            ->has('options.seasons', 1)
+            ->where('options.seasons.0.label', 'Wintercompetitie')
+            ->has('options.types', 5)
+            ->has('options.registrationStatuses', 4),
+        );
+
+    $this->get(route('admin.events.edit', $event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/events/edit')
+            ->where('canManageSeasons', true)
+            ->where('event.id', $event->id)
+            ->where('event.locationId', $firstLocation->id)
+            ->where('event.seasonId', $season->id)
+            ->where('event.priceEuros', '12.34')
+            ->where('event.registrationStatus', EventRegistrationStatus::Waitlist->value)
+            ->where('event.registrationUrl', 'https://example.com/wachtlijst')
+            ->where('event.capabilities.delete', true)
+            ->where('event.capabilities.publish', true)
+            ->where('event.capabilities.cancel', true)
+            ->has('options.types', 5),
+        );
+
+    $this->get(route('admin.events.edit', $eventWithoutOptionalValues))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.endsAt', null)
+            ->where('event.priceEuros', null)
+            ->where('event.capacity', null)
+            ->where('event.registrationOpensAt', null)
+            ->where('event.registrationDeadlineAt', null)
+            ->where('event.publishedAt', null)
+            ->where('event.capabilities.cancel', false),
         );
 });
 

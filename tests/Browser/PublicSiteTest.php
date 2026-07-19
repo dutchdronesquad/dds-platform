@@ -374,7 +374,7 @@ test('season context without a ticket offer stays informative without sales cont
         )
         ->assertDontSee('Onderdeel van het seizoen')
         ->assertDontSee('Voor dit seizoen wordt geen seizoensticket aangeboden.')
-        ->click('Bekijk seizoen')
+        ->click('[data-testid="event-season-context"]')
         ->assertPathIs("/seasons/{$season->slug}")
         ->assertSee('Per event aanmelden.')
         ->assertSee('€ 17,50')
@@ -387,10 +387,22 @@ test('season context without a ticket offer stays informative without sales cont
         ->assertDontSee('Koop seizoensticket')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
         ->assertNoJavaScriptErrors();
+});
+
+test('season event registration details are available on desktop hover', function () {
+    $season = Season::factory()->create();
+    SeasonTicket::factory()->notOffered()->for($season)->create();
+    Event::factory()->published()->training()->for($season)->create([
+        'registration_status' => EventRegistrationStatus::Closed,
+        'registration_url' => null,
+    ]);
 
     visit("/seasons/{$season->slug}")
         ->on()->desktop()
         ->withTimezone('Europe/Amsterdam')
+        ->assertVisible(
+            '#season-events li:first-child [data-testid="season-event-registration-status"]',
+        )
         ->hover(
             '#season-events li:first-child [data-testid="season-event-registration-status"]',
         )

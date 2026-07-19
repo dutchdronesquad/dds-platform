@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Enums\SeasonTicketSalesState;
 use App\Models\Event;
 use App\Models\Season;
+use App\Models\SeasonTicket;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -16,6 +17,9 @@ beforeEach(function () {
 test('only admins can manage seasons', function () {
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $season = Season::factory()->create();
 
     $this->get(route('admin.seasons.index'))->assertRedirect(route('login'));
 
@@ -26,6 +30,9 @@ test('only admins can manage seasons', function () {
     $this->actingAs($editor)
         ->post(route('admin.seasons.store'), validSeasonPayload())
         ->assertForbidden();
+
+    expect($editor->can('view', $season))->toBeFalse()
+        ->and($admin->can('view', $season))->toBeTrue();
 });
 
 test('admins can review season and ticket summaries', function () {
@@ -46,6 +53,64 @@ test('admins can review season and ticket summaries', function () {
             ->where('seasons.data.0.name', 'Racejaar 2027')
             ->where('seasons.data.0.eventCount', 2)
             ->has('seasons.data.0.ticket'),
+        );
+});
+
+test('admins can open season forms with offered and optional ticket values', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $seasonWithTicket = Season::factory()->create([
+        'name' => 'Wintercompetitie',
+    ]);
+    SeasonTicket::factory()->for($seasonWithTicket)->create([
+        'price_cents' => 12950,
+        'capacity' => 40,
+        'sales_opens_at' => '2027-01-10 09:30:00',
+        'sales_closes_at' => '2027-02-10 22:00:00',
+        'registration_url' => 'https://example.com/wintercompetitie',
+        'copy' => 'Toegang tot alle wedstrijden.',
+    ]);
+    $seasonWithoutTicket = Season::factory()->create([
+        'name' => 'Los seizoen',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.seasons.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/seasons/create')
+            ->has('salesStateOptions', 4)
+            ->where('salesStateOptions.0.value', SeasonTicketSalesState::ComingSoon->value),
+        );
+
+    $this->get(route('admin.seasons.edit', $seasonWithTicket))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/seasons/edit')
+            ->where('season.id', $seasonWithTicket->id)
+            ->where('season.ticketOffered', true)
+            ->where('season.ticketSalesState', SeasonTicketSalesState::Available->value)
+            ->where('season.ticketPriceEuros', '129.50')
+            ->where('season.ticketCapacity', 40)
+            ->where('season.ticketSalesOpensAt', '2027-01-10T09:30')
+            ->where('season.ticketSalesClosesAt', '2027-02-10T22:00')
+            ->where('season.ticketRegistrationUrl', 'https://example.com/wintercompetitie')
+            ->where('season.ticketCopy', 'Toegang tot alle wedstrijden.')
+            ->has('salesStateOptions', 4),
+        );
+
+    $this->get(route('admin.seasons.edit', $seasonWithoutTicket))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('season.id', $seasonWithoutTicket->id)
+            ->where('season.ticketOffered', false)
+            ->where('season.ticketSalesState', SeasonTicketSalesState::ComingSoon->value)
+            ->where('season.ticketPriceEuros', null)
+            ->where('season.ticketCapacity', null)
+            ->where('season.ticketSalesOpensAt', null)
+            ->where('season.ticketSalesClosesAt', null)
+            ->where('season.ticketRegistrationUrl', null)
+            ->where('season.ticketCopy', null),
         );
 });
 
