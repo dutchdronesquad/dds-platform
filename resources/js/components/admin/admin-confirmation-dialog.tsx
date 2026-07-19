@@ -19,7 +19,13 @@ type MutationForm = {
 };
 
 type ConfirmationIntent =
-    'archive' | 'cancel' | 'delete' | 'publish' | 'unpublish';
+    | 'archive'
+    | 'block'
+    | 'cancel'
+    | 'delete'
+    | 'publish'
+    | 'unblock'
+    | 'unpublish';
 
 const confirmationCopy: Record<
     ConfirmationIntent,
@@ -35,6 +41,13 @@ const confirmationCopy: Record<
         description: (subject) =>
             `${subject} verdwijnt uit de actieve overzichten, maar blijft bewaard.`,
         title: 'Archiveren?',
+        variant: 'destructive',
+    },
+    block: {
+        confirmLabel: 'Account blokkeren',
+        description: (subject) =>
+            `${subject} wordt direct uitgelogd en kan niet meer aanmelden totdat het account wordt gedeblokkeerd.`,
+        title: 'Account blokkeren?',
         variant: 'destructive',
     },
     cancel: {
@@ -56,6 +69,13 @@ const confirmationCopy: Record<
         description: (subject) =>
             `${subject} wordt zichtbaar op de publieke website.`,
         title: 'Publiceren?',
+        variant: 'default',
+    },
+    unblock: {
+        confirmLabel: 'Account deblokkeren',
+        description: (subject) =>
+            `${subject} kan na het deblokkeren direct weer aanmelden.`,
+        title: 'Account deblokkeren?',
         variant: 'default',
     },
     unpublish: {
