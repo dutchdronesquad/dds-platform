@@ -6,6 +6,7 @@ import {
     destroy,
     edit,
 } from '@/actions/App/Http/Controllers/Admin/SeasonController';
+import { AdminActivityByline } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import { AdminRowActions } from '@/components/admin/admin-row-actions';
 import { Badge } from '@/components/ui/badge';
@@ -25,16 +26,6 @@ const salesStateLabels: Record<SalesState, string> = {
 const currencyFormatter = new Intl.NumberFormat('nl-NL', {
     style: 'currency',
     currency: 'EUR',
-});
-
-const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
-    dateStyle: 'medium',
-    timeZone: 'Europe/Amsterdam',
-});
-
-const timeFormatter = new Intl.DateTimeFormat('nl-NL', {
-    timeStyle: 'short',
-    timeZone: 'Europe/Amsterdam',
 });
 
 export const seasonColumns: ColumnDef<SeasonRecord>[] = [
@@ -121,25 +112,14 @@ export const seasonColumns: ColumnDef<SeasonRecord>[] = [
             ),
     },
     {
-        accessorKey: 'updatedAt',
+        id: 'activity',
         header: 'Bijgewerkt',
         meta: {
             className: 'hidden sm:table-cell',
         },
-        cell: ({ row }) => {
-            const updatedAt = new Date(row.original.updatedAt);
-
-            return (
-                <div className="whitespace-nowrap">
-                    <p className="text-neutral-700 dark:text-neutral-300">
-                        {dateFormatter.format(updatedAt)}
-                    </p>
-                    <p className="mt-0.5 text-xs text-neutral-500">
-                        {timeFormatter.format(updatedAt)} uur
-                    </p>
-                </div>
-            );
-        },
+        cell: ({ row }) => (
+            <AdminActivityByline activity={row.original.activity} />
+        ),
     },
     {
         id: 'actions',

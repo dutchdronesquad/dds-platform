@@ -27,6 +27,7 @@ import {
     unpublish,
 } from '@/actions/App/Http/Controllers/Admin/EventStatusController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
+import { AdminActivityMetadata } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import {
     AdminFormActions,
@@ -836,6 +837,7 @@ function EventFormAside({
     return (
         <div className="overflow-clip rounded-2xl border border-neutral-200 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-950">
             <EventStatusPanel event={event} isDirty={isDirty} />
+            {event && <AdminActivityMetadata activity={event.activity} />}
             <AdminFormOutline
                 description="Spring direct naar een onderdeel van het formulier."
                 items={eventFormOutlineItems}

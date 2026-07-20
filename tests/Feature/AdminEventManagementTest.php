@@ -188,6 +188,107 @@ test('event filters search the relevant context and keep query parameters in pag
         );
 });
 
+test('situation filters show only matching upcoming events', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $season = Season::factory()->create();
+
+    $closedRegistration = Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende gesloten race',
+        'starts_at' => now()->addDays(2),
+        'registration_status' => EventRegistrationStatus::Closed,
+    ]);
+    Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende open race',
+        'starts_at' => now()->addDays(3),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    Event::factory()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Gesloten conceptrace',
+        'starts_at' => now()->addDays(4),
+        'registration_status' => EventRegistrationStatus::Closed,
+    ]);
+    Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Gesloten race in het verleden',
+        'starts_at' => now()->subDay(),
+        'registration_status' => EventRegistrationStatus::Closed,
+    ]);
+    $withoutSeason = Event::factory()->published()->withCoverImage()->create([
+        'season_id' => null,
+        'title' => 'Komende race zonder seizoen',
+        'starts_at' => now()->addDays(5),
+        'registration_deadline_at' => now()->addDays(4),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    Event::factory()->cancelled()->create([
+        'season_id' => null,
+        'title' => 'Geannuleerde race zonder seizoen',
+        'starts_at' => now()->addDays(6),
+    ]);
+    $withoutContent = Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende race zonder inhoud',
+        'content' => null,
+        'starts_at' => now()->addDays(7),
+        'registration_deadline_at' => now()->addDays(6),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    $withoutCover = Event::factory()->published()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende race zonder omslagafbeelding',
+        'starts_at' => now()->addDays(8),
+        'registration_deadline_at' => now()->addDays(7),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    $expiredRegistration = Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende race met verlopen inschrijfdeadline',
+        'starts_at' => now()->addDays(9),
+        'registration_deadline_at' => now()->subHour(),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+
+    $this->actingAs($admin);
+
+    $this->get(route('admin.events.index', [
+        'situation' => ['closed_registration'],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.situation', ['closed_registration'])
+            ->where('situationOptions', [
+                ['value' => 'closed_registration', 'label' => 'Registratie gesloten'],
+                ['value' => 'expired_registration', 'label' => 'Inschrijfdeadline verlopen'],
+                ['value' => 'without_content', 'label' => 'Zonder inhoud'],
+                ['value' => 'without_cover', 'label' => 'Zonder omslagafbeelding'],
+                ['value' => 'without_season', 'label' => 'Zonder seizoen'],
+            ])
+            ->has('events.data', 1)
+            ->where('events.data.0.id', $closedRegistration->id),
+        );
+
+    foreach ([
+        'expired_registration' => $expiredRegistration,
+        'without_content' => $withoutContent,
+        'without_cover' => $withoutCover,
+        'without_season' => $withoutSeason,
+    ] as $situation => $expectedEvent) {
+        $this->get(route('admin.events.index', [
+            'situation' => [$situation],
+        ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.situation', [$situation])
+                ->has('events.data', 1)
+                ->where('events.data.0.id', $expectedEvent->id),
+            );
+    }
+});
+
 test('editors can create and update events but cannot publish or delete them', function () {
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);
@@ -243,9 +344,76 @@ test('admins can create events with normalized prices and generated slugs', func
         ->title->toBe('Indoor Training Oktober')
         ->season_id->toBe($season->id)
         ->price_cents->toBe(1250)
+        ->created_by->toBe($admin->id)
+        ->updated_by->toBe($admin->id)
         ->status->toBe(EventStatus::Draft)
         ->type->toBe(EventType::Training)
         ->registration_status->toBe(EventRegistrationStatus::Open);
+});
+
+test('event activity shows manual editors and system or import records', function () {
+    $systemEvent = Event::factory()->create(['title' => 'Geïmporteerd event']);
+    $admin = User::factory()->create(['name' => 'Ada Admin']);
+    $admin->assignRole(Role::Admin->value);
+    $editor = User::factory()->create(['name' => 'Evi Editor']);
+    $editor->assignRole(Role::Editor->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'title' => 'Handmatig event',
+            'slug' => 'handmatig-event',
+        ]))
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event aangemaakt als concept.',
+        ]);
+
+    $event = Event::query()->where('slug', 'handmatig-event')->firstOrFail();
+
+    $this->actingAs($editor)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'title' => 'Bewerkt event',
+            'slug' => 'handmatig-event',
+        ]))
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event opgeslagen.',
+        ]);
+
+    expect($event->refresh())
+        ->created_by->toBe($admin->id)
+        ->updated_by->toBe($editor->id)
+        ->and($systemEvent->refresh())
+        ->created_by->toBeNull()
+        ->updated_by->toBeNull();
+
+    $this->get(route('admin.events.edit', $event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.activity.createdBy.id', $admin->id)
+            ->where('event.activity.createdBy.name', 'Ada Admin')
+            ->where('event.activity.updatedBy.id', $editor->id)
+            ->where('event.activity.updatedBy.name', 'Evi Editor')
+            ->has('event.activity.createdAt')
+            ->has('event.activity.updatedAt'),
+        );
+
+    $this->get(route('admin.events.index', ['search' => 'Bewerkt event']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('events.data', 1)
+            ->where('events.data.0.activity.updatedBy.id', $editor->id)
+            ->where('events.data.0.activity.updatedBy.name', 'Evi Editor')
+            ->has('events.data.0.activity.updatedAt'),
+        );
+
+    $this->get(route('admin.events.edit', $systemEvent))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.activity.createdBy', null)
+            ->where('event.activity.updatedBy', null),
+        );
 });
 
 test('event requests reject invalid chronology and references', function () {
@@ -281,24 +449,37 @@ test('admins can publish cancel unpublish and remove events with public visibili
 
     $this->actingAs($admin)
         ->patch(route('admin.events.publish', $event))
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event gepubliceerd.',
+        ]);
 
     expect($event->refresh())
         ->status->toBe(EventStatus::Published)
+        ->updated_by->toBe($admin->id)
         ->published_at->not->toBeNull();
 
     $this->get(route('events.show', $event->slug))->assertOk();
 
     $this->actingAs($admin)
         ->patch(route('admin.events.cancel', $event))
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event geannuleerd.',
+        ]);
 
     expect($event->refresh()->status)->toBe(EventStatus::Cancelled);
     $this->get(route('events.show', $event->slug))->assertOk();
 
     $this->actingAs($admin)
         ->patch(route('admin.events.unpublish', $event))
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Publicatie ingetrokken.',
+        ]);
 
     expect($event->refresh())
         ->status->toBe(EventStatus::Draft)
@@ -308,7 +489,11 @@ test('admins can publish cancel unpublish and remove events with public visibili
 
     $this->actingAs($admin)
         ->delete(route('admin.events.destroy', $event))
-        ->assertRedirect(route('admin.events.index'));
+        ->assertRedirect(route('admin.events.index'))
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event verwijderd.',
+        ]);
 
     $this->assertModelMissing($event);
 });

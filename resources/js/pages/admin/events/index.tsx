@@ -26,6 +26,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { dashboard } from '@/routes';
 import { eventColumns } from './columns';
 import type {
+    AdminEventSituation,
     AdminEventStatus,
     AdminEventType,
     EventIndexProps,
@@ -38,12 +39,14 @@ export default function EventsIndex({
     canManageSeasons,
     events,
     filters,
+    situationOptions,
     statusOptions,
     summary,
     typeOptions,
 }: EventIndexProps) {
     const hasFilters =
         filters.search !== '' ||
+        filterValues(filters.situation).length > 0 ||
         filterValues(filters.status).length > 0 ||
         filterValues(filters.type).length > 0;
 
@@ -116,11 +119,12 @@ export default function EventsIndex({
                     }
                     pagination={events}
                     resourceLabel="events"
-                    tableClassName="min-w-0 md:min-w-[58rem] lg:min-w-[68rem]"
+                    tableClassName="min-w-0 sm:min-w-[44rem] xl:min-w-[56rem]"
                     toolbar={
                         <EventFilterBar
                             filters={filters}
                             resultCount={events.total}
+                            situationOptions={situationOptions}
                             statusOptions={statusOptions}
                             typeOptions={typeOptions}
                         />
@@ -134,11 +138,18 @@ export default function EventsIndex({
 function EventFilterBar({
     filters,
     resultCount,
+    situationOptions,
     statusOptions,
     typeOptions,
-}: Pick<EventIndexProps, 'filters' | 'statusOptions' | 'typeOptions'> & {
+}: Pick<
+    EventIndexProps,
+    'filters' | 'situationOptions' | 'statusOptions' | 'typeOptions'
+> & {
     resultCount: number;
 }) {
+    const [situation, setSituation] = useState(() =>
+        filterValues(filters.situation),
+    );
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(() => filterValues(filters.status));
     const [type, setType] = useState(() => filterValues(filters.type));
@@ -147,6 +158,7 @@ function EventFilterBar({
     const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const lastSubmittedFiltersRef = useRef<EventFiltersState>(undefined);
     const requestIdRef = useRef(0);
+    const situationRef = useRef(filterValues(filters.situation));
     const statusRef = useRef(filterValues(filters.status));
     const typeRef = useRef(filterValues(filters.type));
 
@@ -187,8 +199,10 @@ function EventFilterBar({
         }
 
         setSearch(filters.search);
+        setSituation(normalizedFilters.situation);
         setStatus(normalizedFilters.status);
         setType(normalizedFilters.type);
+        situationRef.current = normalizedFilters.situation;
         statusRef.current = normalizedFilters.status;
         typeRef.current = normalizedFilters.type;
     }, [filters]);
@@ -203,6 +217,7 @@ function EventFilterBar({
         debounceTimeoutRef.current = setTimeout(() => {
             applyFilters({
                 search,
+                situation: situationRef.current,
                 status: statusRef.current,
                 type: typeRef.current,
             });
@@ -215,15 +230,32 @@ function EventFilterBar({
     const isUpdating =
         isFiltering ||
         normalizedSearch !== filters.search ||
+        !valuesAreEqual(situation, filters.situation) ||
         !valuesAreEqual(status, filters.status) ||
         !valuesAreEqual(type, filters.type);
     const hasFilters =
-        normalizedSearch !== '' || status.length > 0 || type.length > 0;
+        normalizedSearch !== '' ||
+        situation.length > 0 ||
+        status.length > 0 ||
+        type.length > 0;
 
     function submit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
         clearTimeout(debounceTimeoutRef.current);
-        applyFilters({ search, status, type });
+        applyFilters({ search, situation, status, type });
+    }
+
+    function changeSituation(values: string[]): void {
+        const nextSituation = values.filter(isEventSituation);
+
+        if (valuesAreEqual(nextSituation, situation)) {
+            return;
+        }
+
+        clearTimeout(debounceTimeoutRef.current);
+        situationRef.current = nextSituation;
+        setSituation(nextSituation);
+        applyFilters({ search, situation: nextSituation, status, type });
     }
 
     function changeStatus(values: string[]): void {
@@ -236,7 +268,7 @@ function EventFilterBar({
         clearTimeout(debounceTimeoutRef.current);
         statusRef.current = nextStatus;
         setStatus(nextStatus);
-        applyFilters({ search, status: nextStatus, type });
+        applyFilters({ search, situation, status: nextStatus, type });
     }
 
     function changeType(values: string[]): void {
@@ -249,23 +281,25 @@ function EventFilterBar({
         clearTimeout(debounceTimeoutRef.current);
         typeRef.current = nextType;
         setType(nextType);
-        applyFilters({ search, status, type: nextType });
+        applyFilters({ search, situation, status, type: nextType });
     }
 
     function clearSearch(): void {
         clearTimeout(debounceTimeoutRef.current);
         setSearch('');
-        applyFilters({ search: '', status, type });
+        applyFilters({ search: '', situation, status, type });
     }
 
     function resetFilters(): void {
         clearTimeout(debounceTimeoutRef.current);
+        situationRef.current = [];
         statusRef.current = [];
         typeRef.current = [];
+        setSituation([]);
         setSearch('');
         setStatus([]);
         setType([]);
-        applyFilters({ search: '', status: [], type: [] });
+        applyFilters({ search: '', situation: [], status: [], type: [] });
     }
 
     function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
@@ -283,6 +317,14 @@ function EventFilterBar({
             aria-busy={isUpdating}
             className="flex flex-col gap-3"
         >
+            {situation.map((value) => (
+                <input
+                    key={value}
+                    type="hidden"
+                    name="situation[]"
+                    value={value}
+                />
+            ))}
             {status.map((value) => (
                 <input
                     key={value}
@@ -332,6 +374,12 @@ function EventFilterBar({
 
                     <div className="flex flex-wrap items-center gap-2">
                         <AdminDataTableFacetFilter
+                            title="Situatie"
+                            selected={situation}
+                            options={situationOptions}
+                            onChange={changeSituation}
+                        />
+                        <AdminDataTableFacetFilter
                             title="Status"
                             selected={status}
                             options={statusOptions}
@@ -375,6 +423,7 @@ function EventFilterBar({
 function normalizeFilters(filters: EventFiltersState): EventFiltersState {
     return {
         search: filters.search.trim(),
+        situation: filterValues(filters.situation),
         status: filterValues(filters.status),
         type: filterValues(filters.type),
     };
@@ -386,6 +435,7 @@ function filtersAreEqual(
 ): boolean {
     return (
         first.search === second.search &&
+        valuesAreEqual(first.situation, second.situation) &&
         valuesAreEqual(first.status, second.status) &&
         valuesAreEqual(first.type, second.type)
     );
@@ -395,10 +445,22 @@ function eventsRoute(filters: EventFiltersState) {
     return index({
         query: {
             search: filters.search !== '' ? filters.search : undefined,
+            situation:
+                filters.situation.length > 0 ? filters.situation : undefined,
             status: filters.status.length > 0 ? filters.status : undefined,
             type: filters.type.length > 0 ? filters.type : undefined,
         },
     });
+}
+
+function isEventSituation(value: string): value is AdminEventSituation {
+    return [
+        'closed_registration',
+        'expired_registration',
+        'without_content',
+        'without_cover',
+        'without_season',
+    ].includes(value);
 }
 
 function isEventStatus(value: string): value is AdminEventStatus {

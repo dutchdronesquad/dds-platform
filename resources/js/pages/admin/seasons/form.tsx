@@ -14,6 +14,7 @@ import {
     destroy,
     index,
 } from '@/actions/App/Http/Controllers/Admin/SeasonController';
+import { AdminActivityMetadata } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import {
     AdminFormActions,
@@ -778,6 +779,7 @@ function SeasonAside({
                     )}
                 </div>
             </section>
+            {season && <AdminActivityMetadata activity={season.activity} />}
             <AdminFormOutline
                 description="Spring direct naar een onderdeel van het formulier."
                 items={seasonFormOutlineItems}

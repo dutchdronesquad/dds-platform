@@ -61,7 +61,7 @@ final class SeasonController extends Controller
     {
         Gate::authorize('update', $season);
 
-        $season->load('seasonTicket');
+        $season->load(['seasonTicket', 'createdBy:id,name', 'updatedBy:id,name']);
 
         return Inertia::render('admin/seasons/edit', [
             'season' => $this->formSeason($season),
@@ -119,16 +119,19 @@ final class SeasonController extends Controller
      *     name: string,
      *     slug: string,
      *     eventCount: int,
-     *     updatedAt: string,
+     *     activity: array{updatedAt: string, updatedBy: array{id: int, name: string}|null},
      *     ticket: array{salesState: string, priceCents: int|null, capacity: int|null}|null
      * }>
      */
     private function seasons(): LengthAwarePaginator
     {
         return Season::query()
-            ->select(['id', 'name', 'slug', 'updated_at'])
+            ->select(['id', 'name', 'slug', 'updated_by', 'updated_at'])
             ->withCount('events')
-            ->with('seasonTicket:id,season_id,sales_state,price_cents,capacity')
+            ->with([
+                'seasonTicket:id,season_id,sales_state,price_cents,capacity',
+                'updatedBy:id,name',
+            ])
             ->latest('id')
             ->paginate(25)
             ->through(fn (Season $season): array => [
@@ -136,7 +139,13 @@ final class SeasonController extends Controller
                 'name' => $season->name,
                 'slug' => $season->slug,
                 'eventCount' => $season->events_count,
-                'updatedAt' => $season->updated_at->toIso8601String(),
+                'activity' => [
+                    'updatedAt' => $season->updated_at->toIso8601String(),
+                    'updatedBy' => $season->updatedBy === null ? null : [
+                        'id' => $season->updatedBy->id,
+                        'name' => $season->updatedBy->name,
+                    ],
+                ],
                 'ticket' => $season->seasonTicket === null
                     || $season->seasonTicket->sales_state === SeasonTicketSalesState::NotOffered ? null : [
                         'salesState' => $season->seasonTicket->sales_state->value,
@@ -170,6 +179,18 @@ final class SeasonController extends Controller
             'ticketSalesClosesAt' => $ticket?->sales_closes_at?->format('Y-m-d\TH:i'),
             'ticketRegistrationUrl' => $ticket?->registration_url,
             'ticketCopy' => $ticket?->copy,
+            'activity' => [
+                'createdAt' => $season->created_at->toIso8601String(),
+                'createdBy' => $season->createdBy === null ? null : [
+                    'id' => $season->createdBy->id,
+                    'name' => $season->createdBy->name,
+                ],
+                'updatedAt' => $season->updated_at->toIso8601String(),
+                'updatedBy' => $season->updatedBy === null ? null : [
+                    'id' => $season->updatedBy->id,
+                    'name' => $season->updatedBy->name,
+                ],
+            ],
         ];
     }
 

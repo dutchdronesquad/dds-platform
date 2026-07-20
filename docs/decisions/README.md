@@ -236,3 +236,21 @@ Implementation direction:
 - admin screens should optimize scanning, repeated workflows, and low-friction editing;
 - public screens should optimize visitor intent, clarity, trust, and conversion to the next action;
 - generic starter-kit visuals and placeholder copy should be replaced deliberately as soon as pages become product-facing.
+
+## 2026-07-20: Lightweight Content Activity Before Full Audit Logs
+
+Decision: phase 1 records the creator and latest editor for managed events and seasons, while a full append-only audit log is deferred until after launch.
+
+Reason:
+
+- admins need immediate confidence about who last changed operational content;
+- nullable actor metadata keeps records created by seeders, imports, or other system processes source-agnostic;
+- confirmed status actions and one-time feedback already make publish-state changes explicit;
+- a durable history requires separate decisions about retention, privacy, diff detail, and which actions are operationally important.
+
+Implementation direction:
+
+- store nullable `created_by` and `updated_by` references on events and seasons;
+- set both references automatically for authenticated creates and update the latest editor for authenticated changes, including status actions;
+- show manual versus system/import origin and recent update metadata in management screens;
+- revisit a full audit log when import tooling or launch operations demonstrate a concrete history or rollback need.

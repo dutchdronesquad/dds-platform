@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\TracksContentActivity;
 use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $location_id
  * @property int|null $season_id
  * @property int|null $cover_image_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
  * @property string $title
  * @property string $slug
  * @property string|null $content
@@ -36,6 +39,8 @@ final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory;
+
+    use TracksContentActivity;
 
     /** @var list<string> */
     protected $fillable = [

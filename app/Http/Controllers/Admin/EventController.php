@@ -23,6 +23,16 @@ use Inertia\Response;
 
 final class EventController extends Controller
 {
+    private const string SITUATION_CLOSED_REGISTRATION = 'closed_registration';
+
+    private const string SITUATION_EXPIRED_REGISTRATION = 'expired_registration';
+
+    private const string SITUATION_WITHOUT_CONTENT = 'without_content';
+
+    private const string SITUATION_WITHOUT_COVER = 'without_cover';
+
+    private const string SITUATION_WITHOUT_SEASON = 'without_season';
+
     public function index(Request $request): Response
     {
         Gate::authorize('viewAny', Event::class);
@@ -35,6 +45,7 @@ final class EventController extends Controller
             'summary' => fn (): array => $this->summary(),
             'canCreate' => $request->user()->can('create', Event::class),
             'canManageSeasons' => $request->user()->can('viewAny', Season::class),
+            'situationOptions' => $this->situationOptions(),
             'statusOptions' => $this->statusOptions(),
             'typeOptions' => $this->typeOptions(),
         ]);
@@ -63,6 +74,8 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
+        $event->load(['createdBy:id,name', 'updatedBy:id,name']);
+
         return Inertia::render('admin/events/edit', [
             'event' => $this->formEvent($request->user(), $event),
             'options' => $this->formOptions(),
@@ -90,11 +103,23 @@ final class EventController extends Controller
         return to_route('admin.events.index');
     }
 
-    /** @return array{search: string, status: list<string>, type: list<string>} */
+    /** @return array{search: string, situation: list<string>, status: list<string>, type: list<string>} */
     private function filters(Request $request): array
     {
+        $requestedSituations = $request->array('situation');
         $requestedStatuses = $request->array('status');
         $requestedTypes = $request->array('type');
+
+        $situations = array_values(array_filter(
+            [
+                self::SITUATION_CLOSED_REGISTRATION,
+                self::SITUATION_EXPIRED_REGISTRATION,
+                self::SITUATION_WITHOUT_CONTENT,
+                self::SITUATION_WITHOUT_COVER,
+                self::SITUATION_WITHOUT_SEASON,
+            ],
+            fn (string $value): bool => in_array($value, $requestedSituations, true),
+        ));
 
         $statuses = array_values(array_map(
             fn (EventStatus $status): string => $status->value,
@@ -113,18 +138,20 @@ final class EventController extends Controller
 
         return [
             'search' => Str::substr($request->string('search')->trim()->toString(), 0, 100),
+            'situation' => $situations,
             'status' => $statuses,
             'type' => $types,
         ];
     }
 
     /**
-     * @param  array{search: string, status: list<string>, type: list<string>}  $filters
+     * @param  array{search: string, situation: list<string>, status: list<string>, type: list<string>}  $filters
      * @return LengthAwarePaginator<int, covariant array{
      *     id: int,
      *     title: string,
      *     slug: string,
      *     startsAt: string,
+     *     activity: array{updatedAt: string, updatedBy: array{id: int, name: string}|null},
      *     publishedAt: string|null,
      *     status: string,
      *     type: string,
@@ -148,11 +175,17 @@ final class EventController extends Controller
                 'status',
                 'type',
                 'registration_status',
+                'updated_by',
                 'updated_at',
             ])
-            ->with(['location:id,name,city', 'season:id,name,slug']);
+            ->with([
+                'location:id,name,city',
+                'season:id,name,slug',
+                'updatedBy:id,name',
+            ]);
 
         $this->applySearch($query, $filters['search']);
+        $this->applySituationFilters($query, $filters['situation']);
 
         return $query
             ->when($filters['status'] !== [], fn (Builder $query): Builder => $query
@@ -164,6 +197,7 @@ final class EventController extends Controller
             ->paginate(25)
             ->appends(array_filter([
                 'search' => $filters['search'] !== '' ? $filters['search'] : null,
+                'situation' => $filters['situation'] !== [] ? $filters['situation'] : null,
                 'status' => $filters['status'] !== [] ? $filters['status'] : null,
                 'type' => $filters['type'] !== [] ? $filters['type'] : null,
             ], fn (mixed $value): bool => $value !== null))
@@ -172,6 +206,13 @@ final class EventController extends Controller
                 'title' => $event->title,
                 'slug' => $event->slug,
                 'startsAt' => $event->starts_at->toIso8601String(),
+                'activity' => [
+                    'updatedAt' => $event->updated_at->toIso8601String(),
+                    'updatedBy' => $event->updatedBy === null ? null : [
+                        'id' => $event->updatedBy->id,
+                        'name' => $event->updatedBy->name,
+                    ],
+                ],
                 'publishedAt' => $event->published_at?->toIso8601String(),
                 'status' => $event->status->value,
                 'type' => $event->type->value,
@@ -191,6 +232,69 @@ final class EventController extends Controller
                     'cancel' => $user->can('cancel', $event),
                 ],
             ]);
+    }
+
+    /**
+     * @param  Builder<Event>  $query
+     * @param  list<string>  $situations
+     */
+    private function applySituationFilters(Builder $query, array $situations): void
+    {
+        if ($situations === []) {
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($situations): void {
+            if (in_array(self::SITUATION_CLOSED_REGISTRATION, $situations, true)) {
+                $query->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('starts_at', '>=', now())
+                        ->where('status', EventStatus::Published->value)
+                        ->where('registration_status', EventRegistrationStatus::Closed->value);
+                });
+            }
+
+            if (in_array(self::SITUATION_EXPIRED_REGISTRATION, $situations, true)) {
+                $query->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('starts_at', '>=', now())
+                        ->where('status', '!=', EventStatus::Cancelled->value)
+                        ->where('registration_status', EventRegistrationStatus::Open->value)
+                        ->where('registration_deadline_at', '<', now());
+                });
+            }
+
+            if (in_array(self::SITUATION_WITHOUT_CONTENT, $situations, true)) {
+                $query->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('starts_at', '>=', now())
+                        ->where('status', '!=', EventStatus::Cancelled->value)
+                        ->where(function (Builder $query): void {
+                            $query
+                                ->whereNull('content')
+                                ->orWhere('content', '');
+                        });
+                });
+            }
+
+            if (in_array(self::SITUATION_WITHOUT_COVER, $situations, true)) {
+                $query->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('starts_at', '>=', now())
+                        ->where('status', '!=', EventStatus::Cancelled->value)
+                        ->whereNull('cover_image_id');
+                });
+            }
+
+            if (in_array(self::SITUATION_WITHOUT_SEASON, $situations, true)) {
+                $query->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('starts_at', '>=', now())
+                        ->where('status', '!=', EventStatus::Cancelled->value)
+                        ->whereNull('season_id');
+                });
+            }
+        });
     }
 
     /** @param Builder<Event> $query */
@@ -280,6 +384,18 @@ final class EventController extends Controller
             'registrationStatus' => $event->registration_status->value,
             'registrationUrl' => $event->registration_url,
             'publishedAt' => $event->published_at?->toIso8601String(),
+            'activity' => [
+                'createdAt' => $event->created_at->toIso8601String(),
+                'createdBy' => $event->createdBy === null ? null : [
+                    'id' => $event->createdBy->id,
+                    'name' => $event->createdBy->name,
+                ],
+                'updatedAt' => $event->updated_at->toIso8601String(),
+                'updatedBy' => $event->updatedBy === null ? null : [
+                    'id' => $event->updatedBy->id,
+                    'name' => $event->updatedBy->name,
+                ],
+            ],
             'capabilities' => [
                 'delete' => $user->can('delete', $event),
                 'publish' => $user->can('publish', $event),
@@ -295,6 +411,18 @@ final class EventController extends Controller
             ['value' => EventStatus::Draft->value, 'label' => 'Concept'],
             ['value' => EventStatus::Published->value, 'label' => 'Gepubliceerd'],
             ['value' => EventStatus::Cancelled->value, 'label' => 'Geannuleerd'],
+        ];
+    }
+
+    /** @return list<array{value: string, label: string}> */
+    private function situationOptions(): array
+    {
+        return [
+            ['value' => self::SITUATION_CLOSED_REGISTRATION, 'label' => 'Registratie gesloten'],
+            ['value' => self::SITUATION_EXPIRED_REGISTRATION, 'label' => 'Inschrijfdeadline verlopen'],
+            ['value' => self::SITUATION_WITHOUT_CONTENT, 'label' => 'Zonder inhoud'],
+            ['value' => self::SITUATION_WITHOUT_COVER, 'label' => 'Zonder omslagafbeelding'],
+            ['value' => self::SITUATION_WITHOUT_SEASON, 'label' => 'Zonder seizoen'],
         ];
     }
 
