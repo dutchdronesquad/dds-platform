@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\Permission;
 use App\Enums\Role;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Vite;
+use Spatie\Permission\Models\Role as RoleModel;
 
 beforeEach(function () {
     Vite::useHotFile(storage_path('framework/testing/vite.hot'));
@@ -58,5 +60,19 @@ test('the user search follows the active filters through browser history', funct
         ->assertDontSee('Beta gebruiker')
         ->assertQueryStringHas('search', 'Alpha')
         ->assertValue('#user-search', 'Alpha')
+        ->assertNoJavaScriptErrors();
+});
+
+test('the user index hides the role review link without its permission', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    RoleModel::findByName(Role::Editor->value)
+        ->givePermissionTo(Permission::ViewUsers);
+
+    $this->actingAs($editor);
+
+    visit('/dashboard/users')
+        ->assertSee('Gebruikers')
+        ->assertMissing('[data-testid="role-permission-review-link"]')
         ->assertNoJavaScriptErrors();
 });

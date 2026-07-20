@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     BadgeCheck,
     Search,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
+import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { AdminDataTable } from '@/components/admin/admin-data-table';
 import type { ServerPagination } from '@/components/admin/admin-data-table';
@@ -51,6 +52,7 @@ type Props = {
 };
 
 export default function UsersIndex({ users, filters, facets, summary }: Props) {
+    const { management } = usePage().props;
     const [search, setSearch] = useState(filters.search);
     const [isFiltering, setIsFiltering] = useState(false);
     const appliedFiltersRef = useRef(normalizeFilters(filters));
@@ -162,6 +164,18 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                 eyebrow="Toegangsbeheer"
                 title="Gebruikers"
                 description="Beheer profielgegevens, rollen, taalvoorkeur en accounttoegang zonder directe databasewijzigingen."
+                actions={
+                    management?.canViewRoles ? (
+                        <Button asChild variant="outline">
+                            <Link
+                                href={RolePermissionController()}
+                                data-testid="role-permission-review-link"
+                            >
+                                <ShieldCheck /> Rollen en rechten
+                            </Link>
+                        </Button>
+                    ) : undefined
+                }
             >
                 <AdminListSummary
                     label="Gebruikerssamenvatting"

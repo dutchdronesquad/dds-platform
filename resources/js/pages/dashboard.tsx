@@ -11,10 +11,12 @@ import {
     MapPin,
     Newspaper,
     Route as RouteIcon,
+    ShieldCheck,
     Tags,
     Users,
 } from 'lucide-react';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
+import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,7 @@ type ResourceId =
     | 'partners'
     | 'media'
     | 'users'
+    | 'roles'
     | 'redirects';
 
 type ManagementAreaId = ResourceId | 'seasons';
@@ -112,6 +115,13 @@ const managementAreas: ManagementArea[] = [
         description: 'Beheer accounts, rollen en toegang tot het platform.',
         icon: Users,
         href: usersIndex(),
+    },
+    {
+        id: 'roles',
+        title: 'Rollen en rechten',
+        description: 'Controleer de actieve rollen en hun code-owned rechten.',
+        icon: ShieldCheck,
+        href: RolePermissionController(),
     },
 ];
 

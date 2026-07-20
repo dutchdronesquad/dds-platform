@@ -4,10 +4,12 @@ import {
     Home,
     LayoutDashboard,
     Route as RouteIcon,
+    ShieldCheck,
     Tags,
     Users,
 } from 'lucide-react';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
+import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import AppLogo from '@/components/app-logo';
@@ -71,6 +73,15 @@ export function AppSidebar() {
                       title: 'Gebruikers',
                       href: usersIndex(),
                       icon: Users,
+                  },
+              ]
+            : []),
+        ...(management?.canViewRoles
+            ? [
+                  {
+                      title: 'Rollen en rechten',
+                      href: RolePermissionController(),
+                      icon: ShieldCheck,
                   },
               ]
             : []),

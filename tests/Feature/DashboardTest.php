@@ -46,6 +46,7 @@ test('admins can visit the dashboard', function () {
             ->where('resources.partners', true)
             ->where('resources.media', true)
             ->where('resources.users', true)
+            ->where('resources.roles', true)
             ->where('resources.redirects', true)
             ->where('stats.drafts', 0)
             ->where('stats.upcomingEvents', 0)
@@ -53,7 +54,8 @@ test('admins can visit the dashboard', function () {
             ->where('isEmpty', true)
             ->where('management.canViewEvents', true)
             ->where('management.canManageSeasons', true)
-            ->where('management.canViewRedirects', true),
+            ->where('management.canViewRedirects', true)
+            ->where('management.canViewRoles', true),
         );
 });
 
@@ -73,10 +75,12 @@ test('editors can visit the dashboard', function () {
             ->where('resources.partners', false)
             ->where('resources.media', false)
             ->where('resources.users', false)
+            ->where('resources.roles', false)
             ->where('resources.redirects', true)
             ->where('management.canViewEvents', true)
             ->where('management.canManageSeasons', false)
-            ->where('management.canViewRedirects', true),
+            ->where('management.canViewRedirects', true)
+            ->where('management.canViewRoles', false),
         );
 });
 
