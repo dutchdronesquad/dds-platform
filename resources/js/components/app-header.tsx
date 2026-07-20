@@ -11,9 +11,8 @@ import {
     Search,
     ShieldCheck,
 } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
-import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import DdsBrand from '@/components/dds-brand';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -130,14 +129,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     Navigatiemenu
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex size-8 items-center justify-center rounded-md bg-red-600 text-white dark:bg-red-500 dark:text-neutral-950">
-                                            <AppLogoIcon className="size-5 fill-current" />
-                                        </span>
-                                        <span className="font-semibold">
-                                            Dutch Drone Squad
-                                        </span>
-                                    </div>
+                                    <DdsBrand />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
@@ -179,9 +171,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     <Link
                         href={dashboard()}
                         prefetch
-                        className="flex items-center space-x-2"
+                        aria-label="Dutch Drone Squad dashboard"
+                        className="flex min-w-0 items-center"
                     >
-                        <AppLogo />
+                        <DdsBrand className="max-md:[&>span:last-child]:hidden" />
                     </Link>
 
                     {/* Desktop Navigation */}

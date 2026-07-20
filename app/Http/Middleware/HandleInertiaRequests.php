@@ -9,6 +9,10 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    private const int AUTH_PHOTO_ROTATION_INTERVAL = 7000;
+
+    private const int TEST_AUTH_PHOTO_ROTATION_INTERVAL = 250;
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -57,6 +61,11 @@ class HandleInertiaRequests extends Middleware
                 'canViewUsers' => $request->user()->can(Permission::ViewUsers->value),
                 'canViewRoles' => $request->user()->can(Permission::ViewRoles->value),
             ] : null,
+            'ui' => [
+                'authPhotoRotationInterval' => app()->environment('testing')
+                    ? self::TEST_AUTH_PHOTO_ROTATION_INTERVAL
+                    : self::AUTH_PHOTO_ROTATION_INTERVAL,
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
