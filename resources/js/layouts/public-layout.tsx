@@ -3,7 +3,7 @@ import type { InertiaLinkProps } from '@inertiajs/react';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import PublicBrand from '@/components/public/public-brand';
+import DdsBrand from '@/components/dds-brand';
 import { cn } from '@/lib/utils';
 import {
     about,
@@ -168,7 +168,7 @@ export default function PublicLayout({ children }: Props) {
                         onClick={() => setIsMenuOpen(false)}
                         className="min-w-0 rounded-sm focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-3 focus-visible:outline-none dark:focus-visible:ring-signal-400 dark:focus-visible:ring-offset-night-950"
                     >
-                        <PublicBrand
+                        <DdsBrand
                             inverse
                             className="max-md:[&>span:last-child]:hidden"
                         />
@@ -281,7 +281,7 @@ export default function PublicLayout({ children }: Props) {
             <footer className="bg-ink text-white">
                 <div className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-10 sm:py-12 lg:grid-cols-[1.5fr_0.58fr_0.58fr_0.58fr] lg:gap-10 lg:py-14">
                     <div className="max-w-sm">
-                        <PublicBrand inverse />
+                        <DdsBrand inverse />
                         <p className="mt-4 text-sm leading-6 text-white/52">
                             <strong className="font-semibold text-white/78">
                                 Dutch Drone Squad

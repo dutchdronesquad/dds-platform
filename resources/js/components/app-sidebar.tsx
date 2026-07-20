@@ -12,7 +12,7 @@ import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/Event
 import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
-import AppLogo from '@/components/app-logo';
+import DdsBrand from '@/components/dds-brand';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -24,6 +24,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { index as redirectsIndex } from '@/routes/redirects';
@@ -39,6 +40,7 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { management } = usePage().props;
+    const { state } = useSidebar();
     const workspaceItems: NavItem[] = [
         {
             title: 'Overzicht',
@@ -98,16 +100,29 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader className="border-b border-sidebar-border/70 pb-3">
+            <SidebarHeader className="p-2 pb-1">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             size="lg"
                             asChild
-                            className="h-auto py-2 focus-visible:ring-signal-500/50"
+                            className="h-16 justify-center rounded-xl border border-sidebar-border/80 bg-linear-to-br from-white via-flight-50/45 to-signal-50/70 p-0 text-sidebar-foreground shadow-xs group-data-[collapsible=icon]:rounded-lg hover:border-signal-300/60 hover:from-flight-50 hover:to-signal-100/70 hover:text-sidebar-foreground focus-visible:ring-signal-500/60 dark:border-white/10 dark:from-white/6 dark:via-white/4 dark:to-signal-500/10 dark:hover:border-signal-400/35 dark:hover:from-white/8 dark:hover:to-signal-500/15"
                         >
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
+                            <Link
+                                href={dashboard()}
+                                prefetch
+                                aria-label="Dutch Drone Squad dashboard"
+                                data-testid="sidebar-brand"
+                            >
+                                <DdsBrand
+                                    className={
+                                        state === 'collapsed'
+                                            ? 'relative z-10'
+                                            : 'relative z-10 [&>span:first-child]:h-12 [&>span:first-child]:w-32 [&>span:first-child]:px-2'
+                                    }
+                                    compact={state === 'collapsed'}
+                                    logoOnly
+                                />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
