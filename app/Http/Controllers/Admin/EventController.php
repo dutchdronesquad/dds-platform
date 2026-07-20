@@ -244,30 +244,32 @@ final class EventController extends Controller
             return;
         }
 
-        $query->where(function (Builder $query) use ($situations): void {
+        $referenceTime = now();
+
+        $query->where(function (Builder $query) use ($referenceTime, $situations): void {
             if (in_array(self::SITUATION_CLOSED_REGISTRATION, $situations, true)) {
-                $query->orWhere(function (Builder $query): void {
+                $query->orWhere(function (Builder $query) use ($referenceTime): void {
                     $query
-                        ->where('starts_at', '>=', now())
+                        ->where('starts_at', '>=', $referenceTime)
                         ->where('status', EventStatus::Published->value)
                         ->where('registration_status', EventRegistrationStatus::Closed->value);
                 });
             }
 
             if (in_array(self::SITUATION_EXPIRED_REGISTRATION, $situations, true)) {
-                $query->orWhere(function (Builder $query): void {
+                $query->orWhere(function (Builder $query) use ($referenceTime): void {
                     $query
-                        ->where('starts_at', '>=', now())
+                        ->where('starts_at', '>=', $referenceTime)
                         ->where('status', '!=', EventStatus::Cancelled->value)
                         ->where('registration_status', EventRegistrationStatus::Open->value)
-                        ->where('registration_deadline_at', '<', now());
+                        ->where('registration_deadline_at', '<', $referenceTime);
                 });
             }
 
             if (in_array(self::SITUATION_WITHOUT_CONTENT, $situations, true)) {
-                $query->orWhere(function (Builder $query): void {
+                $query->orWhere(function (Builder $query) use ($referenceTime): void {
                     $query
-                        ->where('starts_at', '>=', now())
+                        ->where('starts_at', '>=', $referenceTime)
                         ->where('status', '!=', EventStatus::Cancelled->value)
                         ->where(function (Builder $query): void {
                             $query
@@ -278,18 +280,18 @@ final class EventController extends Controller
             }
 
             if (in_array(self::SITUATION_WITHOUT_COVER, $situations, true)) {
-                $query->orWhere(function (Builder $query): void {
+                $query->orWhere(function (Builder $query) use ($referenceTime): void {
                     $query
-                        ->where('starts_at', '>=', now())
+                        ->where('starts_at', '>=', $referenceTime)
                         ->where('status', '!=', EventStatus::Cancelled->value)
                         ->whereNull('cover_image_id');
                 });
             }
 
             if (in_array(self::SITUATION_WITHOUT_SEASON, $situations, true)) {
-                $query->orWhere(function (Builder $query): void {
+                $query->orWhere(function (Builder $query) use ($referenceTime): void {
                     $query
-                        ->where('starts_at', '>=', now())
+                        ->where('starts_at', '>=', $referenceTime)
                         ->where('status', '!=', EventStatus::Cancelled->value)
                         ->whereNull('season_id');
                 });

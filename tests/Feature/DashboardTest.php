@@ -184,21 +184,30 @@ test('dashboard counts records consistently at its time boundaries', function ()
     $user->assignRole(Role::Admin->value);
 
     Event::factory()->create([
+        'title' => 'Event op recente grens',
         'starts_at' => $referenceTime,
         'updated_at' => $recentCutoff,
     ]);
     Event::factory()->create([
+        'title' => 'Oud event',
         'starts_at' => $referenceTime->subSecond(),
         'updated_at' => $recentCutoff->subSecond(),
     ]);
-    Season::factory()->create(['updated_at' => $recentCutoff]);
-    Season::factory()->create(['updated_at' => $recentCutoff->subSecond()]);
+    Season::factory()->create([
+        'name' => 'Seizoen op recente grens',
+        'updated_at' => $recentCutoff,
+    ]);
+    Season::factory()->create([
+        'name' => 'Oud seizoen',
+        'updated_at' => $recentCutoff->subSecond(),
+    ]);
 
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('stats.upcomingEvents', 1)
-            ->where('stats.recentChanges', 2),
+            ->where('stats.recentChanges', 2)
+            ->has('recentChanges', 2),
         );
 });

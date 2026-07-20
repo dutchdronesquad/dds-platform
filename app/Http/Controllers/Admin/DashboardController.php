@@ -55,7 +55,7 @@ final class DashboardController extends Controller
                 'unassignedUpcomingEvents' => $eventSummary['withoutSeason'],
             ],
             'nextEvent' => $canViewEvents ? $this->nextEvent($referenceTime) : null,
-            'recentChanges' => $this->recentChanges($canViewEvents, $canManageSeasons),
+            'recentChanges' => $this->recentChanges($canViewEvents, $canManageSeasons, $recentCutoff),
             'isEmpty' => $eventSummary['total'] + $seasonSummary['total'] === 0,
         ]);
     }
@@ -211,13 +211,17 @@ final class DashboardController extends Controller
      *     updatedBy: array{id: int, name: string}|null
      * }>
      */
-    private function recentChanges(bool $canViewEvents, bool $canManageSeasons): array
-    {
+    private function recentChanges(
+        bool $canViewEvents,
+        bool $canManageSeasons,
+        CarbonInterface $recentCutoff,
+    ): array {
         $changes = [
             ...($canViewEvents
                 ? Event::query()
                     ->select(['id', 'title', 'updated_by', 'updated_at'])
                     ->with('updatedBy:id,name')
+                    ->where('updated_at', '>=', $recentCutoff)
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
@@ -237,6 +241,7 @@ final class DashboardController extends Controller
                 ? Season::query()
                     ->select(['id', 'name', 'slug', 'updated_by', 'updated_at'])
                     ->with('updatedBy:id,name')
+                    ->where('updated_at', '>=', $recentCutoff)
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()

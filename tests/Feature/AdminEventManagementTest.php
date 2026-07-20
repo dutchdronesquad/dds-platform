@@ -8,12 +8,17 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutVite();
     $this->seed(RolesAndPermissionsSeeder::class);
+});
+
+afterEach(function () {
+    CarbonImmutable::setTestNow();
 });
 
 test('event management requires a management role and event permission', function () {
@@ -189,6 +194,9 @@ test('event filters search the relevant context and keep query parameters in pag
 });
 
 test('situation filters show only matching upcoming events', function () {
+    $referenceTime = CarbonImmutable::parse('2026-07-20 12:00:00');
+    CarbonImmutable::setTestNow($referenceTime);
+
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     $season = Season::factory()->create();
@@ -249,6 +257,20 @@ test('situation filters show only matching upcoming events', function () {
         'title' => 'Komende race met verlopen inschrijfdeadline',
         'starts_at' => now()->addDays(9),
         'registration_deadline_at' => now()->subHour(),
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Komende race op de inschrijfdeadline',
+        'starts_at' => $referenceTime->addDays(10),
+        'registration_deadline_at' => $referenceTime,
+        'registration_status' => EventRegistrationStatus::Open,
+    ]);
+    Event::factory()->published()->withCoverImage()->create([
+        'season_id' => $season->id,
+        'title' => 'Afgelopen race met verlopen inschrijfdeadline',
+        'starts_at' => $referenceTime->subSecond(),
+        'registration_deadline_at' => $referenceTime->subDay(),
         'registration_status' => EventRegistrationStatus::Open,
     ]);
 
