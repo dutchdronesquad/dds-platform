@@ -21,6 +21,9 @@ declare module '@inertiajs/core' {
                 canViewRoles: boolean;
                 canViewUsers: boolean;
             } | null;
+            ui: {
+                authPhotoRotationInterval: number;
+            };
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

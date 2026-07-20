@@ -79,8 +79,8 @@ test('authentication screens use accessible DDS branding without mobile overflow
                     const passwordToggle = document.querySelector('button[aria-label="Show password"]');
                     const heading = document.querySelector('[data-testid="auth-heading"]');
 
-                    return photoRotation?.getAttribute('data-active-photo') === '/images/dds/racing/pilot-preparing-drone.jpg'
-                        && photoRotation?.getAttribute('data-rotation-interval') === '7000'
+                    return photos.some((photo) => photo.getAttribute('src') === photoRotation?.getAttribute('data-active-photo'))
+                        && photoRotation?.getAttribute('data-rotation-interval') === '250'
                         && photos.length === 2
                         && photos.some((photo) => photo.getAttribute('src') === '/images/dds/racing/pilot-preparing-drone.jpg')
                         && photos.some((photo) => photo.getAttribute('src') === '/images/dds/racing/homepage-hero.jpg')
@@ -97,15 +97,36 @@ test('the desktop auth visual rotates between DDS photos', function () {
     visit(route('login'))
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
-        ->assertScript(
-            "document.querySelector('[data-testid=\"auth-photo-rotation\"]')?.getAttribute('data-active-photo')",
-            '/images/dds/racing/pilot-preparing-drone.jpg',
-        )
-        ->wait(8)
-        ->assertScript(
-            "document.querySelector('[data-testid=\"auth-photo-rotation\"]')?.getAttribute('data-active-photo')",
-            '/images/dds/racing/homepage-hero.jpg',
-        );
+        ->wait(1)
+        ->assertScript(<<<'JS'
+            (() => {
+                const photoRotation = document.querySelector('[data-testid="auth-photo-rotation"]');
+                const activePhoto = document.querySelector('[data-auth-photo][data-active="true"]');
+
+                return Number(photoRotation?.getAttribute('data-rotation-count')) > 0
+                    && activePhoto?.getAttribute('src') === photoRotation?.getAttribute('data-active-photo');
+            })()
+            JS);
+});
+
+test('authentication errors use assertive alert semantics', function () {
+    $user = User::factory()->create();
+
+    visit(route('login'))
+        ->on()->desktop()
+        ->fill('email', $user->email)
+        ->fill('password', 'wrong-password')
+        ->click('Log in')
+        ->assertVisible('[data-slot="auth-error"]')
+        ->assertScript(<<<'JS'
+            (() => {
+                const error = document.querySelector('[data-slot="auth-error"]');
+
+                return error?.getAttribute('role') === 'alert'
+                    && !error.hasAttribute('aria-live');
+            })()
+            JS)
+        ->assertNoJavaScriptErrors();
 });
 
 test('the verification screen shares the same DDS branding', function () {

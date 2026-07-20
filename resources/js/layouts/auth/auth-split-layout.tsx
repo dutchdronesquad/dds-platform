@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { KeyRound, MailCheck, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import DdsBrand from '@/components/dds-brand';
@@ -16,10 +16,9 @@ const authPhotos = [
     },
 ] as const;
 
-const authPhotoRotationInterval = 7_000;
-
-function AuthPhotoRotation() {
-    const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+function AuthPhotoRotation({ rotationInterval }: { rotationInterval: number }) {
+    const [rotationStep, setRotationStep] = useState(0);
+    const activePhotoIndex = rotationStep % authPhotos.length;
 
     useEffect(() => {
         const reducedMotionQuery = window.matchMedia(
@@ -33,16 +32,14 @@ function AuthPhotoRotation() {
             }
 
             if (reducedMotionQuery.matches) {
-                setActivePhotoIndex(0);
+                setRotationStep(0);
 
                 return;
             }
 
             rotationTimer = window.setInterval(() => {
-                setActivePhotoIndex(
-                    (currentIndex) => (currentIndex + 1) % authPhotos.length,
-                );
-            }, authPhotoRotationInterval);
+                setRotationStep((currentStep) => currentStep + 1);
+            }, rotationInterval);
         };
 
         updateRotation();
@@ -55,14 +52,15 @@ function AuthPhotoRotation() {
                 window.clearInterval(rotationTimer);
             }
         };
-    }, []);
+    }, [rotationInterval]);
 
     return (
         <div
             className="absolute inset-0"
             data-testid="auth-photo-rotation"
             data-active-photo={authPhotos[activePhotoIndex].src}
-            data-rotation-interval={authPhotoRotationInterval}
+            data-rotation-count={rotationStep}
+            data-rotation-interval={rotationInterval}
         >
             {authPhotos.map((photo, photoIndex) => (
                 <img
@@ -110,6 +108,8 @@ export default function AuthSplitLayout({
     title,
     description,
 }: AuthLayoutProps) {
+    const { ui } = usePage().props;
+
     return (
         <div
             className="relative min-h-svh overflow-x-hidden bg-paper text-night-950 lg:grid lg:grid-cols-[minmax(0,1fr)_clamp(28rem,36vw,32rem)] dark:bg-night-900 dark:text-white"
@@ -121,7 +121,9 @@ export default function AuthSplitLayout({
                 data-testid="auth-visual"
                 aria-hidden="true"
             >
-                <AuthPhotoRotation />
+                <AuthPhotoRotation
+                    rotationInterval={ui.authPhotoRotationInterval}
+                />
                 <div className="absolute inset-0 bg-linear-to-t from-night-950/95 via-night-950/50 to-night-950/20" />
                 <div className="absolute inset-0 bg-linear-to-r from-night-950/10 via-transparent to-night-950/32" />
 
