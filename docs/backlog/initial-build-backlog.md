@@ -856,24 +856,75 @@ Acceptance criteria:
 
 Goal: support the operational season-ticket workflow if DDS chooses native registration after the public information model is established.
 
+Product rules and implementation gates are maintained in [Training Registration And Capacity](../product/training-registration-and-capacity.md). This ticket must implement that approved policy without becoming a second source of truth.
+
 Tasks:
 
-- define season-ticket holder, payment, cancellation, and refund states with the organization before implementation;
-- record which season-ticket product a holder purchased;
-- support per-event attendance confirmation or opt-out for eligible events;
-- make released places usable by the event registration or waitlist workflow without overselling capacity;
-- provide administrators with holder, payment, and per-event attendance overviews;
+- keep initial registration calls to action email-based and avoid presenting unverified live availability or waitlist behavior;
+- implement approved holder, allocation, payment, cancellation, refund, and attendance states;
+- derive holder access from the purchased product and its explicit eligible events;
+- reserve eligible events by default and support per-event opt-out without requiring attendance confirmation or issuing an automatic refund;
+- keep payment records provider-agnostic while supporting manual external-payment registration in the initial workflow;
+- provide administrators with holder, payment, allocation, opt-out, and per-event attendance overviews plus an export for manual heat planning;
 - give authenticated holders one clear overview of their included events and required actions;
-- log important operational changes and protect personal data through policies and retention rules.
+- log important operational changes, administrator exceptions, and refund reasons, and protect personal data through policies and retention rules.
 
 Acceptance criteria:
 
-- holder access is derived from the purchased season-ticket product and its explicit eligible events;
+- the initial public registration action opens or clearly explains the email process without implying that registration is completed in the platform;
 - administrators can distinguish season-ticket allocation from actual attendance for each event;
-- opt-outs and cancellations cannot silently corrupt event capacity;
-- holders can see which events require confirmation and which actions are complete;
-- payment and refund behavior is implemented only after the business rules are approved;
+- only an explicit holder opt-out releases a season-ticket allocation, and opt-outs and cancellations cannot silently corrupt event capacity;
+- holders can see their reserved events and completed opt-outs without being asked to confirm every event;
+- cancellations, refunds, organizer cancellations, and capacity exceptions follow the product document and require explicit administrator handling where no automatic rule is approved;
+- no native registration, live waitlist, online payment, or automatic heat planning is introduced through this ticket;
 - authorization and focused workflow tests cover administrator and holder behavior.
+
+### DDS-011G: Dashboard And Authentication Branding
+
+Goal: make the authenticated part of the platform recognizably DDS by consistently applying the official logo to the dashboard and authentication pages.
+
+Tasks:
+
+- confirm the canonical full and compact DDS logo assets, including suitable variants for light and dark backgrounds;
+- replace the generic application mark in the dashboard shell and shared authentication layouts with DDS branding;
+- centralize the logo treatment in one reusable component instead of duplicating assets or markup;
+- preserve the logo's aspect ratio, clear space, and legibility across desktop and mobile layouts;
+- give meaningful logo links an accessible name and hide purely decorative duplicates from assistive technology;
+- verify the login, password reset, email verification, two-factor authentication, and dashboard entry screens in light and dark mode.
+
+Acceptance criteria:
+
+- the dashboard and authentication pages are immediately recognizable as part of DDS;
+- all authenticated and authentication layouts use one shared source of truth for the DDS logo;
+- full and compact variants remain sharp, undistorted, and readable in light and dark mode;
+- the logo does not introduce overflow, layout shift, or cramped headings on small screens;
+- screen-reader behavior correctly distinguishes linked branding from decorative imagery;
+- focused component or browser tests cover the shared branding on the key dashboard and authentication layouts.
+
+### DDS-011H: Native Training Registration And Capacity Discovery
+
+Goal: establish a safe and fair capacity model before DDS replaces email registration with native training registration, waitlists, or online payment.
+
+The confirmed current workflow, proposed training formats, capacity examples, vendor references, and implementation gates are maintained in [Training Registration And Capacity](../product/training-registration-and-capacity.md).
+
+Tasks:
+
+- maintain the product document as decisions are approved instead of copying rules into implementation tickets;
+- verify Walksnail race mode and DJI O4 race mode in DDS's actual venue and channel plan before marking either profile as race-group compatible;
+- decide whether native registration uses immediate confirmation, a configurable review threshold, or administrator approval for all training requests;
+- define how first-in-first-out priority, compatibility exceptions, response deadlines, released places, and administrator reasons should work;
+- decide when payment is collected for a request that may still require compatibility review;
+- approve holder, allocation, attendance, payment, cancellation, refund, privacy, and retention states;
+- confirm that the public House Rules contain the binding `25 mW` and 24-hour single-ticket cancellation rules;
+- validate the proposed workflow with the people who currently compose the heats before implementation starts.
+
+Acceptance criteria:
+
+- DDS has an approved definition of when a training request is confirmed, awaiting review, waitlisted, or declined;
+- the product document records the approved policy, unresolved risks, and effective season without contradictory backlog copies;
+- DDS has field evidence for every VTX profile admitted to fully mixed heats;
+- payment timing and refund consequences are clear before native checkout is introduced;
+- email remains the registration channel until the discovery outcome is explicitly approved.
 
 ## Epic 5: Supporting Content Models
 
@@ -1160,10 +1211,38 @@ Acceptance criteria:
 
 ### DDS-015: WordPress Export Discovery
 
-Goal: verify the best import source for the current site.
+Goal: define the approved migration scope and verify the best import source for the current site after the target content workflows are ready for review.
+
+Start conditions:
+
+- DDS-014H provides a working media library with upload, metadata editing, previews, reuse, and asset selection;
+- DDS-014J provides public news pages and Article admin CRUD so sample and imported articles can be reviewed in their real destination;
+- every additional WordPress page type included in the discovery has an implemented target model or an explicit manual-rewrite destination;
+- the existing redirect foundation is available for legacy URLs that will not be imported directly.
+
+#### DDS-015 discovery subtask: Content Selection And Migration Policy
+
+Before comparing REST and XML exports, hold a content workshop and produce an explicit `import`, `rewrite`, `redirect`, or `skip` decision for each legacy content group.
+
+Questions to resolve:
+
+- whether to preserve all historical news posts, use a publication-date cutoff, or curate a valuable selection;
+- which race reports, results, training updates, and other historical records remain useful as a public archive;
+- whether About DDS, house rules, locations, training information, and other static pages are copied selectively or rewritten into the new designed pages;
+- whether media import is limited to assets referenced by approved content plus selected brand and partner assets;
+- which WordPress users, comments, drafts, private content, plugin data, theme markup, categories, and tags are intentionally excluded or normalized;
+- which skipped public URLs redirect to a new destination and which should deliberately return `410 Gone`.
+
+Subtask output:
+
+- a reviewed content inventory grouped by WordPress content type and publication period;
+- a source-to-target decision matrix with an owner or reason for manual review;
+- a provisional media scope and legacy URL policy;
+- explicit confirmation that the import is a curated migration rather than a full WordPress clone.
 
 Tasks:
 
+- complete and approve the content-selection subtask;
 - test WordPress REST API endpoints;
 - compare with XML export availability;
 - inspect posts, pages, media, categories, tags, and featured images;
@@ -1172,8 +1251,10 @@ Tasks:
 Acceptance criteria:
 
 - preferred import source is selected;
+- the content-selection matrix defines what is imported, rewritten, redirected, or skipped;
 - risks and missing fields are documented;
-- sample records are mapped to target models.
+- sample records are mapped to implemented target models and can be reviewed through their real admin and public presentation;
+- DDS-016 through DDS-020 do not start until their relevant target workflows and the content-selection subtask are complete.
 
 ### DDS-016: Posts To Articles Import Prototype
 
@@ -1480,19 +1561,21 @@ Acceptance criteria:
 41. DDS-014K
 42. DDS-014G
 43. DDS-011E
-44. DDS-011F
-45. DDS-015
-46. DDS-017
-47. DDS-016
-48. DDS-018
-49. DDS-019
-50. DDS-020
-51. DDS-021
-52. DDS-022
-53. DDS-023
-54. DDS-024
-55. DDS-025
-56. DDS-026
-57. DDS-027
+44. DDS-011G
+45. DDS-011H
+46. DDS-011F
+47. DDS-015
+48. DDS-017
+49. DDS-016
+50. DDS-018
+51. DDS-019
+52. DDS-020
+53. DDS-021
+54. DDS-022
+55. DDS-023
+56. DDS-024
+57. DDS-025
+58. DDS-026
+59. DDS-027
 
 The WordPress importer should not be treated as the next major build step after static routes. The platform needs public branding, target content models, admin review flows, media handling, redirects, and user/permission management first. Import work can start as discovery earlier, but production-grade import should wait until the target models and admin review screens exist.

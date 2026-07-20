@@ -33,14 +33,14 @@ The desired visitor outcome is a concrete next step: read the relevant guide, ch
 
 The hub explains how DDS works, but it must not duplicate operational data that can change. Each domain retains one source of truth.
 
-| Information                                                                  | Source of truth                   | How the hub uses it                                 |
-| ---------------------------------------------------------------------------- | --------------------------------- | --------------------------------------------------- |
-| Event date, time, event price, capacity, deadline, and status                | Event                             | Link to or render current event data                |
-| Season name, included events, season-ticket price, capacity, and sales state | Season and season-ticket workflow | Render current season data and explain the concept  |
-| Address, facilities, dimensions, and accessibility                           | Location                          | Link to the current location page                   |
-| Binding conduct and safety policies                                          | House Rules                       | Summarize the purpose and link to the full rules    |
-| Registration, payment, confirmation, and waitlist state                      | Registration workflow             | Send the visitor into the current registration flow |
-| Beginner guidance, equipment advice, preparation, and DDS context            | Getting Started hub               | Own and maintain as evergreen editorial content     |
+| Information                                                                  | Source of truth                                                             | How the hub uses it                                 |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------- |
+| Event date, time, event price, capacity, deadline, and status                | Event                                                                       | Link to or render current event data                |
+| Season name, included events, season-ticket price, capacity, and sales state | Season and season-ticket workflow                                           | Render current season data and explain the concept  |
+| Address, facilities, dimensions, and accessibility                           | Location                                                                    | Link to the current location page                   |
+| Binding conduct and safety policies                                          | House Rules                                                                 | Summarize the purpose and link to the full rules    |
+| Registration, payment, confirmation, and waitlist state                      | [Training registration and capacity](training-registration-and-capacity.md) | Send the visitor into the current registration flow |
+| Beginner guidance, equipment advice, preparation, and DDS context            | Getting Started hub                                                         | Own and maintain as evergreen editorial content     |
 
 Event descriptions may contain event-specific instructions. They should not become the only place where general newcomer information is maintained.
 
