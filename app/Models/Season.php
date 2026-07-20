@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\TracksContentActivity;
 use Database\Factories\SeasonFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property int|null $created_by
+ * @property int|null $updated_by
  * @property string $name
  * @property string $slug
  */
@@ -18,6 +21,8 @@ final class Season extends Model
 {
     /** @use HasFactory<SeasonFactory> */
     use HasFactory;
+
+    use TracksContentActivity;
 
     /** @var list<string> */
     protected $fillable = [

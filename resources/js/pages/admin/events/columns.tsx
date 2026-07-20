@@ -11,6 +11,7 @@ import {
     publish,
     unpublish,
 } from '@/actions/App/Http/Controllers/Admin/EventStatusController';
+import { AdminActivityByline } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import { AdminRowActions } from '@/components/admin/admin-row-actions';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
@@ -66,39 +67,59 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
 
             return (
                 <div className="min-w-0 sm:min-w-60">
-                    {row.original.capabilities.update ? (
-                        <Link
-                            href={edit(row.original.id)}
-                            className="font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-white dark:hover:text-signal-300"
-                        >
-                            {row.original.title}
-                        </Link>
-                    ) : (
-                        <p className="font-semibold text-neutral-950 dark:text-white">
-                            {row.original.title}
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {row.original.capabilities.update ? (
+                            <Link
+                                href={edit(row.original.id)}
+                                className="font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-white dark:hover:text-signal-300"
+                            >
+                                {row.original.title}
+                            </Link>
+                        ) : (
+                            <p className="font-semibold text-neutral-950 dark:text-white">
+                                {row.original.title}
+                            </p>
+                        )}
+                        <EventTypeBadge type={row.original.type} />
+                    </div>
+                    {row.original.season && (
+                        <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            <Tags className="size-3.5 shrink-0" />
+                            <span className="truncate">
+                                {row.original.season.name}
+                            </span>
                         </p>
                     )}
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:hidden">
-                        <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                    <div className="mt-2 grid gap-1.5 sm:hidden">
+                        <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                             {dateFormatter.format(startsAt)} ·{' '}
-                            {timeFormatter.format(startsAt)}
-                        </span>
-                        <EventTypeBadge
-                            type={row.original.type}
-                            className="h-5 px-1.5 text-[10px]"
-                        />
-                        <AdminStatusBadge
-                            status={row.original.status}
-                            className="h-5 px-1.5 text-[10px]"
-                        />
+                            {timeFormatter.format(startsAt)} uur
+                        </p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {row.original.location.name} ·{' '}
+                            {row.original.location.city}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <AdminStatusBadge
+                                status={row.original.status}
+                                className="h-5 px-1.5 text-[10px]"
+                            />
+                            <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                                {
+                                    registrationLabels[
+                                        row.original.registrationStatus
+                                    ]
+                                }
+                            </span>
+                        </div>
                     </div>
                 </div>
             );
         },
     },
     {
-        accessorKey: 'startsAt',
-        header: 'Start',
+        id: 'planning',
+        header: 'Planning',
         meta: {
             className: 'hidden sm:table-cell',
         },
@@ -106,62 +127,18 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
             const startsAt = new Date(row.original.startsAt);
 
             return (
-                <div className="whitespace-nowrap">
+                <div className="min-w-56">
                     <p className="font-medium text-neutral-800 dark:text-neutral-200">
-                        {dateFormatter.format(startsAt)}
-                    </p>
-                    <p className="mt-0.5 text-xs text-neutral-500">
+                        {dateFormatter.format(startsAt)} ·{' '}
                         {timeFormatter.format(startsAt)} uur
+                    </p>
+                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                        {row.original.location.name} ·{' '}
+                        {row.original.location.city}
                     </p>
                 </div>
             );
         },
-    },
-    {
-        id: 'location',
-        header: 'Locatie',
-        meta: {
-            className: 'hidden md:table-cell',
-        },
-        cell: ({ row }) => (
-            <div className="min-w-40 text-sm">
-                <p className="font-medium text-neutral-800 dark:text-neutral-200">
-                    {row.original.location.name}
-                </p>
-                <p className="mt-0.5 text-xs text-neutral-500">
-                    {row.original.location.city}
-                </p>
-            </div>
-        ),
-    },
-    {
-        accessorKey: 'type',
-        header: 'Type',
-        meta: {
-            className: 'hidden md:table-cell',
-        },
-        cell: ({ row }) => <EventTypeBadge type={row.original.type} />,
-    },
-    {
-        id: 'season',
-        header: 'Seizoen',
-        meta: {
-            className: 'hidden lg:table-cell',
-        },
-        cell: ({ row }) =>
-            row.original.season ? (
-                <Badge
-                    variant="secondary"
-                    className="max-w-48 justify-start gap-1.5 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-                >
-                    <Tags />
-                    <span className="truncate">{row.original.season.name}</span>
-                </Badge>
-            ) : (
-                <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
-                    Los event
-                </span>
-            ),
     },
     {
         id: 'status',
@@ -170,12 +147,22 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
             className: 'hidden sm:table-cell',
         },
         cell: ({ row }) => (
-            <div className="flex min-w-40 flex-wrap items-center gap-2">
+            <div className="grid min-w-40 gap-2">
                 <AdminStatusBadge status={row.original.status} />
-                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                     {registrationLabels[row.original.registrationStatus]}
                 </span>
             </div>
+        ),
+    },
+    {
+        id: 'activity',
+        header: 'Bijgewerkt',
+        meta: {
+            className: 'hidden xl:table-cell',
+        },
+        cell: ({ row }) => (
+            <AdminActivityByline activity={row.original.activity} />
         ),
     },
     {

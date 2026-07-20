@@ -131,10 +131,65 @@ test('admins can create seasons with an optional ticket price and limit', functi
     $ticket = $season->seasonTicket()->firstOrFail();
 
     expect($season->name)->toBe('Winter 2027')
+        ->and($season->created_by)->toBe($admin->id)
+        ->and($season->updated_by)->toBe($admin->id)
         ->and($ticket->sales_state)->toBe(SeasonTicketSalesState::Available)
         ->and($ticket->price_cents)->toBe(14995)
         ->and($ticket->capacity)->toBe(40)
         ->and($ticket->registration_url)->toBe('https://example.com/seizoensticket');
+});
+
+test('season activity shows the maker and latest editor', function () {
+    $admin = User::factory()->create(['name' => 'Ada Admin']);
+    $admin->assignRole(Role::Admin->value);
+    $secondAdmin = User::factory()->create(['name' => 'Nora Admin']);
+    $secondAdmin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin)
+        ->post(route('admin.seasons.store'), validSeasonPayload([
+            'name' => 'Activiteit seizoen',
+            'slug' => 'activiteit-seizoen',
+        ]))
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Seizoen aangemaakt.',
+        ]);
+
+    $season = Season::query()->where('slug', 'activiteit-seizoen')->firstOrFail();
+
+    $this->actingAs($secondAdmin)
+        ->put(route('admin.seasons.update', $season), validSeasonPayload([
+            'name' => 'Bijgewerkt seizoen',
+            'slug' => 'activiteit-seizoen',
+        ]))
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Seizoen opgeslagen.',
+        ]);
+
+    expect($season->refresh())
+        ->created_by->toBe($admin->id)
+        ->updated_by->toBe($secondAdmin->id);
+
+    $this->get(route('admin.seasons.edit', $season))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('season.activity.createdBy.id', $admin->id)
+            ->where('season.activity.createdBy.name', 'Ada Admin')
+            ->where('season.activity.updatedBy.id', $secondAdmin->id)
+            ->where('season.activity.updatedBy.name', 'Nora Admin')
+            ->has('season.activity.createdAt')
+            ->has('season.activity.updatedAt'),
+        );
+
+    $this->get(route('admin.seasons.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('seasons.data', 1)
+            ->where('seasons.data.0.activity.updatedBy.id', $secondAdmin->id)
+            ->where('seasons.data.0.activity.updatedBy.name', 'Nora Admin')
+            ->has('seasons.data.0.activity.updatedAt'),
+        );
 });
 
 test('admins can create a season without offering a ticket', function () {

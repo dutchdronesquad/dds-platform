@@ -1,6 +1,14 @@
+import type { AdminActivity } from '@/components/admin/admin-activity-metadata';
 import type { ServerPagination } from '@/components/admin/admin-data-table';
 
 export type AdminEventStatus = 'cancelled' | 'draft' | 'published';
+
+export type AdminEventSituation =
+    | 'closed_registration'
+    | 'expired_registration'
+    | 'without_content'
+    | 'without_cover'
+    | 'without_season';
 
 export type AdminEventType =
     'demo' | 'other' | 'race' | 'training' | 'workshop';
@@ -13,6 +21,7 @@ export type SelectOption = {
 };
 
 export type EventRecord = {
+    activity: Pick<AdminActivity, 'updatedAt' | 'updatedBy'>;
     capabilities: {
         cancel: boolean;
         delete: boolean;
@@ -43,9 +52,11 @@ export type EventIndexProps = {
     events: ServerPagination<EventRecord>;
     filters: {
         search: string;
+        situation: AdminEventSituation[];
         status: AdminEventStatus[];
         type: AdminEventType[];
     };
+    situationOptions: SelectOption[];
     statusOptions: SelectOption[];
     summary: {
         cancelled: number;
@@ -64,6 +75,7 @@ export type EventFormOptions = {
 };
 
 export type EditableEvent = {
+    activity: AdminActivity;
     capabilities: {
         cancel: boolean;
         delete: boolean;

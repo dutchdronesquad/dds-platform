@@ -13,9 +13,21 @@ return new class extends Migration
     {
         Schema::create('seasons', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('created_by')
+                ->nullable()
+                ->index()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->foreignId('updated_by')
+                ->nullable()
+                ->index()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->timestamps();
+
+            $table->index('updated_at');
         });
     }
 

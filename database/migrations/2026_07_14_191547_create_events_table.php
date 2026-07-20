@@ -16,6 +16,16 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('created_by')
+                ->nullable()
+                ->index()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->foreignId('updated_by')
+                ->nullable()
+                ->index()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->foreignId('location_id')
                 ->index()
                 ->constrained()
@@ -48,6 +58,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['status', 'starts_at']);
+            $table->index(['registration_status', 'registration_deadline_at']);
+            $table->index('updated_at');
         });
     }
 
