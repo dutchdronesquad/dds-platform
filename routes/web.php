@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
 use App\Http\Controllers\Admin\RedirectController;
+use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
@@ -84,6 +85,9 @@ Route::middleware([
         Route::patch('users/{user}/unblock', [UserStatusController::class, 'unblock'])
             ->name('users.unblock');
         Route::resource('users', AdminUserController::class)->only(['index', 'edit', 'update', 'destroy']);
+        Route::get('roles', RolePermissionController::class)
+            ->middleware('can:'.Permission::ViewRoles->value)
+            ->name('roles.index');
     });
 
     Route::get('dashboard/redirects', [RedirectController::class, 'index'])

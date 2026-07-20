@@ -301,10 +301,11 @@ final class UserController extends Controller
     /** @return list<array{value: string, label: string, description: string}> */
     private function roleOptions(): array
     {
-        return [
-            ['value' => Role::Admin->value, 'label' => 'Beheerder', 'description' => 'Volledige toegang tot gebruikers en beheerfuncties.'],
-            ['value' => Role::Editor->value, 'label' => 'Redacteur', 'description' => 'Toegang tot toegewezen contentfuncties, niet tot gebruikersbeheer.'],
-        ];
+        return array_map(fn (Role $role): array => [
+            'value' => $role->value,
+            'label' => $role->label(),
+            'description' => $role->description(),
+        ], Role::cases());
     }
 
     /** @return list<array{value: string, label: string}> */

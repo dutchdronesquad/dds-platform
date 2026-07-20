@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                 'canManageSeasons' => $request->user()->can('viewAny', Season::class),
                 'canViewRedirects' => $request->user()->can(Permission::ViewRedirects->value),
                 'canViewUsers' => $request->user()->can(Permission::ViewUsers->value),
+                'canViewRoles' => $request->user()->can(Permission::ViewRoles->value),
             ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

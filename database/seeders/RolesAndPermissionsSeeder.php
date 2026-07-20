@@ -21,16 +21,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = collect(PermissionEnum::cases())
             ->map(fn (PermissionEnum $permission) => Permission::findOrCreate($permission->value, 'web'));
 
-        Role::findOrCreate(RoleEnum::Admin->value, 'web')
-            ->syncPermissions($permissions);
-
-        Role::findOrCreate(RoleEnum::Editor->value, 'web')
-            ->syncPermissions([
-                PermissionEnum::ViewEvents->value,
-                PermissionEnum::CreateEvents->value,
-                PermissionEnum::UpdateEvents->value,
-                PermissionEnum::ViewRedirects->value,
-            ]);
+        foreach (RoleEnum::cases() as $role) {
+            Role::findOrCreate($role->value, 'web')
+                ->syncPermissions($role === RoleEnum::Admin ? $permissions : $role->permissions());
+        }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

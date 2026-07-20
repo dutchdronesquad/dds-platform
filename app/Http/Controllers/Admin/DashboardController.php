@@ -59,6 +59,7 @@ final class DashboardController extends Controller
                 'partners' => $isAdmin,
                 'media' => $isAdmin,
                 'users' => $user->can(Permission::ViewUsers->value),
+                'roles' => $user->can(Permission::ViewRoles->value),
                 'redirects' => $canViewRedirects,
             ],
             'stats' => [
