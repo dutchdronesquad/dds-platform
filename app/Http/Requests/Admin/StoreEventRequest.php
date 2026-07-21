@@ -6,7 +6,9 @@ use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Location;
+use App\Models\MediaAsset;
 use App\Models\Season;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
@@ -32,6 +34,29 @@ class StoreEventRequest extends FormRequest
         return [
             'location_id' => ['required', 'integer', Rule::exists(Location::class, 'id')],
             'season_id' => ['nullable', 'integer', Rule::exists(Season::class, 'id')],
+            'cover_image_id' => [
+                'nullable',
+                'integer',
+                Rule::exists(MediaAsset::class, 'id'),
+                function (string $attribute, mixed $value, Closure $fail) use ($event): void {
+                    $mediaAsset = MediaAsset::query()
+                        ->with('media')
+                        ->find($value);
+
+                    if (! $mediaAsset instanceof MediaAsset || ! $mediaAsset->isImage()) {
+                        $fail('De geselecteerde omslagafbeelding is niet geldig.');
+
+                        return;
+                    }
+
+                    if (
+                        $mediaAsset->archived_at !== null
+                        && $event?->cover_image_id !== $mediaAsset->id
+                    ) {
+                        $fail('Een gearchiveerde afbeelding kan niet als nieuwe omslag worden gekozen.');
+                    }
+                },
+            ],
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required',
@@ -86,6 +111,7 @@ class StoreEventRequest extends FormRequest
         return [
             'location_id' => 'locatie',
             'season_id' => 'seizoen',
+            'cover_image_id' => 'omslagafbeelding',
             'title' => 'titel',
             'slug' => 'URL-slug',
             'content' => 'omschrijving',

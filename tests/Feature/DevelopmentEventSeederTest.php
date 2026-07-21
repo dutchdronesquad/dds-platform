@@ -69,7 +69,8 @@ test('the local demo event command creates the same representative dataset on re
         ->toBe(0)
         ->and(Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->count())
         ->toBe(3)
-        ->and(MediaAsset::query()->whereIn('path', DevelopmentEventSeeder::MEDIA_PATHS)->count())
+        ->and(MediaAsset::query()->whereHas('media', fn ($query) => $query
+            ->whereIn('custom_properties->development_fixture', DevelopmentEventSeeder::MEDIA_FIXTURE_KEYS))->count())
         ->toBe(3)
         ->and(Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->count())
         ->toBe(1);
@@ -97,9 +98,13 @@ test('the local demo event command creates the same representative dataset on re
         ->and($standaloneRace->registration_deadline_at?->isBefore($standaloneRace->starts_at))
         ->toBeTrue();
 
-    Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'pilot-at-training.jpg');
-    Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'race-control.jpg');
-    Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'indoor-track.jpg');
+    MediaAsset::query()
+        ->whereHas('media', fn ($query) => $query
+            ->whereIn('custom_properties->development_fixture', DevelopmentEventSeeder::MEDIA_FIXTURE_KEYS))
+        ->with('media')
+        ->get()
+        ->each(fn (MediaAsset $mediaAsset) => Storage::disk($mediaAsset->disk())
+            ->assertExists($mediaAsset->storagePath()));
 });
 
 test('demo event dates stay in a rolling window around the current date', function () {
@@ -202,8 +207,20 @@ test('reset removes only unreferenced demo records and preserves real content', 
         ->firstOrFail();
     $demoSeason = Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->firstOrFail();
     $demoCover = MediaAsset::query()
-        ->where('path', DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'pilot-at-training.jpg')
+        ->whereHas('media', fn ($query) => $query
+            ->where('custom_properties->development_fixture', 'training'))
+        ->with('media')
         ->firstOrFail();
+    $preservedCoverPath = $demoCover->storagePath();
+    $removedCoverPaths = MediaAsset::query()
+        ->whereHas('media', fn ($query) => $query
+            ->whereIn('custom_properties->development_fixture', ['race', 'track']))
+        ->with('media')
+        ->get()
+        ->map(fn (MediaAsset $mediaAsset): array => [
+            'disk' => $mediaAsset->disk(),
+            'path' => $mediaAsset->storagePath(),
+        ]);
     $realEvent = Event::factory()->published()->create([
         'location_id' => $demoLocation->id,
         'season_id' => $demoSeason->id,
@@ -213,10 +230,7 @@ test('reset removes only unreferenced demo records and preserves real content', 
     $prefixedLocation = Location::factory()->create([
         'slug' => DevelopmentEventSeeder::LOCATION_SLUG_PREFIX.'community-record',
     ]);
-    $prefixedCover = MediaAsset::factory()->create([
-        'disk' => 'public',
-        'path' => DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'community-record.jpg',
-    ]);
+    $prefixedCover = MediaAsset::factory()->named('community-record.jpg')->create();
     $prefixedEvent = Event::factory()->published()->create([
         'location_id' => $prefixedLocation->id,
         'cover_image_id' => $prefixedCover->id,
@@ -237,9 +251,9 @@ test('reset removes only unreferenced demo records and preserves real content', 
         ->and($prefixedLocation->fresh())->not->toBeNull()
         ->and($prefixedCover->fresh())->not->toBeNull();
 
-    Storage::disk('public')->assertExists(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'pilot-at-training.jpg');
-    Storage::disk('public')->assertMissing(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'race-control.jpg');
-    Storage::disk('public')->assertMissing(DevelopmentEventSeeder::MEDIA_PATH_PREFIX.'indoor-track.jpg');
+    Storage::disk($demoCover->disk())->assertExists($preservedCoverPath);
+    $removedCoverPaths->each(fn (array $file) => Storage::disk($file['disk'])
+        ->assertMissing($file['path']));
 });
 
 test('reset works before the optional articles migration is applied', function () {
@@ -315,7 +329,7 @@ function demoEventsSnapshot(): array
 {
     return Event::query()
         ->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)
-        ->with(['coverImage:id,path', 'location:id,slug', 'season:id,name'])
+        ->with(['coverImage:id', 'coverImage.media', 'location:id,slug', 'season:id,name'])
         ->oldest('slug')
         ->get()
         ->map(fn (Event $event): array => [
@@ -334,7 +348,7 @@ function demoEventsSnapshot(): array
             'registration_url' => $event->registration_url,
             'location' => $event->location->slug,
             'season' => $event->season?->name,
-            'cover' => $event->coverImage?->path,
+            'cover' => $event->coverImage?->filename(),
         ])
         ->all();
 }
@@ -345,7 +359,8 @@ function demoRecordIds(): array
     return [
         'events' => Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->oldest('id')->pluck('id')->all(),
         'locations' => Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->oldest('id')->pluck('id')->all(),
-        'media' => MediaAsset::query()->whereIn('path', DevelopmentEventSeeder::MEDIA_PATHS)->oldest('id')->pluck('id')->all(),
+        'media' => MediaAsset::query()->whereHas('media', fn ($query) => $query
+            ->whereIn('custom_properties->development_fixture', DevelopmentEventSeeder::MEDIA_FIXTURE_KEYS))->oldest('id')->pluck('id')->all(),
         'seasons' => Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->oldest('id')->pluck('id')->all(),
         'seasonTickets' => SeasonTicket::query()->whereHas(
             'season',

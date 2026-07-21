@@ -19,6 +19,7 @@ export type AdminDataTableFacetOption = {
 };
 
 type AdminDataTableFacetFilterProps = {
+    closeOnSelect?: boolean;
     onChange: (values: string[]) => void;
     options: AdminDataTableFacetOption[];
     selected: string[];
@@ -26,6 +27,7 @@ type AdminDataTableFacetFilterProps = {
 };
 
 export function AdminDataTableFacetFilter({
+    closeOnSelect = false,
     onChange,
     options,
     selected,
@@ -96,7 +98,11 @@ export function AdminDataTableFacetFilter({
                         onCheckedChange={(checked) =>
                             changeSelection(option.value, checked === true)
                         }
-                        onSelect={(event) => event.preventDefault()}
+                        onSelect={
+                            closeOnSelect
+                                ? undefined
+                                : (event) => event.preventDefault()
+                        }
                         className="cursor-pointer"
                     >
                         <span>{option.label}</span>

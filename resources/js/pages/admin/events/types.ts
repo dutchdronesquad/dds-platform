@@ -1,5 +1,6 @@
 import type { AdminActivity } from '@/components/admin/admin-activity-metadata';
 import type { ServerPagination } from '@/components/admin/admin-data-table';
+import type { MediaPickerAsset } from '@/types/media';
 
 export type AdminEventStatus = 'cancelled' | 'draft' | 'published';
 
@@ -83,6 +84,8 @@ export type EditableEvent = {
     };
     capacity: number | null;
     content: string | null;
+    coverImage: MediaPickerAsset | null;
+    coverImageId: number | null;
     endsAt: string | null;
     id: number;
     locationId: number;

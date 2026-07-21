@@ -1117,6 +1117,14 @@ Acceptance criteria:
 - imported WordPress media can coexist with manually uploaded media;
 - unused media can be reviewed without deleting it automatically.
 
+Optional follow-up tasks — AI-assisted alt text defaults (deferred and not part of the DDS-014H definition of done):
+
+- select an AI provider and model, with an explicit quality, privacy, and cost assessment;
+- generate alt text asynchronously through a queued job with retries, rate limits, and cost limits;
+- present generated text as an editable suggestion that never silently replaces editorial alt text;
+- support the configured locales and distinguish a reusable asset default from context-specific alt text;
+- add production configuration, privacy safeguards, monitoring, and failure reporting for the generation workflow.
+
 ### DDS-014I: Public Location Pages And Admin Location CRUD
 
 Goal: turn locations into useful public and admin-managed content.

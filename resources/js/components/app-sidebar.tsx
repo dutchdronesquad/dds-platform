@@ -3,12 +3,14 @@ import {
     CalendarDays,
     Home,
     LayoutDashboard,
+    Images,
     Route as RouteIcon,
     ShieldCheck,
     Tags,
     Users,
 } from 'lucide-react';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
+import { index as mediaIndex } from '@/actions/App/Http/Controllers/Admin/MediaAssetController';
 import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
@@ -64,6 +66,15 @@ export function AppSidebar() {
                       title: 'Seizoenen',
                       href: seasonsIndex(),
                       icon: Tags,
+                  },
+              ]
+            : []),
+        ...(management?.canViewMedia
+            ? [
+                  {
+                      title: 'Media',
+                      href: mediaIndex(),
+                      icon: Images,
                   },
               ]
             : []),

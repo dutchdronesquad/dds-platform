@@ -32,6 +32,9 @@ enum Role: string
                 Permission::ViewEvents,
                 Permission::CreateEvents,
                 Permission::UpdateEvents,
+                Permission::ViewMedia,
+                Permission::CreateMedia,
+                Permission::UpdateMedia,
                 Permission::ViewRedirects,
             ],
         };

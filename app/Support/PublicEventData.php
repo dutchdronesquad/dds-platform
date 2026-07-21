@@ -5,7 +5,6 @@ namespace App\Support;
 use App\Models\Event;
 use App\Models\MediaAsset;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 final class PublicEventData
@@ -76,7 +75,7 @@ final class PublicEventData
         $altText = $event->coverImage->alt_text;
 
         return [
-            'src' => Storage::disk($event->coverImage->disk)->url($event->coverImage->path),
+            'src' => $event->coverImage->url(),
             'alt' => Arr::get($altText, app()->getLocale())
                 ?? Arr::get($altText, 'en')
                 ?? $event->title,

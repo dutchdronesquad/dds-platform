@@ -5,6 +5,9 @@ use App\Enums\Role;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
+use App\Http\Controllers\Admin\MediaAssetArchiveController;
+use App\Http\Controllers\Admin\MediaAssetController;
+use App\Http\Controllers\Admin\MediaAssetPickerController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
@@ -72,6 +75,15 @@ Route::middleware([
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->name('admin.')->group(function () {
+        Route::get('media/picker', MediaAssetPickerController::class)
+            ->name('media.picker');
+        Route::patch('media/{mediaAsset}/archive', [MediaAssetArchiveController::class, 'archive'])
+            ->name('media.archive');
+        Route::patch('media/{mediaAsset}/restore', [MediaAssetArchiveController::class, 'restore'])
+            ->name('media.restore');
+        Route::resource('media', MediaAssetController::class)
+            ->parameters(['media' => 'mediaAsset'])
+            ->except('edit');
         Route::patch('events/{event}/publish', [EventStatusController::class, 'publish'])
             ->name('events.publish');
         Route::patch('events/{event}/unpublish', [EventStatusController::class, 'unpublish'])
