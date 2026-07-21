@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\Permission;
+use App\Models\MediaAsset;
 use App\Models\Season;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -56,6 +57,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'management' => fn (): ?array => $request->user() ? [
                 'canViewEvents' => $request->user()->can(Permission::ViewEvents->value),
+                'canViewMedia' => $request->user()->can('viewAny', MediaAsset::class),
                 'canManageSeasons' => $request->user()->can('viewAny', Season::class),
                 'canViewRedirects' => $request->user()->can(Permission::ViewRedirects->value),
                 'canViewUsers' => $request->user()->can(Permission::ViewUsers->value),

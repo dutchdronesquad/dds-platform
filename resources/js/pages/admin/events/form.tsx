@@ -38,6 +38,7 @@ import {
     AdminFormSection,
 } from '@/components/admin/admin-form';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
+import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
@@ -116,6 +117,7 @@ export function EventForm({
     const [registrationStatus, setRegistrationStatus] = useState(
         event?.registrationStatus ?? 'closed',
     );
+    const [coverImage, setCoverImage] = useState(event?.coverImage ?? null);
 
     const defaultEventType =
         event?.type ??
@@ -618,6 +620,23 @@ export function EventForm({
                                             Publieke URL: /events/{slug}
                                         </p>
                                     )}
+                                </FormField>
+                                <FormField
+                                    id="cover_image_id"
+                                    label="Omslagafbeelding (optioneel)"
+                                    error={errors.cover_image_id}
+                                >
+                                    <MediaAssetPicker
+                                        id="cover_image_id"
+                                        name="cover_image_id"
+                                        selected={coverImage}
+                                        onChange={setCoverImage}
+                                        invalid={Boolean(errors.cover_image_id)}
+                                        describedBy={fieldDescription(
+                                            'cover_image_id',
+                                            errors.cover_image_id,
+                                        )}
+                                    />
                                 </FormField>
                                 <FormField
                                     id="content"

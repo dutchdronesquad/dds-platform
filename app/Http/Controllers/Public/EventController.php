@@ -48,7 +48,8 @@ final class EventController extends Controller
             ->with([
                 'location:id,name,city',
                 'season:id,name,slug',
-                'coverImage:id,disk,path,alt_text',
+                'coverImage:id,alt_text',
+                'coverImage.media',
             ]);
 
         if ($activeType !== null) {
@@ -94,7 +95,8 @@ final class EventController extends Controller
         $event->load([
             'location',
             'season:id,name,slug',
-            'coverImage:id,disk,path,alt_text',
+            'coverImage:id,alt_text',
+            'coverImage.media',
         ]);
 
         $image = $this->eventData->image($event);

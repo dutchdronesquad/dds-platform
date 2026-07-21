@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
 use App\Models\User;
+use App\Support\MediaAssetPickerData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,8 @@ final class EventController extends Controller
     private const string SITUATION_WITHOUT_COVER = 'without_cover';
 
     private const string SITUATION_WITHOUT_SEASON = 'without_season';
+
+    public function __construct(private MediaAssetPickerData $mediaAssetPickerData) {}
 
     public function index(Request $request): Response
     {
@@ -74,7 +77,7 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $event->load(['createdBy:id,name', 'updatedBy:id,name']);
+        $event->load(['coverImage.media', 'createdBy:id,name', 'updatedBy:id,name']);
 
         return Inertia::render('admin/events/edit', [
             'event' => $this->formEvent($request->user(), $event),
@@ -373,6 +376,10 @@ final class EventController extends Controller
             'content' => $event->content,
             'locationId' => $event->location_id,
             'seasonId' => $event->season_id,
+            'coverImageId' => $event->cover_image_id,
+            'coverImage' => $event->coverImage === null
+                ? null
+                : $this->mediaAssetPickerData->one($event->coverImage),
             'startsAt' => $event->starts_at->format('Y-m-d\TH:i'),
             'endsAt' => $event->ends_at?->format('Y-m-d\TH:i'),
             'status' => $event->status->value,

@@ -9,7 +9,6 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Models\SeasonTicket;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -298,6 +297,11 @@ test('a published training detail exposes practical and registration information
         'house_number' => '200',
         'postal_code' => '1816 LE',
     ]);
+    $coverImage = MediaAsset::factory()
+        ->named('indoor-training-round-01.jpg')
+        ->create([
+            'alt_text' => ['en' => 'Pilots preparing for an indoor training heat'],
+        ]);
     $event = Event::factory()
         ->for($location)
         ->for(Season::factory()->state(['name' => 'Wintercompetitie 2026/27']))
@@ -311,11 +315,7 @@ test('a published training detail exposes practical and registration information
             'ends_at' => '2026-10-15 20:30:00',
             'price_cents' => 1500,
             'capacity' => 15,
-            'cover_image_id' => MediaAsset::factory()->create([
-                'disk' => 'public',
-                'path' => 'events/indoor-training-round-01.jpg',
-                'alt_text' => ['en' => 'Pilots preparing for an indoor training heat'],
-            ]),
+            'cover_image_id' => $coverImage,
             'registration_opens_at' => '2026-09-15 10:00:00',
             'registration_deadline_at' => '2026-10-14 23:59:00',
             'registration_status' => EventRegistrationStatus::Open,
@@ -347,7 +347,7 @@ test('a published training detail exposes practical and registration information
             ->where('event.registrationOpensAt', $event->registration_opens_at?->toIso8601String())
             ->where('event.registrationDeadlineAt', $event->registration_deadline_at?->toIso8601String())
             ->where('event.registrationUrl', 'https://example.com/register')
-            ->where('event.image.src', Storage::disk('public')->url('events/indoor-training-round-01.jpg'))
+            ->where('event.image.src', $coverImage->url())
             ->where('event.image.alt', 'Pilots preparing for an indoor training heat')
             ->where('seo.title', 'Indoor training round 01')
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/events/indoor-training-round-01'),

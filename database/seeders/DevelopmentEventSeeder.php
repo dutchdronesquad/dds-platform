@@ -18,7 +18,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 final class DevelopmentEventSeeder extends Seeder
@@ -30,8 +29,6 @@ final class DevelopmentEventSeeder extends Seeder
     public const EVENT_SLUG_PREFIX = 'dds-demo-';
 
     public const LOCATION_SLUG_PREFIX = 'dds-demo-location-';
-
-    public const MEDIA_PATH_PREFIX = 'demo/events/';
 
     public const SEASON_SLUG = 'dds-demo-seizoen';
 
@@ -59,10 +56,10 @@ final class DevelopmentEventSeeder extends Seeder
     ];
 
     /** @var list<string> */
-    public const MEDIA_PATHS = [
-        'demo/events/pilot-at-training.jpg',
-        'demo/events/race-control.jpg',
-        'demo/events/indoor-track.jpg',
+    public const MEDIA_FIXTURE_KEYS = [
+        'training',
+        'race',
+        'track',
     ];
 
     public function run(): void
@@ -98,15 +95,14 @@ final class DevelopmentEventSeeder extends Seeder
     {
         $this->ensureDevelopmentEnvironment();
 
-        /** @var array{deletedEvents: int, mediaPaths: list<string>} $result */
-        $result = DB::transaction(function (): array {
+        return DB::transaction(function (): int {
             $deletedEvents = Event::query()
                 ->whereIn('slug', self::EVENT_SLUGS)
                 ->delete();
 
             $mediaAssetsQuery = MediaAsset::query()
-                ->where('disk', 'public')
-                ->whereIn('path', self::MEDIA_PATHS)
+                ->whereHas('media', fn ($query) => $query
+                    ->whereIn('custom_properties->development_fixture', self::MEDIA_FIXTURE_KEYS))
                 ->whereDoesntHave('coverEvents')
                 ->whereDoesntHave('coverLocations');
 
@@ -114,9 +110,7 @@ final class DevelopmentEventSeeder extends Seeder
                 $mediaAssetsQuery->whereDoesntHave('coverArticles');
             }
 
-            $mediaAssets = $mediaAssetsQuery->get(['id', 'path']);
-
-            MediaAsset::query()->whereKey($mediaAssets->modelKeys())->delete();
+            $mediaAssetsQuery->get()->each->delete();
 
             Location::query()
                 ->whereIn('slug', self::LOCATION_SLUGS)
@@ -128,17 +122,8 @@ final class DevelopmentEventSeeder extends Seeder
                 ->whereDoesntHave('events')
                 ->delete();
 
-            return [
-                'deletedEvents' => $deletedEvents,
-                'mediaPaths' => $mediaAssets->pluck('path')->all(),
-            ];
+            return $deletedEvents;
         });
-
-        if ($result['mediaPaths'] !== [] && ! Storage::disk('public')->delete($result['mediaPaths'])) {
-            throw new RuntimeException('Niet alle ongebruikte demo-afbeeldingen konden worden verwijderd.');
-        }
-
-        return $result['deletedEvents'];
     }
 
     /**
@@ -150,19 +135,16 @@ final class DevelopmentEventSeeder extends Seeder
         $fixtures = [
             'training' => [
                 'source' => public_path('images/dds/racing/pilot-at-training.jpg'),
-                'path' => self::MEDIA_PATHS[0],
                 'filename' => 'pilot-at-training.jpg',
                 'alt' => 'FPV-piloot tijdens een indoortraining van Dutch Drone Squad',
             ],
             'race' => [
                 'source' => public_path('images/dds/racing/race-control.jpg'),
-                'path' => self::MEDIA_PATHS[1],
                 'filename' => 'race-control.jpg',
                 'alt' => 'Race control tijdens een wedstrijd van Dutch Drone Squad',
             ],
             'track' => [
                 'source' => public_path('images/dds/racing/indoor-track.jpg'),
-                'path' => self::MEDIA_PATHS[2],
                 'filename' => 'indoor-track.jpg',
                 'alt' => 'Indoor FPV-raceparcours van Dutch Drone Squad',
             ],
@@ -179,25 +161,29 @@ final class DevelopmentEventSeeder extends Seeder
                 throw new RuntimeException("Demo-afbeelding ontbreekt of is ongeldig: {$fixture['source']}");
             }
 
-            $path = $fixture['path'];
+            $mediaAsset = MediaAsset::query()
+                ->whereHas('media', fn ($query) => $query
+                    ->where('custom_properties->development_fixture', $key))
+                ->first();
 
-            if (! Storage::disk('public')->put($path, File::get($fixture['source']))) {
-                throw new RuntimeException("Demo-afbeelding kon niet worden opgeslagen: {$path}");
+            if (! $mediaAsset instanceof MediaAsset) {
+                $mediaAsset = MediaAsset::query()->create();
             }
 
-            $covers[$key] = MediaAsset::query()->updateOrCreate(
-                ['disk' => 'public', 'path' => $path],
-                MediaAsset::factory()->make([
-                    'disk' => 'public',
-                    'path' => $path,
-                    'original_filename' => $fixture['filename'],
-                    'mime_type' => 'image/jpeg',
-                    'size_bytes' => File::size($fixture['source']),
+            $mediaAsset->update(['alt_text' => ['nl' => $fixture['alt']]]);
+            $mediaAsset->clearMediaCollection(MediaAsset::COLLECTION);
+            $mediaAsset
+                ->addMedia($fixture['source'])
+                ->preservingOriginal()
+                ->usingName($fixture['filename'])
+                ->withCustomProperties([
                     'width' => $dimensions[0],
                     'height' => $dimensions[1],
-                    'alt_text' => ['nl' => $fixture['alt']],
-                ])->toArray(),
-            );
+                    'development_fixture' => $key,
+                ])
+                ->toMediaCollection(MediaAsset::COLLECTION);
+
+            $covers[$key] = $mediaAsset->load('media');
         }
 
         return $covers;

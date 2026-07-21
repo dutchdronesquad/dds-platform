@@ -26,7 +26,7 @@ export function NavMain({
         <SidebarGroup className="px-2 py-1.5">
             <SidebarGroupLabel
                 id={labelId}
-                className="h-7 px-2 text-[11px] font-semibold tracking-[0.12em] text-neutral-400 uppercase dark:text-neutral-500"
+                className="h-7 px-2 text-[11px] font-semibold tracking-[0.12em] text-neutral-600 uppercase dark:text-neutral-400"
             >
                 {label}
             </SidebarGroupLabel>

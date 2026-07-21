@@ -13,17 +13,9 @@ return new class extends Migration
     {
         Schema::create('media_assets', function (Blueprint $table) {
             $table->id();
-            $table->string('disk')->default('public');
-            $table->string('path');
-            $table->string('original_filename');
-            $table->string('mime_type');
-            $table->unsignedBigInteger('size_bytes');
-            $table->unsignedInteger('width')->nullable();
-            $table->unsignedInteger('height')->nullable();
             $table->jsonb('alt_text')->nullable();
+            $table->timestampTz('archived_at')->nullable()->index();
             $table->timestamps();
-
-            $table->unique(['disk', 'path']);
         });
     }
 

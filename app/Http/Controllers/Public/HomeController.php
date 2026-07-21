@@ -42,7 +42,8 @@ final class HomeController extends Controller
             ->with([
                 'location:id,name,city',
                 'season:id,name,slug',
-                'coverImage:id,disk,path,alt_text',
+                'coverImage:id,alt_text',
+                'coverImage.media',
             ])
             ->limit(3)
             ->get()
