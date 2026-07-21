@@ -77,7 +77,7 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $event->load(['coverImage', 'createdBy:id,name', 'updatedBy:id,name']);
+        $event->load(['coverImage.media', 'createdBy:id,name', 'updatedBy:id,name']);
 
         return Inertia::render('admin/events/edit', [
             'event' => $this->formEvent($request->user(), $event),

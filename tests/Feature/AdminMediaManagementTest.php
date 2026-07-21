@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Admin\StoreMediaAsset;
 use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Enums\Role;
@@ -8,6 +9,7 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -73,6 +75,29 @@ test('admins can upload images with stable storage identity and localized alt te
         ->toMatch('#^media-library/\d+/Race-Poster\.jpg$#');
 
     Storage::disk('public')->assertExists($mediaAsset->storagePath());
+});
+
+test('image dimension detection tolerates an unavailable temporary path', function () {
+    $file = new class(__FILE__) extends UploadedFile
+    {
+        public function __construct(string $path)
+        {
+            parent::__construct($path, 'missing-image.jpg', 'image/jpeg', null, true);
+        }
+
+        public function getMimeType(): ?string
+        {
+            return 'image/jpeg';
+        }
+
+        public function getRealPath(): string|false
+        {
+            return false;
+        }
+    };
+    $method = new ReflectionMethod(StoreMediaAsset::class, 'imageDimensions');
+
+    expect($method->invoke(new StoreMediaAsset, $file))->toBe([null, null]);
 });
 
 test('admins can upload pdfs without image alt text or dimensions', function () {
@@ -286,7 +311,19 @@ test('event forms select reusable active media and retain an already archived co
 
     expect($event->cover_image_id)->toBe($coverImage->id);
 
-    $this->get(route('admin.events.edit', $event))
+    $forceMediaLibraryLazyLoading = config('media-library.force_lazy_loading');
+
+    config()->set('media-library.force_lazy_loading', false);
+    Model::preventLazyLoading();
+
+    try {
+        $response = $this->get(route('admin.events.edit', $event));
+    } finally {
+        Model::preventLazyLoading(false);
+        config()->set('media-library.force_lazy_loading', $forceMediaLibraryLazyLoading);
+    }
+
+    $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('event.coverImageId', $coverImage->id)

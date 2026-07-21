@@ -40,7 +40,13 @@ class StoreMediaAsset
             return [null, null];
         }
 
-        $dimensions = getimagesize($file->getRealPath());
+        $path = $file->getRealPath();
+
+        if (! is_string($path)) {
+            return [null, null];
+        }
+
+        $dimensions = getimagesize($path);
 
         return $dimensions === false
             ? [null, null]
