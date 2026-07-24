@@ -14,7 +14,7 @@ export type PublicProject = {
     credits: string[];
     featured: boolean;
     media: ProjectMedium[];
-    primaryLink: ProjectLink;
+    primaryLink: ProjectLink | null;
     slug: string;
     summary: string;
     supportingLinks: ProjectLink[];

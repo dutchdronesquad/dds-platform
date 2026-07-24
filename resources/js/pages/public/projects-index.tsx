@@ -131,13 +131,15 @@ function SoftwareSpotlight({ project }: { project: PublicProject }) {
                         {project.summary}
                     </p>
                     <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                        <PublicExternalLink
-                            href={project.primaryLink.url}
-                            data-testid="project-external-link-trackdraw"
-                            className="min-h-11 bg-dds-cyan px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-white dark:focus-visible:ring-offset-deep-signal"
-                        >
-                            {project.primaryLink.label}
-                        </PublicExternalLink>
+                        {project.primaryLink && (
+                            <PublicExternalLink
+                                href={project.primaryLink.url}
+                                data-testid="project-external-link-trackdraw"
+                                className="min-h-11 bg-dds-cyan px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-white dark:focus-visible:ring-offset-deep-signal"
+                            >
+                                {project.primaryLink.label}
+                            </PublicExternalLink>
+                        )}
                         {sourceLink && (
                             <PublicExternalLink
                                 href={sourceLink.url}
@@ -321,12 +323,12 @@ function ProjectCard({ project }: { project: PublicProject }) {
         MonitorUp;
     const medium = project.media[0];
     const isMark = medium?.src.endsWith('.svg') ?? false;
-    const hasExternalLink = project.type.value !== 'hardware_build';
+    const hasPrimaryLink = project.primaryLink !== null;
     const imageClassName = isMark
         ? 'h-full w-full object-contain p-10'
         : cn(
               'h-full w-full object-cover',
-              hasExternalLink &&
+              hasPrimaryLink &&
                   'transition duration-500 group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none',
           );
 
@@ -335,7 +337,7 @@ function ProjectCard({ project }: { project: PublicProject }) {
             data-testid={`project-card-${project.slug}`}
             className={cn(
                 'group flex flex-col overflow-hidden border border-paddock-rule bg-white dark:border-white/12 dark:bg-night-950',
-                hasExternalLink &&
+                hasPrimaryLink &&
                     'transition-colors hover:border-dds-blue/50 dark:hover:border-dds-cyan/50',
             )}
         >
@@ -384,7 +386,7 @@ function ProjectCard({ project }: { project: PublicProject }) {
                 <p className="mt-3 text-sm leading-6 text-signal-muted dark:text-night-400">
                     {project.summary}
                 </p>
-                {hasExternalLink && (
+                {project.primaryLink && (
                     <PublicExternalLink
                         href={project.primaryLink.url}
                         data-testid={`project-external-link-${project.slug}`}

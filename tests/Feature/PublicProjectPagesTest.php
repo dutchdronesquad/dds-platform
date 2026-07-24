@@ -53,6 +53,9 @@ test('the project overview presents the curated public catalogue', function () {
         ->and($projectsBySlug['timer-dotfiles']['type']['value'])->toBe('race_tooling')
         ->and($projectsBySlug['rotorhazard-contributions']['type']['value'])->toBe('open_source_contribution')
         ->and($projectsBySlug['rh-stream-overlays']['type']['value'])->toBe('rotorhazard_plugin')
+        ->and($projectsBySlug['live-feed-flightcase']['primaryLink'])->toBeNull()
+        ->and($projectsBySlug['event-livestream-flightcase']['primaryLink'])->toBeNull()
+        ->and($projectsBySlug['timing-flightcase']['primaryLink'])->toBeNull()
         ->and($slugs)->not->toContain('panevo', 'private-project');
 });
 

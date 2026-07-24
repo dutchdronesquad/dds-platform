@@ -500,6 +500,9 @@ test('software and hardware projects stay balanced on desktop', function () {
             'document.querySelector("[data-testid=project-spotlight-video-trackdraw]")?.getAttribute("poster") === "/images/projects/trackdraw-editor.webp"',
         )
         ->assertScript(
+            'document.querySelector("[data-testid=project-external-link-live-feed-flightcase]") === null',
+        )
+        ->assertScript(
             'document.querySelector("[aria-label=\"Filter projecten op type\"]")?.getAttribute("role") === "group"',
         )
         ->assertScript(

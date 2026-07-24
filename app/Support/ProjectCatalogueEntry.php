@@ -13,7 +13,7 @@ use InvalidArgumentException;
 final readonly class ProjectCatalogueEntry
 {
     /**
-     * @param  ProjectLink  $primaryLink
+     * @param  ProjectLink|null  $primaryLink
      * @param  list<ProjectLink>  $supportingLinks
      * @param  list<string>  $credits
      * @param  list<ProjectMedium>  $media
@@ -23,7 +23,7 @@ final readonly class ProjectCatalogueEntry
         public string $title,
         public string $summary,
         public ProjectType $type,
-        public array $primaryLink,
+        public ?array $primaryLink,
         public array $supportingLinks,
         public array $credits,
         public string $audience,
@@ -55,7 +55,7 @@ final readonly class ProjectCatalogueEntry
             title: self::requiredString($attributes, 'title'),
             summary: self::requiredString($attributes, 'summary'),
             type: $type,
-            primaryLink: self::link($attributes['primary_link'] ?? null, $slug, 'primary_link'),
+            primaryLink: self::optionalLink($attributes['primary_link'] ?? null, $slug, 'primary_link'),
             supportingLinks: self::links($attributes['supporting_links'] ?? [], $slug),
             credits: self::credits($attributes['credits'] ?? null, $slug),
             audience: self::requiredString($attributes, 'audience'),
@@ -106,6 +106,18 @@ final readonly class ProjectCatalogueEntry
     }
 
     /**
+     * @return ProjectLink|null
+     */
+    private static function optionalLink(mixed $value, string $slug, string $field): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return self::link($value, $slug, $field);
+    }
+
+    /**
      * @return list<ProjectLink>
      */
     private static function links(mixed $value, string $slug): array
@@ -147,33 +159,51 @@ final readonly class ProjectCatalogueEntry
             throw new InvalidArgumentException("Project [{$slug}] media must be a list.");
         }
 
-        return array_map(static function (mixed $medium) use ($slug): array {
-            if (! is_array($medium)) {
-                throw new InvalidArgumentException("Project [{$slug}] media entries must contain a path and alt text.");
-            }
+        return array_map(
+            static fn (mixed $medium): array => self::medium($medium, $slug),
+            $value,
+        );
+    }
 
-            $path = $medium['path'] ?? null;
-            $darkPath = $medium['dark_path'] ?? null;
-            $alt = $medium['alt'] ?? null;
+    /**
+     * @return ProjectMedium
+     */
+    private static function medium(mixed $medium, string $slug): array
+    {
+        if (! is_array($medium)) {
+            throw new InvalidArgumentException("Project [{$slug}] media entries must contain a path and alt text.");
+        }
 
-            if (! is_string($path) || ! self::isValidMediaPath($path)) {
-                throw new InvalidArgumentException("Project [{$slug}] media must reference a versioned project image path.");
-            }
+        $path = $medium['path'] ?? null;
+        $darkPath = $medium['dark_path'] ?? null;
+        $alt = $medium['alt'] ?? null;
 
-            if ($darkPath !== null && (! is_string($darkPath) || ! self::isValidMediaPath($darkPath))) {
-                throw new InvalidArgumentException("Project [{$slug}] dark media must reference a versioned project image path.");
-            }
+        if (! is_string($path) || ! self::isValidMediaPath($path)) {
+            throw new InvalidArgumentException("Project [{$slug}] media must reference a versioned project image path.");
+        }
 
-            if (! is_string($alt) || Str::of($alt)->trim()->isEmpty()) {
-                throw new InvalidArgumentException("Project [{$slug}] media must include useful alt text.");
-            }
+        if ($darkPath !== null && (! is_string($darkPath) || ! self::isValidMediaPath($darkPath))) {
+            throw new InvalidArgumentException("Project [{$slug}] dark media must reference a versioned project image path.");
+        }
 
+        if (! is_string($alt) || Str::of($alt)->trim()->isEmpty()) {
+            throw new InvalidArgumentException("Project [{$slug}] media must include useful alt text.");
+        }
+
+        $trimmedAlt = Str::of($alt)->trim()->toString();
+
+        if ($darkPath === null) {
             return [
                 'path' => $path,
-                ...($darkPath !== null ? ['dark_path' => $darkPath] : []),
-                'alt' => Str::of($alt)->trim()->toString(),
+                'alt' => $trimmedAlt,
             ];
-        }, $value);
+        }
+
+        return [
+            'path' => $path,
+            'dark_path' => $darkPath,
+            'alt' => $trimmedAlt,
+        ];
     }
 
     private static function isValidMediaPath(string $path): bool

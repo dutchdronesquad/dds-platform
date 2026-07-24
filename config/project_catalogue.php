@@ -54,10 +54,6 @@ return [
             'title' => 'Live-feedkoffer',
             'summary' => 'Een mobiele live-feedopstelling rond de HDZero Event VRX waarmee videosignalen tijdens races centraal beschikbaar komen voor monitoring en productie.',
             'type' => 'hardware_build',
-            'primary_link' => [
-                'label' => 'Over Dutch Drone Squad',
-                'url' => 'https://dutchdronesquad.nl/',
-            ],
             'supporting_links' => [
                 [
                     'label' => 'HDZero Event VRX-documentatie',
@@ -81,10 +77,6 @@ return [
             'title' => 'Event-livestreamkoffer',
             'summary' => 'Een transporteerbare regieopstelling waarin schermen, bediening en eventtechniek samen in één flightcase naar de evenementlocatie gaan.',
             'type' => 'hardware_build',
-            'primary_link' => [
-                'label' => 'Over Dutch Drone Squad',
-                'url' => 'https://dutchdronesquad.nl/',
-            ],
             'supporting_links' => [],
             'credits' => [
                 'Ontwerp en bouw door Dutch Drone Squad',
@@ -102,10 +94,6 @@ return [
             'title' => 'Tijdregistratiekoffer',
             'summary' => 'Een mobiele RotorHazard-opstelling waarin timingapparatuur en racebediening samen in één flightcase naar de evenementlocatie gaan.',
             'type' => 'hardware_build',
-            'primary_link' => [
-                'label' => 'Over Dutch Drone Squad',
-                'url' => 'https://dutchdronesquad.nl/',
-            ],
             'supporting_links' => [
                 [
                     'label' => 'RotorHazard',

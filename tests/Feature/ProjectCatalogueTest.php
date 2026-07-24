@@ -45,6 +45,13 @@ test('exactly one project is featured on the public overview', function () {
     expect($featuredSlugs)->toEqual(collect(['trackdraw']));
 });
 
+test('a project may omit its primary link', function () {
+    $entry = validProjectCatalogueEntry();
+    unset($entry['primary_link']);
+
+    expect(ProjectCatalogue::fromArray([$entry])->find('test-project')?->primaryLink)->toBeNull();
+});
+
 test('the featured project has a demo video', function () {
     $trackdraw = ProjectCatalogue::fromConfig()->find('trackdraw');
 
@@ -68,7 +75,7 @@ test('DDS open-source work distinguishes owned tools from upstream contributions
 
     expect($catalogue->find('timer-dotfiles')?->type)->toBe(ProjectType::RaceTooling)
         ->and($catalogue->find('rotorhazard-contributions')?->type)->toBe(ProjectType::OpenSourceContribution)
-        ->and($catalogue->find('rotorhazard-contributions')?->primaryLink['url'])
+        ->and($catalogue->find('rotorhazard-contributions')?->primaryLink['url'] ?? null)
         ->toBe('https://rotorhazard.github.io/community-plugins/');
 });
 
@@ -78,8 +85,11 @@ test('every configured project has public-facing context and valid media referen
             ->and($entry->summary)->not->toBeEmpty()
             ->and($entry->audience)->not->toBeEmpty()
             ->and($entry->credits)->not->toBeEmpty()
-            ->and($entry->type->label())->not->toBeEmpty()
-            ->and($entry->primaryLink['url'])->toStartWith('https://');
+            ->and($entry->type->label())->not->toBeEmpty();
+
+        if ($entry->primaryLink !== null) {
+            expect($entry->primaryLink['url'])->toStartWith('https://');
+        }
 
         foreach ($entry->supportingLinks as $link) {
             expect($link['url'])->toStartWith('https://');
