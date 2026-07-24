@@ -19,7 +19,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 `main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, and reusable media-library management through DDS-014H.
 
-DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is implemented in the current working tree and pending review for its maintenance workflow and CMS decision gate. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
 Projects and partners are deliberately code-owned in phase 1. Neither domain gets a database model, permissions, or dashboard CRUD unless observed maintenance needs pass its documented CMS decision gate.
 
@@ -1006,7 +1006,7 @@ Acceptance criteria:
 
 ### DDS-014C: Project Showcase Maintenance Workflow And CMS Decision Gate
 
-Status: implemented in the current working tree and pending review. The code-owned editing workflow, asset and preview conventions, focused checks, reviewer expectations, maintenance evidence, measurable CMS triggers, and future migration contract are documented. The dead-end project resource has been removed from the dashboard response, planned-resource list, and admin navigation.
+Status: complete and merged in pull request #25. The code-owned editing workflow, asset and preview conventions, focused checks, reviewer expectations, maintenance evidence, measurable CMS triggers, and future migration contract are documented. The dead-end project resource has been removed from the dashboard response, planned-resource list, and admin navigation.
 
 Decision: there is no `/dashboard/projects` resource in phase 1. This ticket protects that choice and defines when it should be reconsidered instead of pre-emptively building CRUD.
 

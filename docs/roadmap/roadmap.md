@@ -216,7 +216,7 @@ Acceptance criteria:
 
 Goal: position DDS better toward partners, demos, and external assignments.
 
-Status: DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is implemented in the current working tree and pending review for its documented pull-request workflow, maintenance evidence, and CMS decision gate.
+Status: DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its documented pull-request workflow, maintenance evidence, and CMS decision gate.
 
 Tasks:
 
