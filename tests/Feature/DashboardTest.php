@@ -65,6 +65,7 @@ test('admins can visit the dashboard', function () {
             ->where('isEmpty', true)
             ->where('management.canViewEvents', true)
             ->where('management.canManageSeasons', true)
+            ->where('management.canViewContact', true)
             ->where('management.canViewRedirects', true)
             ->where('management.canViewRoles', true),
         );
@@ -93,6 +94,7 @@ test('editors can visit the dashboard', function () {
             ->where('capabilities.viewUsers', false)
             ->where('management.canViewEvents', true)
             ->where('management.canManageSeasons', false)
+            ->where('management.canViewContact', false)
             ->where('management.canViewRedirects', true)
             ->where('management.canViewRoles', false),
         );

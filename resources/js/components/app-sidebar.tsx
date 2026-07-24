@@ -4,11 +4,13 @@ import {
     Home,
     LayoutDashboard,
     Images,
+    MessageSquareText,
     Route as RouteIcon,
     ShieldCheck,
     Tags,
     Users,
 } from 'lucide-react';
+import { index as contactIndex } from '@/actions/App/Http/Controllers/Admin/ContactController';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
 import { index as mediaIndex } from '@/actions/App/Http/Controllers/Admin/MediaAssetController';
 import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
@@ -75,6 +77,16 @@ export function AppSidebar() {
                       title: 'Media',
                       href: mediaIndex(),
                       icon: Images,
+                  },
+              ]
+            : []),
+        ...(management?.canViewContact
+            ? [
+                  {
+                      title: 'Contactaanvragen',
+                      href: contactIndex(),
+                      icon: MessageSquareText,
+                      count: management.contactFollowUpCount,
                   },
               ]
             : []),

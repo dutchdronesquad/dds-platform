@@ -16,11 +16,13 @@ declare module '@inertiajs/core' {
             auth: Auth;
             management: {
                 canManageSeasons: boolean;
+                canViewContact: boolean;
                 canViewEvents: boolean;
                 canViewMedia: boolean;
                 canViewRedirects: boolean;
                 canViewRoles: boolean;
                 canViewUsers: boolean;
+                contactFollowUpCount: number;
             } | null;
             ui: {
                 authPhotoRotationInterval: number;

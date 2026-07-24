@@ -19,7 +19,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 `main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, and reusable media-library management through DDS-014H.
 
-DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
 Projects, partners, and fixed informational pages are deliberately code-owned in phase 1. They do not get database models, permissions, or dashboard CRUD unless observed maintenance needs pass their documented CMS decision gates.
 
@@ -1132,6 +1132,8 @@ Acceptance criteria:
 - spam protection exists without harming accessibility;
 - no submitted message is silently lost if email delivery fails.
 
+Replying to a submission directly from the dashboard is tracked separately as DDS-014M and is not part of the DDS-014G definition of done.
+
 ### DDS-014H: Media Library Admin
 
 Status: complete and merged in pull request #22.
@@ -1256,6 +1258,27 @@ Acceptance criteria:
 - the hub clearly distinguishes events, seasons, single-event tickets, and season tickets;
 - adding the navigation item does not create broken or crowded mobile navigation;
 - accessibility, public visibility, dynamic module, and entry-source behavior are covered by focused tests.
+
+### DDS-014M: Reply To Contact Submissions From The Dashboard
+
+Status: optional follow-up to DDS-014G, deferred and not required before other queued work.
+
+Goal: let admins answer a visitor directly from the contact submission detail view instead of only reading it and switching to an external mailbox.
+
+Tasks:
+
+- add a reply composer to the contact submission detail view;
+- store sent replies against the submission (e.g. a `contact_replies` table or a lightweight thread), including sender, body, and delivery status;
+- send replies through the configured mailer with the visitor as recipient, keeping the existing reply-to behavior reviewable;
+- track a submission's conversation status (e.g. open, replied, closed) separately from the existing delivery status;
+- add authorization, audit logging, and abuse safeguards for outbound replies sent by admins.
+
+Acceptance criteria:
+
+- an admin with contact permissions can send a reply to a visitor without leaving the dashboard;
+- sent replies are stored and visible on the submission's detail view;
+- reply delivery failures are visible and do not silently lose the reply;
+- only authorized users can send replies, and sends are attributable to the sending admin.
 
 ## Epic 6: WordPress Import Spike
 

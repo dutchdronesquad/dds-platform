@@ -193,6 +193,28 @@ export default function Welcome({
 
             <UpcomingEventsSection events={visibleEvents} />
 
+            <section className="bg-dds-orange text-deep-signal">
+                <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-public-gutter py-12 sm:py-14 lg:grid-cols-[1fr_auto]">
+                    <div>
+                        <h2 className="font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+                            Vlieg je de volgende keer mee?
+                        </h2>
+                        <p className="mt-3 text-sm font-medium text-deep-signal/70">
+                            Bekijk de planning en meld je aan voor de volgende
+                            event.
+                        </p>
+                    </div>
+                    <Link
+                        href={eventsIndex()}
+                        prefetch
+                        className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-deep-signal px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-deep-signal/90 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:ring-offset-dds-orange focus-visible:outline-none"
+                    >
+                        Bekijk de agenda
+                        <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+                    </Link>
+                </div>
+            </section>
+
             <section className="overflow-hidden bg-warmup text-deep-signal">
                 <div className="mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-20 sm:py-28 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-24 lg:py-32">
                     <div className="max-w-3xl">
@@ -319,28 +341,6 @@ export default function Welcome({
             </section>
 
             <PartnerLogosSection partners={partners} />
-
-            <section className="bg-dds-orange text-deep-signal">
-                <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-public-gutter py-12 sm:py-14 lg:grid-cols-[1fr_auto]">
-                    <div>
-                        <h2 className="font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-                            Vlieg je de volgende keer mee?
-                        </h2>
-                        <p className="mt-3 text-sm font-medium text-deep-signal/70">
-                            Bekijk de planning en meld je aan voor de volgende
-                            event.
-                        </p>
-                    </div>
-                    <Link
-                        href={eventsIndex()}
-                        prefetch
-                        className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-deep-signal px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-deep-signal/90 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:ring-offset-dds-orange focus-visible:outline-none"
-                    >
-                        Bekijk de agenda
-                        <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
-                    </Link>
-                </div>
-            </section>
         </>
     );
 }

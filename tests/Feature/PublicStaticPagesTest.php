@@ -40,5 +40,4 @@ test('public static routes expose their page contract', function (string $routeN
     'locations' => ['locations.index', 'Locations'],
     'about' => ['about', 'About'],
     'house rules' => ['house_rules', 'House Rules'],
-    'contact' => ['contact', 'Contact'],
 ]);

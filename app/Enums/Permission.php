@@ -16,6 +16,8 @@ enum Permission: string
 
     case ViewRedirects = 'redirects.view';
 
+    case ViewContact = 'contact.view';
+
     case ViewUsers = 'users.view';
     case UpdateUsers = 'users.update';
 
@@ -33,6 +35,7 @@ enum Permission: string
             self::UpdateMedia => 'Media bijwerken',
             self::DeleteMedia => 'Media verwijderen',
             self::ViewRedirects => 'Redirects bekijken',
+            self::ViewContact => 'Contact bekijken',
             self::ViewUsers => 'Gebruikers bekijken',
             self::UpdateUsers => 'Gebruikers bijwerken',
             self::ViewRoles => 'Rollen en rechten bekijken',
@@ -51,6 +54,7 @@ enum Permission: string
             self::UpdateMedia => 'Maakt het wijzigen en archiveren van mediametadata mogelijk.',
             self::DeleteMedia => 'Maakt het definitief verwijderen van ongebruikte media mogelijk.',
             self::ViewRedirects => 'Geeft toegang tot het overzicht van legacy redirects.',
+            self::ViewContact => 'Geeft toegang tot opgeslagen publieke contactaanvragen en hun afleverstatus.',
             self::ViewUsers => 'Geeft toegang tot het gebruikersoverzicht.',
             self::UpdateUsers => 'Maakt het wijzigen van profielen, rollen en accountstatus mogelijk.',
             self::ViewRoles => 'Geeft toegang tot het alleen-lezen rollen- en rechtenoverzicht.',
@@ -63,6 +67,7 @@ enum Permission: string
             self::ViewEvents, self::CreateEvents, self::UpdateEvents, self::DeleteEvents => 'events',
             self::ViewMedia, self::CreateMedia, self::UpdateMedia, self::DeleteMedia => 'media',
             self::ViewRedirects => 'redirects',
+            self::ViewContact => 'contact',
             self::ViewUsers, self::UpdateUsers => 'users',
             self::ViewRoles => 'roles',
         };
@@ -74,6 +79,7 @@ enum Permission: string
             self::ViewEvents, self::CreateEvents, self::UpdateEvents, self::DeleteEvents => 'Events',
             self::ViewMedia, self::CreateMedia, self::UpdateMedia, self::DeleteMedia => 'Media',
             self::ViewRedirects => 'Redirects',
+            self::ViewContact => 'Contact',
             self::ViewUsers, self::UpdateUsers => 'Gebruikers',
             self::ViewRoles => 'Rollen en rechten',
         };

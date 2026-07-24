@@ -205,6 +205,8 @@ Tasks:
 - Plunk or alternative in production;
 - admin overview and status handling.
 
+Deferred: replying to a contact submission directly from the dashboard (tracked as DDS-014M in the initial build backlog).
+
 Acceptance criteria:
 
 - requests are stored;

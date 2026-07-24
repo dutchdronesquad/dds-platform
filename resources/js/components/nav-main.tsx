@@ -4,6 +4,7 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -56,6 +57,11 @@ export function NavMain({
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
+                                {Boolean(item.count) && (
+                                    <SidebarMenuBadge className="bg-destructive/10 text-destructive dark:bg-destructive/15">
+                                        {item.count}
+                                    </SidebarMenuBadge>
+                                )}
                             </SidebarMenuItem>
                         );
                     })}
