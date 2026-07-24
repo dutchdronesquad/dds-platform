@@ -13,7 +13,7 @@ Use a staged import:
 1. Export WordPress content from the current site.
 2. Store raw export files outside the application runtime, for example in `storage/app/imports/wordpress` during local development.
 3. Build Laravel import commands for each content type.
-4. Normalize imported data into first-class models such as `Article`, `Location`, `Event`, `Partner`, and `MediaAsset`.
+4. Normalize imported data into first-class models such as `Article`, `Location`, `Event`, and `MediaAsset`, while manually approved partner data moves into the code-owned partner catalogue.
 5. Generate a redirect map from old WordPress URLs to new Laravel routes.
 6. Run the importer repeatedly in a staging environment until the output is clean.
 
@@ -120,7 +120,7 @@ WordPress pages should not automatically become generic pages. Map them delibera
 | location pages              | `Location`                                                                                |
 | house rules                 | static page or managed content record                                                     |
 | contact                     | dedicated contact page                                                                    |
-| partners                    | `Partner` records                                                                         |
+| partners                    | manually reviewed entries and selected logo assets in the code-owned partner catalogue    |
 | in the media                | `Article` category or future media mention model                                          |
 
 Observed legacy page mapping:

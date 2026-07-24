@@ -110,14 +110,12 @@ The legacy training route continues to serve visitors looking for dated activiti
 /dashboard/articles
 /dashboard/articles/create
 /dashboard/articles/{article}/edit
-/dashboard/projects
-/dashboard/projects/create
-/dashboard/projects/{project}/edit
 /dashboard/locations
-/dashboard/partners
 /dashboard/media
 /dashboard/contact-submissions
 ```
+
+Projects and partners are code-owned in phase 1 and therefore have no dashboard routes. Their catalogues are updated through reviewed code changes until their separate CMS decision gates are reached.
 
 ## Homepage Structure
 
@@ -130,10 +128,10 @@ Current homepage order:
 5. Beginner path with a clear link into the Getting Started hub, clearly separated from the experienced Sportpaleis events.
 6. Concise About DDS introduction.
 7. Latest news.
-8. Compact row with verified partner logos from backend content.
+8. Compact row with verified partner logos from the code-owned partner catalogue.
 9. Final agenda CTA.
 
-The structure stays modular. Projects remain directly accessible through the primary navigation and footer; a project only earns homepage space when a real case supports a clear visitor action. Temporary homepage modules are delivered from backend configuration so the future Event, Article, Partner, and managed-content domains can replace them without redesigning the page. Team details belong on the About page, and inactive or fallback locations should not be promoted as equal homepage destinations.
+The structure stays modular. Projects remain directly accessible through the primary navigation and footer; a project only earns homepage space when a real case supports a clear visitor action. Temporary homepage modules are delivered from backend configuration so Event, Article, managed-content, and code-owned partner sources can replace placeholders without redesigning the page. Team details belong on the About page, and inactive or fallback locations should not be promoted as equal homepage destinations.
 
 ## Event Detail Page
 
@@ -194,7 +192,7 @@ Public pages derive SEO metadata consistently instead of adding SEO columns to e
 - robots directives are derived from publication status or visibility;
 - Open Graph images use the content cover or logo media, with the platform default as fallback.
 
-This contract applies to events, articles, projects, locations, partners, and managed public pages. Models do not store `seo_title` or `seo_description` fields unless a concrete future requirement proves that an override is necessary.
+This contract applies to events, articles, code-owned projects and partners, locations, and managed public pages. Models do not store `seo_title` or `seo_description` fields unless a concrete future requirement proves that an override is necessary.
 
 ### Event
 
@@ -367,19 +365,20 @@ Fields:
 
 ### Partner
 
-For partners and sponsors.
+Partners and sponsors use a typed code-owned catalogue in phase 1, not a database model.
 
-Fields:
+Catalogue fields:
 
+- stable key;
 - name;
-- slug;
-- description;
-- logo_media_id;
-- website_url;
-- type;
-- tier;
-- sort_order;
-- is_visible;
+- website URL;
+- versioned logo path;
+- accessible logo text;
+- optional public description;
+- manual sort order;
+- explicit homepage visibility.
+
+The catalogue contains public presentation data only. Private contact notes, agreements, invoices, campaign administration, and unverified entries remain outside it. A later model and `/dashboard/partners` workflow may be designed only after the DDS-014E decision gate is reached.
 
 ### ContactSubmission
 

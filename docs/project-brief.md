@@ -13,7 +13,7 @@ Rebuild dutchdronesquad.nl as a modern Laravel platform that:
 - keeps the current DDS identity recognizable;
 - improves the public website and mobile experience;
 - provides a custom admin instead of relying on WordPress;
-- makes events, locations, news, partners, and projects manageable, with trainings represented as event records;
+- makes events, locations, news, and contact requests manageable, keeps small project and partner catalogues safely maintainable through code review, and represents trainings as event records;
 - creates a technical foundation for registrations, reminders, payments, and integrations later.
 
 ## Non-Goals For This Phase
@@ -29,5 +29,5 @@ Rebuild dutchdronesquad.nl as a modern Laravel platform that:
 1. Rebuild the public website.
 2. Add authentication and a custom admin area.
 3. Build the event domain properly first, with trainings as the first important event type.
-4. Repeat the pattern for news, partners, locations, and contact submissions.
+4. Repeat the model-backed pattern for news, locations, and contact submissions, while partners remain a typed code-owned catalogue until their CMS decision gate is reached.
 5. Add registrations, reminders, project showcases, and payments in later phases.
