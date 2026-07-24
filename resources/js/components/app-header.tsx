@@ -1,7 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     CalendarDays,
-    ClipboardList,
     Home,
     LayoutDashboard,
     LifeBuoy,
@@ -59,11 +58,6 @@ const mainNavItems: NavItem[] = [
         title: 'Events',
         href: `${dashboard.url()}#events`,
         icon: CalendarDays,
-    },
-    {
-        title: 'Projecten',
-        href: `${dashboard.url()}#projects`,
-        icon: ClipboardList,
     },
     {
         title: 'Nieuws',

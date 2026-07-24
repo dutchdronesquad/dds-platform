@@ -19,7 +19,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 `main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, and reusable media-library management through DDS-014H.
 
-DDS-014A and DDS-014B are implemented in pull request #24 and remain pending until that pull request is reviewed and merged. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is implemented in the current working tree and pending review for its maintenance workflow and CMS decision gate. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
 Projects and partners are deliberately code-owned in phase 1. Neither domain gets a database model, permissions, or dashboard CRUD unless observed maintenance needs pass its documented CMS decision gate.
 
@@ -955,7 +955,7 @@ Acceptance criteria:
 
 ### DDS-014A: Code-Owned Project Catalogue And Selection
 
-Status: implemented in pull request #24 and pending review and merge.
+Status: complete and merged in pull request #24.
 
 Decision: phase 1 keeps the project showcase deliberately code-owned. DDS does not introduce a `Project` model, project tables, project permissions, or dashboard CRUD until the maintenance burden proves that a CMS is needed.
 
@@ -981,7 +981,7 @@ Acceptance criteria:
 
 ### DDS-014B: Art-Directed Public Project Showcase
 
-Status: implemented in pull request #24 and pending review and merge.
+Status: complete and merged in pull request #24.
 
 Goal: replace the temporary `/projects` shell with a distinctive public showcase that presents a small number of DDS projects as credible cases rather than generic CMS records.
 
@@ -1005,6 +1005,8 @@ Acceptance criteria:
 - project content can be changed safely through code review without requiring a database or dashboard workflow.
 
 ### DDS-014C: Project Showcase Maintenance Workflow And CMS Decision Gate
+
+Status: implemented in the current working tree and pending review. The code-owned editing workflow, asset and preview conventions, focused checks, reviewer expectations, maintenance evidence, measurable CMS triggers, and future migration contract are documented. The dead-end project resource has been removed from the dashboard response, planned-resource list, and admin navigation.
 
 Decision: there is no `/dashboard/projects` resource in phase 1. This ticket protects that choice and defines when it should be reconsidered instead of pre-emptively building CRUD.
 

@@ -40,7 +40,7 @@ test('admins can visit the dashboard', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard')
             ->where('resources.events', true)
-            ->where('resources.projects', true)
+            ->missing('resources.projects')
             ->where('resources.articles', true)
             ->where('resources.locations', true)
             ->where('resources.partners', true)
@@ -80,7 +80,7 @@ test('editors can visit the dashboard', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard')
             ->where('resources.events', true)
-            ->where('resources.projects', false)
+            ->missing('resources.projects')
             ->where('resources.articles', false)
             ->where('resources.locations', false)
             ->where('resources.partners', false)

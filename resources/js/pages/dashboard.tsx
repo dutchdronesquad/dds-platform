@@ -8,7 +8,6 @@ import {
     CircleAlert,
     Clock3,
     FilePenLine,
-    FolderKanban,
     Handshake,
     Images,
     MapPin,
@@ -35,7 +34,6 @@ import { dashboard, home } from '@/routes';
 
 type ResourceId =
     | 'events'
-    | 'projects'
     | 'articles'
     | 'locations'
     | 'partners'
@@ -104,7 +102,6 @@ type DashboardAction = {
 };
 
 const plannedAreas = [
-    { id: 'projects', title: 'Projecten', icon: FolderKanban },
     { id: 'articles', title: 'Artikelen', icon: Newspaper },
     { id: 'locations', title: 'Locaties', icon: MapPin },
     { id: 'partners', title: 'Partners', icon: Handshake },
