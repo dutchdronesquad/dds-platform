@@ -20,7 +20,7 @@ export default function PartnersIndex({ partners, seo }: Props) {
                 description="Van een vaste indoorlocatie tot materiaal en expertise: onze partners helpen Dutch Drone Squad om trainingen, races en de Nederlandse FPV-community verder te brengen."
                 actions={[
                     { label: 'Bekijk hun bijdrage', href: '#partners' },
-                    { label: 'Werk met ons samen', href: contact.url() },
+                    { label: 'Werk met ons samen', href: contact().url },
                 ]}
                 media={{
                     src: '/images/dds/racing/race-control.jpg',
@@ -109,7 +109,7 @@ export default function PartnersIndex({ partners, seo }: Props) {
                         </p>
                     </div>
                     <Link
-                        href={contact.url()}
+                        href={contact()}
                         prefetch
                         className="inline-flex min-h-11 items-center justify-center rounded-md bg-dds-cyan px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:ring-offset-deep-signal focus-visible:outline-none"
                     >

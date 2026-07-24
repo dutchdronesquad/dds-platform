@@ -27,8 +27,8 @@ final readonly class PartnerCatalogue
      */
     public static function fromArray(array $entries): self
     {
-        if ($entries === [] || ! array_is_list($entries)) {
-            throw new InvalidArgumentException('The partner catalogue must be a non-empty list.');
+        if (! array_is_list($entries)) {
+            throw new InvalidArgumentException('The partner catalogue must be a list.');
         }
 
         $catalogueEntries = [];

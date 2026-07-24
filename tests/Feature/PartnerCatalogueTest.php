@@ -73,6 +73,14 @@ test('equal manual positions are ordered deterministically by key', function () 
     ]);
 });
 
+test('an empty partner catalogue is valid', function () {
+    $catalogue = PartnerCatalogue::fromArray([]);
+
+    expect($catalogue->all())->toBe([])
+        ->and($catalogue->forHomepage())->toBe([])
+        ->and($catalogue->find('missing-partner'))->toBeNull();
+});
+
 test('every configured partner references a committed recognizable logo', function () {
     foreach (PartnerCatalogue::fromConfig()->all() as $partner) {
         expect($partner->name)->not->toBeEmpty()
