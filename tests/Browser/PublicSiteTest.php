@@ -49,12 +49,22 @@ test('desktop visitors can use the public shell and safe external links', functi
         ->assertAttribute(
             'a[aria-label="Bekijk website van Droneshop.nl"]',
             'href',
-            'https://droneshop.nl',
+            'https://droneshop.nl/',
         )
         ->assertAttribute(
             'a[aria-label="Bekijk website van Droneshop.nl"]',
             'target',
             '_blank',
+        )
+        ->assertAttribute(
+            'a[aria-label="Bekijk website van Sportpaleis Alkmaar"]',
+            'href',
+            'https://sportpaleis-alkmaar.nl/',
+        )
+        ->assertAttribute(
+            'a[aria-label="Bekijk website van Sportpaleis Alkmaar"]',
+            'rel',
+            'noopener noreferrer',
         )
         ->keys('[class~="font-sans"]', 'Tab')
         ->assertScript(
@@ -424,6 +434,42 @@ test('representative public pages render without browser errors', function () {
         '/partners',
         '/contact',
     ])->assertNoSmoke();
+});
+
+test('partner catalogue stays aligned and accessible on mobile', function () {
+    $page = visit('/partners')->on()->iPhone14Pro();
+
+    $page->assertSee('Samen maken we meer mogelijk.')
+        ->assertSee('onze partners helpen Dutch Drone Squad')
+        ->assertSee('Bekijk hun bijdrage')
+        ->assertSee('Partners die onze races mogelijk maken.')
+        ->assertSee('van een vaste indoorlocatie tot gesponsord trackmateriaal')
+        ->assertAttribute('a[href="#partners"]', 'href', '#partners')
+        ->assertScript(
+            'document.querySelectorAll("#partners-heading > span").length',
+            2,
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("#partners-heading > span")].every((line) => line.scrollWidth <= line.clientWidth)',
+        )
+        ->assertSee('Droneshop.nl')
+        ->assertSee('Sportpaleis Alkmaar')
+        ->assertDontSee('Partner 01')
+        ->assertVisible('img[alt="Droneshop.nl"]')
+        ->assertVisible('img[alt="Logo van Sportpaleis Alkmaar"]')
+        ->assertAttribute(
+            'a[aria-label="Bezoek de website van Sportpaleis Alkmaar"]',
+            'target',
+            '_blank',
+        )
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertScript(
+            '[...document.querySelectorAll("#partners img")].every((image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0)',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("#partners a[target=_blank]")].every((link) => link.rel.includes("noopener") && link.rel.includes("noreferrer"))',
+        )
+        ->assertNoSmoke();
 });
 
 test('project catalogue stays usable on mobile', function () {

@@ -1031,6 +1031,8 @@ Acceptance criteria:
 
 ### DDS-014D: Code-Owned Partner Catalogue And Public Presentation
 
+Status: implemented and ready for review. Droneshop.nl and Sportpaleis Alkmaar now live in one validated code-owned catalogue that supplies both the homepage partner row and the dedicated `/partners` presentation. Public data is deliberately limited, partner links and logo assets are validated, the dead-end dashboard placeholder has been removed, and DDS-007E is fully absorbed. The ticket remains open until its pull request is reviewed and merged.
+
 Decision: phase 1 keeps the small and slowly changing partner list in code. DDS does not introduce a `Partner` model, partner tables, permissions, or dashboard CRUD merely to replace a short verified list that developers already update safely through pull requests.
 
 Goal: give verified partners and sponsors a consistent public presentation from one typed, code-owned source of truth.

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\PartnerController;
 use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\SeasonController;
 use App\Http\Middleware\HandleLegacyRedirects;
@@ -55,10 +56,7 @@ Route::inertia('/house-rules', 'public/shell', [
     'seo' => $seoMetadata->forPage('house_rules'),
 ])->name('house_rules');
 
-Route::inertia('/partners', 'public/shell', [
-    'page' => $publicPages['partners'],
-    'seo' => $seoMetadata->forPage('partners'),
-])->name('partners');
+Route::get('/partners', [PartnerController::class, 'index'])->name('partners');
 
 Route::inertia('/contact', 'public/shell', [
     'page' => $publicPages['contact'],

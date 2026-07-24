@@ -8,7 +8,6 @@ import {
     CircleAlert,
     Clock3,
     FilePenLine,
-    Handshake,
     Images,
     MapPin,
     Newspaper,
@@ -36,7 +35,6 @@ type ResourceId =
     | 'events'
     | 'articles'
     | 'locations'
-    | 'partners'
     | 'media'
     | 'users'
     | 'roles'
@@ -104,7 +102,6 @@ type DashboardAction = {
 const plannedAreas = [
     { id: 'articles', title: 'Artikelen', icon: Newspaper },
     { id: 'locations', title: 'Locaties', icon: MapPin },
-    { id: 'partners', title: 'Partners', icon: Handshake },
     { id: 'media', title: 'Media', icon: Images },
 ] satisfies Array<{
     id: ResourceId;

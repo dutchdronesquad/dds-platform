@@ -2,13 +2,14 @@ import { Link } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import PublicEventCard from '@/components/public/public-event-card';
+import PublicPartnerLogo from '@/components/public/public-partner-logo';
 import { PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
-import { about, contact } from '@/routes';
+import { about, contact, partners as partnersPage } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
 import { index as locationsIndex } from '@/routes/locations';
 import { index as newsIndex } from '@/routes/news';
-import type { PublicEventSummary, SeoMetadata } from '@/types';
+import type { PublicEventSummary, PublicPartner, SeoMetadata } from '@/types';
 
 type NewsItem = {
     dateLabel: string;
@@ -21,16 +22,10 @@ type NewsItem = {
     title: string;
 };
 
-type PartnerLogo = {
-    alt: string;
-    href?: string;
-    src: string;
-};
-
 type WelcomeProps = {
     latestNews: NewsItem[];
     latestNewsAreLegacy: boolean;
-    partnerLogos: PartnerLogo[];
+    partners: PublicPartner[];
     seo: SeoMetadata;
     upcomingEvents: PublicEventSummary[];
 };
@@ -53,7 +48,7 @@ const pilotBenefits = [
 export default function Welcome({
     latestNews,
     latestNewsAreLegacy,
-    partnerLogos,
+    partners,
     seo,
     upcomingEvents,
 }: WelcomeProps) {
@@ -323,7 +318,7 @@ export default function Welcome({
                 </div>
             </section>
 
-            <PartnerLogosSection partnerLogos={partnerLogos} />
+            <PartnerLogosSection partners={partners} />
 
             <section className="bg-dds-orange text-deep-signal">
                 <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-public-gutter py-12 sm:py-14 lg:grid-cols-[1fr_auto]">
@@ -351,65 +346,46 @@ export default function Welcome({
 }
 
 type PartnerLogosSectionProps = {
-    partnerLogos: PartnerLogo[];
+    partners: PublicPartner[];
 };
 
-function PartnerLogosSection({ partnerLogos }: PartnerLogosSectionProps) {
-    if (partnerLogos.length === 0) {
+function PartnerLogosSection({ partners }: PartnerLogosSectionProps) {
+    if (partners.length === 0) {
         return null;
     }
 
     return (
         <section className="border-t border-deep-signal/10 bg-paddock text-deep-signal">
             <div className="mx-auto w-full max-w-7xl px-public-gutter py-12 sm:py-14">
-                <h2 className="text-xs font-semibold tracking-[0.12em] text-signal-muted uppercase">
-                    Partners & sponsors
-                </h2>
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <h2 className="text-xs font-semibold tracking-[0.12em] text-signal-muted uppercase">
+                        Partners & sponsors
+                    </h2>
+                    <Link
+                        href={partnersPage()}
+                        prefetch
+                        className="text-sm font-semibold text-dds-blue transition-colors hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none"
+                    >
+                        Bekijk alle partners
+                    </Link>
+                </div>
 
                 <ul className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-8 md:gap-x-12">
-                    {partnerLogos.map((partnerLogo) => (
+                    {partners.map((partner) => (
                         <li
-                            key={partnerLogo.src}
-                            className="flex min-h-14 w-48 items-center sm:w-52"
+                            key={partner.key}
+                            className="flex min-h-14 w-64 max-w-full items-center sm:w-72"
                         >
-                            <PartnerLogoItem partnerLogo={partnerLogo} />
+                            <PublicPartnerLogo
+                                partner={partner}
+                                className="focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-paddock"
+                            />
                         </li>
                     ))}
                 </ul>
             </div>
         </section>
     );
-}
-
-type PartnerLogoItemProps = {
-    partnerLogo: PartnerLogo;
-};
-
-function PartnerLogoItem({ partnerLogo }: PartnerLogoItemProps) {
-    const image = (
-        <img
-            src={partnerLogo.src}
-            alt={partnerLogo.alt}
-            loading="lazy"
-            className="max-h-12 max-w-full object-contain"
-        />
-    );
-
-    if (partnerLogo.href) {
-        return (
-            <a
-                href={partnerLogo.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Bekijk website van ${partnerLogo.alt}`}
-                className="inline-flex w-full items-center rounded-sm opacity-80 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-paddock focus-visible:outline-none motion-reduce:transition-none"
-            >
-                {image}
-            </a>
-        );
-    }
-
-    return image;
 }
 
 type UpcomingEventsSectionProps = {

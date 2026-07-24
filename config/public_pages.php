@@ -103,30 +103,6 @@ return [
             ],
         ],
     ],
-    'partners' => [
-        'title' => 'Partners',
-        'eyebrow' => 'Samenwerking',
-        'description' => 'Partners krijgen straks een herkenbare plek voor samenwerkingen, bijdragen en community-initiatieven.',
-        'visual' => [
-            'src' => '/images/dds/racing/indoor-track.jpg',
-            'alt' => 'Professioneel indoor FPV-raceparcours voor DDS-events en partners',
-            'position' => '56% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Start contact',
-            'href' => '/contact',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Samen bouwen',
-                'body' => 'Deze shell ondersteunt partners die bijdragen aan events, kennisdeling, tooling of locaties.',
-            ],
-            [
-                'heading' => 'Publieke zichtbaarheid',
-                'body' => 'De pagina kan later partnerprofielen, cases en concrete call-to-actions tonen.',
-            ],
-        ],
-    ],
     'contact' => [
         'title' => 'Contact',
         'eyebrow' => 'Bereik DDS',

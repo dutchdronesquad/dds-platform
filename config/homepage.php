@@ -3,8 +3,8 @@
 /**
  * Temporary homepage content.
  *
- * Article, partner, and managed page records will replace these remaining
- * values as their public domains become available.
+ * Article and managed page records will replace these remaining values as
+ * their public domains become available.
  */
 return [
     'latestNews' => [
@@ -40,11 +40,4 @@ return [
         ],
     ],
     'latestNewsAreLegacy' => true,
-    'partnerLogos' => [
-        [
-            'alt' => 'Droneshop.nl',
-            'href' => 'https://droneshop.nl',
-            'src' => '/images/dds/partners/partner-droneshop.png',
-        ],
-    ],
 ];
