@@ -63,7 +63,6 @@ final class DashboardController extends Controller
     /**
      * @return array{
      *     events: bool,
-     *     projects: bool,
      *     articles: bool,
      *     locations: bool,
      *     partners: bool,
@@ -77,7 +76,6 @@ final class DashboardController extends Controller
     {
         return [
             'events' => $canViewEvents,
-            'projects' => $isAdmin,
             'articles' => $isAdmin,
             'locations' => $isAdmin,
             'partners' => $isAdmin,

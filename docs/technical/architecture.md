@@ -142,6 +142,10 @@ For phase 1, a simple custom media approach is enough:
 
 Important: every rendered image receives an `alt` attribute. The rendering context chooses a descriptive value, optionally starting from the asset default, or `alt=""` when that specific use is decorative.
 
+## Code-Owned Public Catalogues
+
+Small, slowly changing public catalogues remain versioned with the application until observed editorial needs justify structured management. The project showcase follows the [project showcase maintenance workflow](./project-showcase-maintenance.md), including its pull-request checks, maintenance evidence, and CMS decision gate. It deliberately has no dashboard resource in phase 1.
+
 ## SEO
 
 Minimum SEO baseline:

@@ -59,6 +59,7 @@ test('admin dashboard prioritizes open points quick actions and recent changes',
         ->assertSee('Nieuw seizoen')
         ->assertSee('Gebruikers beheren')
         ->assertDontSee('Open beheer')
+        ->assertDontSee('Projecten')
         ->assertScript(
             "(() => { const draftStat = document.querySelector('[data-testid=\"dashboard-stat-drafts\"]'); const upcomingStat = document.querySelector('[data-testid=\"dashboard-stat-upcoming\"]'); const recentStat = document.querySelector('[data-testid=\"dashboard-stat-recent\"]'); const quickActions = Array.from(document.querySelectorAll('[data-testid=\"quick-action\"]')).map((link) => new URL(link.href).pathname).sort(); return draftStat?.textContent.includes('1') && upcomingStat?.textContent.includes('3') && recentStat?.textContent.includes('4') && quickActions.join('|') === ['/dashboard/events/create', '/dashboard/seasons/create', '/dashboard/users'].sort().join('|') && document.querySelectorAll('[data-testid=\"recent-change\"]').length === 4 && document.querySelector('[data-testid=\"next-event\"]')?.textContent.includes('Eerstvolgende training') && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )

@@ -61,6 +61,31 @@ Reason:
 - code-owned catalogues avoid speculative tables, permissions, and CRUD for short lists maintained safely through pull requests;
 - a page builder would increase scope and complexity too early.
 
+## 2026-07-24: Project Showcase Remains Code-Owned In Phase 1
+
+Decision: maintain the public project showcase through the typed catalogue,
+versioned assets, automated tests, and normal pull-request review. Do not expose
+a project-management destination in the dashboard.
+
+Reason:
+
+- the initial catalogue has only nine curated public entries;
+- developers can currently maintain the catalogue safely through reviewed code
+  changes;
+- project presentation is deliberately art-directed rather than a generic
+  resource template;
+- no observed editing frequency, lifecycle, or independent-editor need yet
+  justifies project tables, permissions, or CRUD.
+
+Reconsideration:
+
+- record actual catalogue maintenance and review the concrete triggers in the
+  [project showcase maintenance workflow](../technical/project-showcase-maintenance.md);
+- reaching a trigger opens a decision review and does not by itself approve a
+  CMS;
+- any later migration must preserve slugs, public URLs, credits, media, and
+  custom presentation.
+
 ## 2026-07-04: Trainings Are Events
 
 Decision: model regular training evenings as `Event` records with `type = training`, not as a separate `Training` aggregate in phase 1. Public dated activities are exposed under `Events`, with training as a filter/type.
