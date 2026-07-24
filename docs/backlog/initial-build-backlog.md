@@ -17,29 +17,15 @@ This backlog translates the preparation docs into the first practical implementa
 
 ## Current Backlog Position
 
-Current implementation point: `main` contains the Laravel, authentication, locale, public-shell, homepage, SEO, and redirect foundation through DDS-008B. DDS-007D remains partially open for its explicitly listed navigation, footer, keyboard, and screen-reader follow-up work.
+`main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, and reusable media-library management through DDS-014H.
 
-The current DDS-009 working tree adds the schema dependency cluster in migration order:
+DDS-014A and DDS-014B are implemented in pull request #24 and remain pending until that pull request is reviewed and merged. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
-- DDS-014: reusable `MediaAsset` records for the future dashboard media library;
-- DDS-012: structured `Location` records;
-- DDS-009: minimal `Season` and `Event` models and migrations.
+Projects and partners are deliberately code-owned in phase 1. Neither domain gets a database model, permissions, or dashboard CRUD unless observed maintenance needs pass its documented CMS decision gate.
 
-This means 16 items in the recommended sequence are complete on `main`, DDS-007D is partial, and three additional schema tickets are implemented in the current working tree. Public Event pages, Event admin CRUD, the media-library UI, and supporting content models are not implemented yet.
+The authoritative order for all unfinished work is [Open Work Execution Order](./open-work-execution-order.md). Keep ticket definitions and acceptance criteria in this document, but do not maintain a second numbered execution list here.
 
-Recommended next tickets:
-
-1. finish and merge the current DDS-014 / DDS-012 / DDS-009 schema cluster;
-2. define the explicit DDS-009A season-ticket model before promoting season tickets publicly;
-3. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
-4. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
-5. complete DDS-010 and DDS-010A public Event work, then align season presentation through DDS-010B;
-6. build the public newcomer journey and all documented entry points in DDS-014L using the constrained managed-page foundation;
-7. expand the hub with the DDS-014K curated guide library when the initial content proves that separate guide pages are useful;
-8. keep DDS-011F holder and attendance handling deferred until native season-ticket registration and its business rules are approved;
-9. finish DDS-007D as an independent public-shell polish task before launch.
-
-Do not jump straight from here to the WordPress importer. Import discovery can happen in parallel, but production-grade import should wait until the public design direction, target content models, admin review flows, media handling, redirects, and user/permission management exist.
+Do not jump straight to the WordPress importer. Import discovery can happen earlier, but production-grade import waits until the public destinations and admin review flows for the selected content exist.
 
 ## Global UX Acceptance Criteria
 
@@ -416,7 +402,7 @@ Acceptance criteria:
 
 ### DDS-007C: Homepage Content And Conversion Pass
 
-Status: implemented. The homepage includes the revised hero, experienced-pilot and beginner paths, Sportpaleis proof, upcoming events, About and news previews, a compact partner-logo row near the footer, and a final agenda CTA. Projects are deliberately routed through the primary navigation and footer until real project cases justify a homepage feature. The partner zone shows the verified Droneshop.nl logo from the legacy website, omits its anonymous template placeholders, and does not include a separate sales callout. Temporary event, legacy-news, and partner content is server-backed through `config/homepage.php`; the future Event, Article, Partner, and managed-content domains can replace those props without redesigning the page.
+Status: implemented. The homepage includes the revised hero, experienced-pilot and beginner paths, Sportpaleis proof, upcoming events, About and news previews, a compact partner-logo row near the footer, and a final agenda CTA. Projects are deliberately routed through the primary navigation and footer until real project cases justify a homepage feature. The partner zone shows the verified Droneshop.nl logo from the legacy website, omits its anonymous template placeholders, and does not include a separate sales callout. Temporary event and legacy-news content can move to their domain models without redesigning the page; partner content remains supplied by a typed code-owned catalogue in phase 1.
 
 Goal: turn the homepage from a shell into a useful first public entry point.
 
@@ -467,7 +453,7 @@ Acceptance criteria:
 
 ### DDS-007E: Add Sportpaleis Alkmaar As A Homepage Partner
 
-Status: planned.
+Status: absorbed into DDS-014D so partner selection, validation, imagery, and homepage presentation are implemented through one code-owned catalogue instead of a one-off homepage entry.
 
 Goal: recognize Sportpaleis Alkmaar as a DDS partner in the homepage partner section.
 
@@ -478,7 +464,7 @@ Tasks:
 - present the logo alongside the existing homepage partner logos with a consistent visual weight, clear spacing, and preserved aspect ratio;
 - make the logo or partner entry link to the Sportpaleis Alkmaar website with an accessible partner name and the existing external-link safety conventions;
 - verify the partner row at representative mobile and desktop widths, including wrapping, alignment, contrast, and focus states;
-- move the temporary homepage entry to the structured `Partner` domain when DDS-014D is implemented, while retaining its homepage-featured state.
+- move the temporary homepage entry into the typed code-owned partner catalogue from DDS-014D while retaining its homepage-featured state.
 
 Acceptance criteria:
 
@@ -487,7 +473,7 @@ Acceptance criteria:
 - the logo is sharp, not distorted, and visually balanced with the other partner logos;
 - the partner row remains neatly aligned without overflow or awkward breaks on mobile and desktop;
 - the partner link has a meaningful accessible name, visible keyboard focus, and safe external-link behavior;
-- the implementation can migrate to the structured `Partner` model without redesigning the homepage section.
+- the implementation can migrate to a future structured model without redesigning the homepage section if the DDS-014E decision gate is ever reached.
 
 ### DDS-008: Baseline SEO And Redirect Shape
 
@@ -563,7 +549,7 @@ Implementation order follows schema dependencies instead of ticket numbering. Ti
 
 ### DDS-014: MediaAsset Model
 
-Status: implemented in the current working tree as a schema dependency of DDS-009. Media assets have stable storage identity, a recognizable original filename, optional locale-aware alt text defaults, and optional image dimensions, without WordPress-specific runtime metadata. Whether an image is informative or decorative belongs to its rendering context. Images and PDFs share the same reusable model. Upload, search, selection, and usage management remain in DDS-014H.
+Status: complete and merged as a schema dependency of DDS-009. Media assets have stable storage identity, a recognizable original filename, optional locale-aware alt text defaults, and optional image dimensions, without WordPress-specific runtime metadata. Whether an image is informative or decorative belongs to its rendering context. Images and PDFs share the same reusable model. Upload, search, selection, and usage management are implemented through DDS-014H.
 
 Goal: prepare basic media storage and future WordPress media import before content models reference cover images.
 
@@ -583,7 +569,7 @@ Acceptance criteria:
 
 ### DDS-012: Location Model
 
-Status: implemented in the current working tree as a schema dependency of DDS-009. Locations have an official name, an English-base translated description, a structured Dutch address, indoor/outdoor environment, optional physical dimensions, fixed facility codes, coordinates, an optional cover image, and an event relationship. They intentionally have no publication state or model-specific SEO fields. Public pages and admin management remain in DDS-014I.
+Status: complete and merged as a schema dependency of DDS-009. Locations have an official name, an English-base translated description, a structured Dutch address, indoor/outdoor environment, optional physical dimensions, fixed facility codes, coordinates, an optional cover image, and an event relationship. They intentionally have no publication state or model-specific SEO fields. Public pages and admin management remain in DDS-014I.
 
 Goal: model recurring DDS locations before events reference them.
 
@@ -605,7 +591,7 @@ Acceptance criteria:
 
 ### DDS-009: Season And Event Models And Migrations
 
-Status: implemented in the current working tree. Seasons provide optional event grouping, a nullable season price, and a season-ticket limit. Events have a required protected location, an optional protected season, a removable cover-image reference, plain-text content, enum-backed type/publication/registration states, scheduled publication, and one listing-oriented index. Model-specific SEO and WordPress fields are intentionally absent.
+Status: complete and merged in pull request #8. Seasons provide optional event grouping, a nullable season price, and a season-ticket limit. Events have a required protected location, an optional protected season, a removable cover-image reference, plain-text content, enum-backed type/publication/registration states, scheduled publication, and one listing-oriented index. Model-specific SEO and WordPress fields are intentionally absent.
 
 Goal: create the first real domain model.
 
@@ -629,7 +615,7 @@ Acceptance criteria:
 
 ### DDS-009A: Season Ticket Product And Eligibility Model
 
-Status: implemented in the current working tree. `Season` remains a generic event grouping for training series, competitions, rankings, or other programmes. A separate optional `SeasonTicket` product owns sales details and an explicit eligible-event selection. Public summaries derive the season date range from all grouped events and ticket eligibility from only the selected events. Cancelled events remain visible in their season context and, when eligible, remain counted as ticket events with their cancelled state; no refund or replacement policy is inferred.
+Status: complete and merged in pull request #13. `Season` remains a generic event grouping for training series, competitions, rankings, or other programmes. A separate optional `SeasonTicket` product owns sales details and an explicit eligible-event selection. Public summaries derive the season date range from all grouped events and ticket eligibility from only the selected events. Cancelled events remain visible in their season context and, when eligible, remain counted as ticket events with their cancelled state; no refund or replacement policy is inferred.
 
 Goal: model season tickets explicitly without conflating a season grouping, event capacity, and attendance.
 
@@ -654,6 +640,8 @@ Acceptance criteria:
 
 ### DDS-010: Public Events Pages
 
+Status: complete and merged in pull request #10.
+
 Goal: show published events publicly.
 
 Tasks:
@@ -674,6 +662,8 @@ Acceptance criteria:
 - empty states are useful when no events match a filter.
 
 ### DDS-010A: Realistic Event Fixtures And Frontend Validation
+
+Status: complete and merged in pull request #11.
 
 Goal: validate the public event experience with representative data before the Event admin workflow becomes the primary way to create content.
 
@@ -699,6 +689,8 @@ Acceptance criteria:
 
 ### DDS-010B: Public Season And Season Ticket Presentation
 
+Status: complete and merged in pull request #14.
+
 Goal: make season context and ticket choices understandable across public event experiences.
 
 Tasks:
@@ -722,6 +714,8 @@ Acceptance criteria:
 - focused frontend and feature tests cover the meaningful states instead of relying on broad markup fragments.
 
 ### DDS-011: Admin Event CRUD
+
+Status: complete and merged. Event and Season management use the shared dashboard resource patterns.
 
 Goal: manage events from the `/dashboard` management area.
 
@@ -747,12 +741,14 @@ Acceptance criteria:
 
 ### DDS-011A: Management Dashboard Information Architecture
 
+Status: complete and merged in pull request #15.
+
 Goal: turn `/dashboard` into a practical management home instead of a placeholder.
 
 Tasks:
 
 - define the first dashboard sections and resource navigation;
-- add quick links for events, projects, articles, locations, partners, media, users, and redirects;
+- add quick links for actual dashboard resources such as events, articles, locations, media, users, and redirects, without dead-end project or partner actions;
 - show useful operational cards such as drafts, upcoming events, and recent submissions;
 - define empty states for a fresh installation;
 - keep the dashboard dense and task-oriented rather than marketing-like;
@@ -769,6 +765,8 @@ Acceptance criteria:
 
 ### DDS-011B: Admin Resource Shell And Shared CRUD Patterns
 
+Status: complete and merged in pull request #16.
+
 Goal: establish repeatable admin patterns before building many resource screens.
 
 Tasks:
@@ -782,13 +780,15 @@ Tasks:
 
 Acceptance criteria:
 
-- event, article, project, location, partner, media, user, and redirect screens can share consistent patterns;
+- model-backed event, article, location, media, user, redirect, and later contact screens can share consistent patterns;
 - admin tables support scanning and repeated work;
 - form actions are predictable across resources;
 - validation and success/error feedback are consistent;
 - abstractions remain small and do not block resource-specific UX.
 
 ### DDS-011C: User Management
+
+Status: complete and merged in pull request #18.
 
 Goal: manage platform users from the dashboard without relying on direct database access.
 
@@ -813,6 +813,8 @@ Acceptance criteria:
 
 ### DDS-011D: Role And Permission Review UI
 
+Status: complete and merged in pull request #19.
+
 Goal: make the seeded role and permission model visible and reviewable.
 
 Tasks:
@@ -832,6 +834,8 @@ Acceptance criteria:
 - future resource permissions can be reviewed before launch.
 
 ### DDS-011E: Admin Activity, Audit, And Safety Feedback
+
+Status: complete and merged in pull request #20.
 
 Goal: add lightweight operational confidence for content changes.
 
@@ -880,6 +884,8 @@ Acceptance criteria:
 - authorization and focused workflow tests cover administrator and holder behavior.
 
 ### DDS-011G: Dashboard And Authentication Branding
+
+Status: complete and merged in pull request #21.
 
 Goal: make the authenticated part of the platform recognizably DDS by consistently applying the official logo to the dashboard and authentication pages.
 
@@ -930,7 +936,7 @@ Acceptance criteria:
 
 ### DDS-013: Article Model
 
-Status: implemented in the current working tree. Articles have source-agnostic content fields, optional author and cover-image relationships, enum-backed semantic categories and draft/published/archived states, and a publication-date-aware public scope. Excerpts are a frontend presentation concern derived from content, not a persisted field or `Article` model attribute. WordPress identifiers, legacy terms, and import bookkeeping remain outside the permanent article table.
+Status: complete and merged in pull request #9. Articles have source-agnostic content fields, optional author and cover-image relationships, enum-backed semantic categories and draft/published/archived states, and a publication-date-aware public scope. Excerpts are a frontend presentation concern derived from content, not a persisted field or `Article` model attribute. WordPress identifiers, legacy terms, and import bookkeeping remain outside the permanent article table.
 
 Goal: prepare for news and WordPress post import.
 
@@ -947,108 +953,129 @@ Acceptance criteria:
 - articles remain source-agnostic whether created manually or migrated selectively;
 - only published articles are public.
 
-### DDS-014A: Project Showcase Model
+### DDS-014A: Code-Owned Project Catalogue And Selection
 
-Goal: model public showcase projects for DDS-built tooling, software, plugins, apps, integrations, and selected community builds.
+Status: implemented in pull request #24 and pending review and merge.
 
-Tasks:
+Decision: phase 1 keeps the project showcase deliberately code-owned. DDS does not introduce a `Project` model, project tables, project permissions, or dashboard CRUD until the maintenance burden proves that a CMS is needed.
 
-- create `Project` model and migration;
-- include title, slug, excerpt, content, status, project_type, visibility, featured flag, and sort order;
-- support project types such as `plugin`, `app`, `integration`, `event_tooling`, `community_build`, and `other`;
-- add optional links for GitHub, live demo, documentation, download, and contact;
-- add optional ownership/credit fields for maintainers or contributors;
-- add media references and only translate content fields where the editing workflow benefits from it.
-
-Acceptance criteria:
-
-- RotorHazard plugins, TrackDraw-style apps, race tooling, livestream overlays, and community utilities can be represented cleanly;
-- projects can distinguish open source, public platform, internal/private, and archived work;
-- only published and public projects are visible on the public site;
-- the model does not imply internal task or project-management workflows;
-- project records can be created through factories/tests.
-
-### DDS-014B: Public Project Showcase Pages
-
-Goal: show DDS projects publicly as a credible development and tooling showcase.
+Goal: define a small, curated source of truth for DDS-built tooling, software, plugins, apps, integrations, and selected community builds without constraining the public presentation to a generic content model.
 
 Tasks:
 
-- build `/projects` project index page;
-- build `/projects/{slug}` project detail page;
-- add filters or grouping by project type when useful;
-- show project links, status, media, and concise value proposition;
-- add useful empty states.
+- select the initial projects that have a clear public audience, credible outcome, and suitable supporting material;
+- create a typed code-owned catalogue, preferably in a dedicated configuration file, with stable slugs, titles, concise summaries, project-type labels, primary links, optional supporting links, credits, and static media paths;
+- include only projects intended for public presentation instead of storing internal or private work alongside public entries;
+- define which projects justify a dedicated case page and which belong only in the overview;
+- keep project imagery in versioned static assets while the catalogue remains code-owned;
+- validate unique slugs, required fields, safe external links, and referenced catalogue entries through focused automated tests;
+- record that catalogue changes are reviewed and deployed through the normal pull-request workflow.
 
 Acceptance criteria:
 
-- `/projects` lists published public projects;
-- `/projects/{slug}` shows a published public project;
-- project cards communicate type, purpose, status, and primary link clearly;
-- archived or internal-only projects are not publicly listed unless explicitly marked visible;
-- pages can support both software/tooling projects and selected community builds without separate content types.
+- the initial RotorHazard plugins, TrackDraw-style apps, race tooling, livestream overlays, or community utilities can be described without a database model;
+- every catalogue entry has a stable slug, clear purpose, primary destination, credit where relevant, and an explicit public audience;
+- internal planning data, private projects, task status, and operational project management do not enter the public catalogue;
+- catalogue mistakes such as duplicate slugs, missing required fields, and unsafe links are caught automatically;
+- adding or changing a project requires a reviewed code change and does not imply that dashboard management already exists.
 
-### DDS-014C: Admin Project CRUD
+### DDS-014B: Art-Directed Public Project Showcase
 
-Goal: manage project showcase content from the `/dashboard` management area.
+Status: implemented in pull request #24 and pending review and merge.
+
+Goal: replace the temporary `/projects` shell with a distinctive public showcase that presents a small number of DDS projects as credible cases rather than generic CMS records.
 
 Tasks:
 
-- create `/dashboard/projects` project index;
-- create project create/edit forms;
-- add server-side validation through Form Requests;
-- add project policies;
-- add publish status and featured controls;
-- make link fields easy to add, remove, and validate.
+- build a dedicated `/projects` Inertia page from the code-owned catalogue;
+- give the overview a strong responsive composition with clear project purpose, outcome, credits, media, and primary action;
+- add `/projects/{slug}` only for projects with enough context, visuals, or documentation to justify a dedicated case page;
+- allow dedicated case components or explicit presentation variants when projects need different storytelling instead of forcing every case into one template;
+- add project-type grouping or filtering only when the catalogue becomes large enough for it to help visitors;
+- provide useful external links to GitHub, a live demo, documentation, downloads, or contact where they exist;
+- add project-specific SEO metadata, safe external-link behavior, useful not-found handling, and representative mobile, keyboard, and accessibility coverage.
 
 Acceptance criteria:
 
-- admins can create, edit, publish, feature, archive, and reorder projects;
-- editors can create and update projects according to their seeded permissions;
-- validation errors are shown clearly;
-- public visibility follows status and visibility fields;
-- forms are structured for concise project showcase editing, not task tracking.
+- `/projects` presents the curated public catalogue with a clearly designed DDS identity;
+- entries with dedicated cases have stable `/projects/{slug}` URLs, while smaller projects can remain overview-only;
+- each visible project communicates its purpose, value, ownership or credits, current public relevance, and one clear next action;
+- layouts can vary deliberately for flagship cases without losing navigation, accessibility, or responsive consistency;
+- visitors never see internal/private projects or an empty generic project-management state;
+- project content can be changed safely through code review without requiring a database or dashboard workflow.
 
-### DDS-014D: Partner Model And Public Partner Pages
+### DDS-014C: Project Showcase Maintenance Workflow And CMS Decision Gate
 
-Goal: represent DDS partners and sponsors as structured content.
+Decision: there is no `/dashboard/projects` resource in phase 1. This ticket protects that choice and defines when it should be reconsidered instead of pre-emptively building CRUD.
+
+Goal: keep project-showcase maintenance predictable and lightweight while preserving a clear path to structured management if real editorial needs emerge.
 
 Tasks:
 
-- create `Partner` model and migration;
-- include name, slug, description, logo media reference, website URL, partner type, status, featured flag, and sort order;
-- include optional contact notes for internal admin use;
-- add public partner listing or section support;
-- add factories and tests;
-- include locale-aware public fields where useful.
+- document the code-owned editing workflow, catalogue location, static-asset conventions, preview steps, required tests, and reviewer expectations;
+- remove or avoid dashboard navigation and placeholder actions that imply project CRUD is available or planned for immediate delivery;
+- review the catalogue after real use and record how often projects, ordering, links, credits, and case content change;
+- reconsider a `Project` model and dashboard workflow only when non-technical editors need independent access, catalogue changes become frequent, the catalogue grows enough to need operational filtering or archival state, or the same data needs multiple non-code consumers;
+- if the decision gate is reached, design a later migration that preserves public slugs, URLs, credits, media, and the art-directed presentation rather than replacing it with a generic page builder;
+- keep media-library attachment, permissions, publication states, and reordering out of scope until that later decision is approved.
 
 Acceptance criteria:
 
-- partners and sponsors can be represented without hardcoded page copy;
-- partner logos can be associated with media assets;
-- only active public partners are visible publicly;
-- featured partners can be highlighted on home or partner pages;
-- internal notes do not leak to public pages.
+- maintainers have one documented and tested way to add or change a project through a pull request;
+- the dashboard does not contain a dead-end project-management action;
+- the concrete CMS triggers are documented and can be evaluated using observed maintenance needs;
+- no project model, migration, policy, permission set, Form Request, or admin form is introduced in phase 1;
+- a future CMS migration can preserve existing public URLs and custom presentation if the decision changes.
 
-### DDS-014E: Admin Partner CRUD
+### DDS-014D: Code-Owned Partner Catalogue And Public Presentation
 
-Goal: manage partner content from the dashboard.
+Decision: phase 1 keeps the small and slowly changing partner list in code. DDS does not introduce a `Partner` model, partner tables, permissions, or dashboard CRUD merely to replace a short verified list that developers already update safely through pull requests.
+
+Goal: give verified partners and sponsors a consistent public presentation from one typed, code-owned source of truth.
 
 Tasks:
 
-- create `/dashboard/partners` partner index;
-- create partner create/edit forms;
-- add validation, policies, status controls, featured controls, and ordering;
-- support logo selection once media library exists;
-- show useful empty states before partners are imported or entered manually.
+- create a dedicated typed partner catalogue in configuration or another code-owned data file;
+- include stable keys, names, website URLs, versioned logo paths, accessible logo text, optional public descriptions, manual order, and explicit homepage visibility;
+- migrate the existing Droneshop.nl entry and DDS-007E Sportpaleis Alkmaar entry into that catalogue;
+- use the same catalogue for the homepage partner row and `/partners` when a separate page adds visitor value;
+- validate unique keys, safe external URLs, required fields, referenced assets, and deterministic ordering through focused automated tests;
+- document the asset, preview, test, and pull-request workflow for adding or changing a partner;
+- keep private contact notes, agreements, invoices, and sponsor administration outside the public catalogue.
 
 Acceptance criteria:
 
-- admins can create, edit, publish, feature, archive, and reorder partners;
-- editors can manage partners according to their permissions;
-- validation errors are clear;
-- public visibility follows status;
-- logo/media selection has a fallback state.
+- homepage and optional partner-page presentation use one verified catalogue instead of duplicated page copy;
+- each visible partner has a recognizable logo, safe destination, meaningful accessible name, and deliberate position;
+- partner changes are reviewable code changes and do not require a database or dashboard resource;
+- private or unverified partner information cannot leak through the public catalogue;
+- the presentation can preserve its routes and visual design if a future CMS decision later changes the storage mechanism.
+
+### DDS-014E: Partner CMS Decision Gate
+
+Status: deferred and not part of the active execution order. Reopen only when the decision gate below is reached.
+
+Goal: prevent speculative partner CRUD while retaining an explicit route to managed partner content if real maintenance needs emerge.
+
+Reopen this ticket only when at least one of these conditions is observed:
+
+- non-technical editors need to add or update partners independently;
+- partner visibility, ordering, tiers, or campaign periods change frequently;
+- contracts or sponsor lifecycle state need structured operational handling;
+- partner data needs multiple non-code consumers;
+- pull-request maintenance creates measurable delay or repeated errors.
+
+If reopened:
+
+- define the required model, migration, validation, policies, permissions, media relationships, publication states, and dashboard workflow from observed needs;
+- preserve existing public keys, URLs, logo assets, ordering, SEO behavior, and designed presentation;
+- define a migration from the code-owned catalogue without running both sources in parallel.
+
+Acceptance criteria:
+
+- no `/dashboard/partners` placeholder or unused partner permission exists before the gate is reached;
+- the decision to introduce partner management is supported by recorded maintenance evidence;
+- any later CMS migration preserves the public experience and has one clear source of truth.
 
 ### DDS-014F: Managed Static Content For Known Public Pages
 
@@ -1094,6 +1121,8 @@ Acceptance criteria:
 
 ### DDS-014H: Media Library Admin
 
+Status: complete and merged in pull request #22.
+
 Goal: manage reusable media assets before importing WordPress media at scale.
 
 Tasks:
@@ -1113,7 +1142,7 @@ Acceptance criteria:
 - admins can upload and manage media assets;
 - existing assets can be selected and reused from Event and Location forms;
 - optional alt text defaults are editable in supported locales;
-- media records can be attached to events, articles, projects, partners, and locations later;
+- media records can be attached to model-backed events, articles, and locations, while code-owned partner and project catalogues continue to use versioned static assets;
 - imported WordPress media can coexist with manually uploaded media;
 - unused media can be reviewed without deleting it automatically.
 
@@ -1315,7 +1344,7 @@ Tasks:
 - map training pages into event guidance or future event records;
 - map location pages into `Location` records;
 - map house rules into managed static content;
-- map partners into `Partner` records where possible;
+- review partner pages manually and move only verified names, links, and selected logo assets into the code-owned partner catalogue;
 - map media mentions into articles or a deferred media-mention model;
 - produce a report for pages that require manual rewriting.
 
@@ -1365,7 +1394,7 @@ Tasks:
 Acceptance criteria:
 
 - old post URLs redirect to new article URLs;
-- known page URLs redirect to event, location, partner, house rules, or contact targets;
+- known page URLs redirect to event, location, code-owned partner, house rules, or contact targets;
 - duplicate or ambiguous redirects are flagged;
 - redirects can be reviewed before launch;
 - redirect import can run repeatedly without creating duplicates.
@@ -1487,7 +1516,7 @@ Goal: verify the management area is efficient enough for repeated real use.
 
 Tasks:
 
-- audit dashboard, event CRUD, article CRUD, project CRUD, location CRUD, partner CRUD, media library, user management, contact submissions, redirects, and import review;
+- audit dashboard, event CRUD, article CRUD, location CRUD, media library, user management, contact submissions, redirects, and import review;
 - test common admin workflows from empty state to published content;
 - check validation, save feedback, destructive confirmations, and permission behavior;
 - test mobile/tablet fallback for urgent admin tasks;
@@ -1524,66 +1553,8 @@ Acceptance criteria:
 - SEO basics are active;
 - post-launch issues can be triaged quickly.
 
-## Recommended Sequence
+## Open Work Execution Order
 
-1. DDS-001
-2. DDS-002
-3. DDS-002A
-4. DDS-003
-5. DDS-004
-6. DDS-004B
-7. DDS-005
-8. DDS-006
-9. DDS-006A
-10. DDS-007
-11. DDS-007A
-12. DDS-007B
-13. DDS-007C
-14. DDS-007D
-15. DDS-008
-16. DDS-008A
-17. DDS-008B
-18. DDS-014
-19. DDS-012
-20. DDS-009
-21. DDS-009A
-22. DDS-013
-23. DDS-014A
-24. DDS-014D
-25. DDS-014F
-26. DDS-011A
-27. DDS-011B
-28. DDS-011C
-29. DDS-011D
-30. DDS-014H
-31. DDS-010
-32. DDS-010A
-33. DDS-010B
-34. DDS-011
-35. DDS-014B
-36. DDS-014C
-37. DDS-014E
-38. DDS-014I
-39. DDS-014J
-40. DDS-014L
-41. DDS-014K
-42. DDS-014G
-43. DDS-011E
-44. DDS-011G
-45. DDS-011H
-46. DDS-011F
-47. DDS-015
-48. DDS-017
-49. DDS-016
-50. DDS-018
-51. DDS-019
-52. DDS-020
-53. DDS-021
-54. DDS-022
-55. DDS-023
-56. DDS-024
-57. DDS-025
-58. DDS-026
-59. DDS-027
+[Open Work Execution Order](./open-work-execution-order.md) is the single authoritative numbered list of unfinished tickets. This backlog retains the complete ticket definitions and acceptance criteria; it must not contain a second sequence that can drift out of date.
 
-The WordPress importer should not be treated as the next major build step after static routes. The platform needs public branding, target content models, admin review flows, media handling, redirects, and user/permission management first. Import work can start as discovery earlier, but production-grade import should wait until the target models and admin review screens exist.
+The execution-order document distinguishes work that is ready, blocked, a decision point, or deliberately deferred. Update it whenever a ticket is merged, split, absorbed, newly blocked, or moved behind an approved dependency.

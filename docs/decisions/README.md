@@ -52,12 +52,13 @@ Alternatives considered:
 
 ## 2026-07-04: Concrete Domains Before Page Builder
 
-Decision: start with domain models such as Event, Article, Location, Partner, Project, ContactSubmission, and later EventRegistration.
+Decision: use domain models for operational or frequently managed content such as Event, Article, Location, ContactSubmission, and later EventRegistration. Keep small, slowly changing public catalogues such as projects and partners code-owned until observed maintenance needs justify a CMS.
 
 Reason:
 
 - DDS has clear repeatable content types;
 - concrete models enable better validation, admin workflows, and SEO;
+- code-owned catalogues avoid speculative tables, permissions, and CRUD for short lists maintained safely through pull requests;
 - a page builder would increase scope and complexity too early.
 
 ## 2026-07-04: Trainings Are Events
@@ -173,7 +174,7 @@ Reason:
 - import commands need real target models and fields;
 - redirects are easier to verify once public route names exist;
 - the first technical risk is application foundation, not content import;
-- import can be developed as a controlled spike after `Event`, `Article`, `Location`, `Partner`, and `MediaAsset` shapes are clearer.
+- import can be developed as a controlled spike after `Event`, `Article`, `Location`, and `MediaAsset` shapes are clearer and the code-owned partner-selection policy is established.
 
 Implementation direction:
 
@@ -254,3 +255,19 @@ Implementation direction:
 - set both references automatically for authenticated creates and update the latest editor for authenticated changes, including status actions;
 - show manual versus system/import origin and recent update metadata in management screens;
 - revisit a full audit log when import tooling or launch operations demonstrate a concrete history or rollback need.
+
+## 2026-07-24: Partners Remain Code-Owned In Phase 1
+
+Decision: maintain verified public partner data in a typed code-owned catalogue, using versioned logo assets and normal pull-request review. Do not build a `Partner` model or `/dashboard/partners` resource in phase 1.
+
+Reason:
+
+- the current partner list is small and changes infrequently;
+- developers already maintain the homepage partner row safely;
+- a database model and dashboard workflow would add permissions, validation, publication state, media relationships, and migration work without solving a current problem;
+- the public presentation should remain designed and consistent regardless of storage.
+
+Decision gate:
+
+- reconsider managed partner content only when non-technical editors need independent access, updates become frequent, sponsor lifecycle state becomes operationally relevant, multiple non-code consumers need the data, or pull-request maintenance creates measurable friction;
+- a later migration must preserve public keys, routes, ordering, logo assets, and presentation, with no period of competing sources of truth.

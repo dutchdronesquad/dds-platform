@@ -16,7 +16,7 @@ Deliverables:
 
 Status: complete. Direction, scope, architecture, local-development guidance, decisions, roadmap, and the implementation backlog are established and maintained as the platform evolves.
 
-Detailed implementation tickets are tracked in [Initial Build Backlog](../backlog/initial-build-backlog.md).
+Detailed implementation tickets are tracked in [Initial Build Backlog](../backlog/initial-build-backlog.md). The current order of unfinished work lives only in [Open Work Execution Order](../backlog/open-work-execution-order.md).
 
 ## Phase 1: Technical Foundation
 
@@ -48,7 +48,7 @@ Acceptance criteria:
 
 Goal: replace the current WordPress site visually and functionally with static or seeded content.
 
-Status: in progress. The public shell, brand direction, homepage conversion, baseline SEO, and legacy redirects are merged. Temporary homepage content remains server-backed until the corresponding domain models are wired in. Remaining Phase 2 work includes the DDS-007D navigation/accessibility review, secondary public pages, contact flow, and selective migration inventory.
+Status: in progress. The public shell, brand direction, homepage conversion, baseline SEO, and legacy redirects are merged. Temporary homepage content remains server-backed until its intended domain model, managed-page source, or code-owned catalogue is wired in. Remaining Phase 2 work includes the DDS-007D navigation/accessibility review, secondary public pages, contact flow, and selective migration inventory.
 
 Tasks:
 
@@ -75,7 +75,7 @@ Acceptance criteria:
 
 Goal: create a custom management environment as the foundation for all domains.
 
-Status: partially implemented. Authentication, role-gated access, the management shell, dashboard placeholders, flash handling, permissions, and redirect review exist. DDS-011A and DDS-011B still need to turn these into reusable resource-management patterns.
+Status: complete for the phase-1 foundation. Authentication, role-gated access, dashboard information architecture, shared resource patterns, user management, permission review, operational feedback, DDS branding, redirect review, and reusable media management are merged.
 
 Tasks:
 
@@ -99,7 +99,7 @@ Acceptance criteria:
 
 Goal: build one domain properly and use it as the pattern for later domains. Regular trainings are modeled as events with `type = training`.
 
-Status: in progress. The `MediaAsset`, `Location`, `Season`, and `Event` schema foundation is implemented in the current working tree. Public Event pages, media selection, validation, policies, and Event/Season admin management remain open.
+Status: complete for the planned phase-1 Event domain. The `MediaAsset`, `Location`, `Season`, `SeasonTicket`, and `Event` foundations, public Event pages, representative fixtures, season-ticket presentation, media selection, validation, policies, and Event/Season admin management are merged.
 
 Tasks:
 
@@ -150,14 +150,14 @@ Acceptance criteria:
 
 Goal: migrate valuable WordPress content into the new Laravel domain models.
 
-Note: this phase starts after the Laravel foundation and core target models exist. Import tooling should map into real `Article`, `Event`, `Location`, `Partner`, and `MediaAsset` models instead of shaping those models around raw WordPress exports.
+Note: this phase starts after the Laravel foundation and core target models exist. Import tooling should map into real `Article`, `Event`, `Location`, and `MediaAsset` models instead of shaping those models around raw WordPress exports. Verified partner data is selected manually for the code-owned catalogue.
 
 Tasks:
 
 - choose REST API or XML export as the primary import source;
 - create import commands for posts, pages, and media;
 - map WordPress posts to `Article`;
-- map selected pages to `Location`, `Event`, `Partner`, or static content;
+- map selected pages to `Location`, `Event`, managed static content, or manually reviewed code-owned partner entries;
 - download and register referenced media as `MediaAsset`;
 - rewrite internal links and media URLs;
 - generate redirect map from old WordPress URLs to new routes;
@@ -173,13 +173,13 @@ Acceptance criteria:
 
 ## Phase 7: News, Locations, And Partners
 
-Goal: make the migrated and newly created content manageable through the custom admin.
+Goal: make operational news and location content manageable through the custom admin while keeping the small verified partner list safely code-owned.
 
 Tasks:
 
 - Article CRUD;
 - Location CRUD;
-- Partner CRUD;
+- typed code-owned partner catalogue and designed public presentation;
 - selectively translated content fields and centrally derived SEO metadata;
 - sitemap.
 
@@ -187,7 +187,7 @@ Acceptance criteria:
 
 - news articles are manageable after import;
 - locations have their own detail pages;
-- partners are manageable and sortable;
+- verified partners are ordered and updated through reviewed catalogue changes;
 - interface strings support English and Dutch, while each content model only translates fields that need parallel variants;
 - SEO loss during launch is minimized.
 
@@ -216,12 +216,15 @@ Acceptance criteria:
 
 Goal: position DDS better toward partners, demos, and external assignments.
 
+Status: DDS-014A and DDS-014B are implemented in pull request #24 and pending review and merge. DDS-014C remains open for the maintenance workflow and CMS decision gate.
+
 Tasks:
 
-- Project model;
-- public project index and detail page;
-- admin CRUD;
-- gallery/media support;
+- curated, typed project catalogue maintained in code;
+- art-directed public project index and selected detail pages;
+- versioned static project media and safe external project links;
+- documented pull-request maintenance workflow;
+- explicit CMS decision gate based on observed editing frequency, catalogue scale, and non-technical editor needs;
 - CTA to contact or request form.
 
 Acceptance criteria:
@@ -229,6 +232,8 @@ Acceptance criteria:
 - DDS can present completed projects;
 - cases include visuals, context, and outcome;
 - potential clients are guided toward contact.
+- the showcase retains custom presentation without requiring a database or dashboard CRUD in phase 1;
+- a later CMS is introduced only when concrete maintenance needs justify it.
 
 ## Later
 

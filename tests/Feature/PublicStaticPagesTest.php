@@ -39,7 +39,6 @@ test('public static routes expose their page contract', function (string $routeN
             ->has('page.sections.0.body'),
         );
 })->with([
-    'projects' => ['projects.index', 'Projects'],
     'news' => ['news.index', 'News'],
     'locations' => ['locations.index', 'Locations'],
     'about' => ['about', 'About'],

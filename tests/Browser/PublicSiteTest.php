@@ -425,3 +425,177 @@ test('representative public pages render without browser errors', function () {
         '/contact',
     ])->assertNoSmoke();
 });
+
+test('project catalogue stays usable on mobile', function () {
+    $page = visit('/projects')
+        ->on()->iPhone14Pro();
+
+    $page->assertSee('Projecten uit de praktijk.')
+        ->assertSee('Baanontwerp')
+        ->assertSee('Een baanidee wordt pas echt goed als je het kunt zien, testen en delen.')
+        ->assertSee('Ontwerpen, timen en livestreamen.')
+        ->assertSee('TrackDraw')
+        ->assertSee('Race Voice')
+        ->assertSee('YouTube Chapters')
+        ->assertSee('Timer Dotfiles')
+        ->assertSee('Bijdragen aan RotorHazard')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertScript(
+            '[...document.querySelectorAll("main a[href]")].every((link) => link.tabIndex >= 0)',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("a[target=_blank]")].every((link) => link.rel.includes("noopener") && link.rel.includes("noreferrer"))',
+        )
+        ->assertVisible(
+            '[data-testid="project-spotlight-container"] [data-testid="project-external-link-trackdraw"]',
+        )
+        ->assertVisible('[data-testid="project-spotlight-video-trackdraw"]')
+        ->assertNoAccessibilityIssues()
+        ->assertNoJavaScriptErrors();
+});
+
+test('software and hardware projects stay balanced on desktop', function () {
+    $page = visit('/projects')
+        ->on()->desktop();
+
+    $page->assertSee('Stream Overlays')
+        ->assertSee('Baanontwerp')
+        ->assertSee('Van racecontrol tot baanopbouw.')
+        ->assertSee('De projecten op deze pagina ontstonden vanuit wat we tijdens races, trainingen en livestreams nodig hadden. De ene keer was dat software, de andere keer hardware of een bijdrage aan een bestaand open-sourceproject.')
+        ->assertSee('Ontwerpen, timen en livestreamen.')
+        ->assertSee('Van TrackDraw en RotorHazard-plugins tot flightcases voor timing en livestreams.')
+        ->assertSee('Open de editor')
+        ->assertSee('Bekijk de overlays')
+        ->assertSee('Download de laatste release')
+        ->assertSee('Bekijk de plugin op GitHub')
+        ->assertSee('Live-feedkoffer')
+        ->assertSee('Event-livestreamkoffer')
+        ->assertSee('Tijdregistratiekoffer')
+        ->assertSee('Timer Dotfiles')
+        ->assertSee('Bijdragen aan RotorHazard')
+        ->assertSee('Alle projecten')
+        ->assertSee('Benieuwd wat er achter onze races draait?')
+        ->assertScript(
+            'document.querySelector("main > section")?.getBoundingClientRect().height >= 700',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=project-spotlight-trackdraw]").length === 1',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-spotlight-container]")?.getBoundingClientRect().width <= 1280',
+        )
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=project-spotlight-media-frame]")).borderTopWidth === "1px"',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid^=project-card-]").length === 9',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=project-card-trackdraw]").length === 1',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-media-image-trackdraw]")?.getAttribute("src") === "/images/projects/trackdraw-mark-light.svg"',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-spotlight-video-trackdraw]")?.getAttribute("poster") === "/images/projects/trackdraw-editor.webp"',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-external-link-live-feed-flightcase]") === null',
+        )
+        ->assertScript(
+            'document.querySelector("[aria-label=\"Filter projecten op type\"]")?.getAttribute("role") === "group"',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[aria-controls=projects-grid-results]")].every((button) => button.tagName === "BUTTON")',
+        )
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=projects-community-band]")).backgroundColor === "rgb(243, 146, 0)"',
+        )
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=project-media-rh-race-voice]")).backgroundColor !== getComputedStyle(document.querySelector("section[aria-labelledby=projects-grid-heading]")).backgroundColor',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=page-eyebrow]")].every((element) => ["none", "\\"\\""].includes(getComputedStyle(element, "::before").content))',
+        )
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoAccessibilityIssues()
+        ->assertNoSmoke();
+});
+
+test('the TrackDraw card uses its dark logo variant in dark mode', function () {
+    $page = visit('/projects')
+        ->on()->desktop()
+        ->inDarkMode();
+
+    $page->assertVisible('[data-testid="project-media-dark-image-trackdraw"]')
+        ->assertScript(
+            'document.querySelector("[data-testid=project-media-dark-image-trackdraw]")?.getAttribute("src") === "/images/projects/trackdraw-mark-dark.svg"',
+        )
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=project-media-image-trackdraw]")).display === "none"',
+        )
+        ->assertNoJavaScriptErrors();
+});
+
+test('the project grid can be filtered by type', function () {
+    $page = visit('/projects')
+        ->on()->desktop();
+
+    $page->assertScript(
+        'document.querySelector("[data-testid=project-card-rh-race-voice]") !== null',
+    )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-live-feed-flightcase]") !== null',
+        )
+        ->click('Flightcases')
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-rh-race-voice]") === null',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-live-feed-flightcase]") !== null',
+        )
+        ->assertScript(
+            'document.querySelector("button[aria-pressed=true]")?.textContent?.trim() === "Flightcases"',
+        )
+        ->assertScript(
+            'document.querySelectorAll("#projects-grid-results > article").length === 3',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=projects-grid-status]")?.textContent?.replace(/\\s+/g, " ").trim() === "3 projecten zichtbaar"',
+        )
+        ->click(
+            'button[aria-controls="projects-grid-results"]:first-child',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-rh-race-voice]") !== null',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-live-feed-flightcase]") !== null',
+        )
+        ->click('RotorHazard')
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-rotorhazard-contributions]") !== null',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-rh-race-voice]") !== null',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-live-feed-flightcase]") === null',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=projects-grid-status]")?.textContent?.replace(/\\s+/g, " ").trim() === "5 projecten zichtbaar"',
+        )
+        ->assertScript(
+            'document.querySelectorAll("#projects-grid-results > article").length === 5',
+        )
+        ->click(
+            'button[aria-controls="projects-grid-results"]:first-child',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=project-card-rh-race-voice]") !== null',
+        )
+        ->assertScript(
+            'document.querySelectorAll("#projects-grid-results > article").length === 9',
+        )
+        ->assertNoJavaScriptErrors();
+});

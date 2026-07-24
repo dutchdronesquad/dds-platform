@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title">
+  <title id="title">RotorHazard YouTube Chapters</title>
+  <defs>
+    <linearGradient id="background" x1="6" y1="4" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c084fc"/>
+      <stop offset="1" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#background)"/>
+  <path d="M11.5 9.5A1.5 1.5 0 0 1 13 8h6a1.5 1.5 0 0 1 1.5 1.5v13.2c0 .95-1.06 1.52-1.85.99L16 20.9l-2.65 1.8c-.79.53-1.85-.04-1.85-.99Z" fill="#fff"/>
+</svg>

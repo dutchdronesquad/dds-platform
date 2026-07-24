@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\SeasonController;
 use App\Http\Middleware\HandleLegacyRedirects;
 use App\Support\SeoMetadata;
@@ -32,10 +33,7 @@ Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
 Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
 
-Route::inertia('/projects', 'public/shell', [
-    'page' => $publicPages['projects'],
-    'seo' => $seoMetadata->forPage('projects'),
-])->name('projects.index');
+Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 
 Route::inertia('/news', 'public/shell', [
     'page' => $publicPages['news'],
