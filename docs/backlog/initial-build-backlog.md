@@ -21,7 +21,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
-Projects and partners are deliberately code-owned in phase 1. Neither domain gets a database model, permissions, or dashboard CRUD unless observed maintenance needs pass its documented CMS decision gate.
+Projects, partners, and fixed informational pages are deliberately code-owned in phase 1. They do not get database models, permissions, or dashboard CRUD unless observed maintenance needs pass their documented CMS decision gates.
 
 The authoritative order for all unfinished work is [Open Work Execution Order](./open-work-execution-order.md). Keep ticket definitions and acceptance criteria in this document, but do not maintain a second numbered execution list here.
 
@@ -1083,24 +1083,33 @@ Acceptance criteria:
 
 ### DDS-014F: Managed Static Content For Known Public Pages
 
-Goal: avoid a generic page builder while still allowing known public pages to be edited.
+Status: deferred and not part of the active execution order. The July 2026 review found no demonstrated need for non-technical editors to maintain these pages independently.
 
-Tasks:
+Decision:
 
-- decide which known pages need managed content: about, house rules, contact intro, homepage sections, partner intro, and location intro;
-- create a constrained `StaticPage` or `PublicPage` model if hardcoded content becomes too limiting;
-- support fixed page keys instead of arbitrary user-created routes in phase 1;
-- include the required title, intro, body sections, status, and updated_by metadata, translating only fields that need parallel public variants;
-- add admin edit screens for fixed pages;
-- migrate temporary shell copy into the managed approach when ready.
+- keep about, house rules, the contact intro, homepage sections, partner intro, and location intro in code-owned configuration or their designed React templates;
+- do not add a `StaticPage` or `PublicPage` model, database migration, page permissions, or `/dashboard/pages` screens in phase 1;
+- map useful WordPress page content deliberately into these known templates during migration rather than preserving a generic CMS page model.
+
+Reopen this ticket only when at least one of these conditions is observed:
+
+- non-technical editors need to change fixed-page copy independently;
+- fixed-page changes become frequent or urgent enough that pull-request maintenance causes measurable delay;
+- parallel-language maintenance needs a dedicated editorial workflow;
+- migration discovery identifies approved legacy page content that cannot be maintained reasonably in the existing templates.
+
+If reopened:
+
+- decide exactly which known pages need managed content;
+- support fixed page keys only, without arbitrary user-created routes;
+- define required translated fields, publication state, update metadata, validation, policies, permissions, and admin edit screens;
+- preserve the designed React templates and establish one source of truth for migrated content.
 
 Acceptance criteria:
 
-- known static pages can be updated without code changes;
-- arbitrary CMS route creation is not introduced in phase 1;
-- page keys are stable and testable;
-- pages still use designed React templates;
-- WordPress page content has a clear target when imported or manually rewritten.
+- no unused page model, migration, permission, or dashboard placeholder exists before the gate is reached;
+- the decision to introduce managed page content is supported by recorded maintenance evidence;
+- any later managed-content implementation keeps routes stable and does not introduce a generic page builder.
 
 ### DDS-014G: Contact Submission Model And Form
 
