@@ -218,10 +218,11 @@ Goal: position DDS better toward partners, demos, and external assignments.
 
 Tasks:
 
-- Project model;
-- public project index and detail page;
-- admin CRUD;
-- gallery/media support;
+- curated, typed project catalogue maintained in code;
+- art-directed public project index and selected detail pages;
+- versioned static project media and safe external project links;
+- documented pull-request maintenance workflow;
+- explicit CMS decision gate based on observed editing frequency, catalogue scale, and non-technical editor needs;
 - CTA to contact or request form.
 
 Acceptance criteria:
@@ -229,6 +230,8 @@ Acceptance criteria:
 - DDS can present completed projects;
 - cases include visuals, context, and outcome;
 - potential clients are guided toward contact.
+- the showcase retains custom presentation without requiring a database or dashboard CRUD in phase 1;
+- a later CMS is introduced only when concrete maintenance needs justify it.
 
 ## Later
 

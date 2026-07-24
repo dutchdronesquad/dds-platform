@@ -3,8 +3,10 @@ import { RadioTower } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import PublicButton from './public-button';
+import PublicExternalLink from './public-external-link';
 
 type Action = {
+    external?: boolean;
     href: string;
     label: string;
 };
@@ -21,7 +23,7 @@ type PublicHeroProps = {
     description?: string;
     kicker?: string;
     media: Media;
-    separatorTone?: 'air' | 'paper';
+    separatorTone?: 'air' | 'deep-signal' | 'paper';
     showSeparator?: boolean;
     size?: 'default' | 'compact';
     title: ReactNode;
@@ -96,16 +98,28 @@ export function PublicHero({
                             </p>
                         )}
                         <div className="mt-8 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
-                            {actions.map((action, index) => (
-                                <PublicButton
-                                    key={action.label}
-                                    href={action.href}
-                                    inverse
-                                    variant={index === 0 ? 'primary' : 'text'}
-                                >
-                                    {action.label}
-                                </PublicButton>
-                            ))}
+                            {actions.map((action, index) =>
+                                action.external ? (
+                                    <PublicExternalLink
+                                        key={action.label}
+                                        href={action.href}
+                                        className="min-h-11 px-0 py-3 text-sm font-semibold text-white transition-colors hover:text-signal-300"
+                                    >
+                                        {action.label}
+                                    </PublicExternalLink>
+                                ) : (
+                                    <PublicButton
+                                        key={action.label}
+                                        href={action.href}
+                                        inverse
+                                        variant={
+                                            index === 0 ? 'primary' : 'text'
+                                        }
+                                    >
+                                        {action.label}
+                                    </PublicButton>
+                                ),
+                            )}
                         </div>
                     </div>
                 </div>
@@ -117,17 +131,19 @@ export function PublicHero({
 }
 
 type HeroSeparatorProps = {
-    tone: 'air' | 'paper';
+    tone: 'air' | 'deep-signal' | 'paper';
 };
 
-function HeroSeparator({ tone }: HeroSeparatorProps) {
+export function HeroSeparator({ tone }: HeroSeparatorProps) {
     return (
         <div
             aria-hidden="true"
             data-testid="hero-separator"
             className={cn(
                 'relative z-10 -mt-10 h-10 overflow-hidden sm:-mt-14 sm:h-14',
-                tone === 'air' ? 'text-air' : 'text-paper dark:text-night-950',
+                tone === 'air' && 'text-air',
+                tone === 'deep-signal' && 'text-deep-signal',
+                tone === 'paper' && 'text-paper dark:text-night-950',
             )}
         >
             <svg
@@ -394,16 +410,26 @@ export function CtaBand({
 type EyebrowProps = {
     children: ReactNode;
     inverse?: boolean;
+    line?: boolean;
 };
 
-export function Eyebrow({ children, inverse = false }: EyebrowProps) {
+export function Eyebrow({
+    children,
+    inverse = false,
+    line = true,
+}: EyebrowProps) {
     return (
         <p
+            data-testid="page-eyebrow"
             className={cn(
-                'flex items-center gap-3 text-xs font-semibold tracking-[0.14em] uppercase before:h-px before:w-7',
+                'flex items-center gap-3 text-xs font-semibold tracking-[0.14em] uppercase',
+                line && 'before:h-px before:w-7',
                 inverse
-                    ? 'text-signal-300 before:bg-flight-400'
-                    : 'text-signal-700 before:bg-flight-500 dark:text-signal-300',
+                    ? cn('text-signal-300', line && 'before:bg-flight-400')
+                    : cn(
+                          'text-signal-700 dark:text-signal-300',
+                          line && 'before:bg-flight-500',
+                      ),
             )}
         >
             {children}

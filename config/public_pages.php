@@ -7,30 +7,6 @@
  * to first-class models or constrained managed content.
  */
 return [
-    'projects' => [
-        'title' => 'Projects',
-        'eyebrow' => 'Showcase',
-        'description' => 'Publieke showcase voor DDS-built tooling, software, plugins, apps, integraties en geselecteerde community builds.',
-        'visual' => [
-            'src' => '/images/dds/racing/pilot-preparing-drone.jpg',
-            'alt' => 'FPV-piloot werkt aan een racedrone tijdens een DDS-training',
-            'position' => '44% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Neem contact op',
-            'href' => '/contact',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Geen intern projectbeheer',
-                'body' => 'Projects toont straks wat de community bouwt en gebruikt, zodat bezoekers de resultaten kunnen bekijken zonder toegang tot interne planning.',
-            ],
-            [
-                'heading' => 'Selectiecriteria',
-                'body' => 'De focus ligt op bruikbare tooling, documentatie, integraties en builds die de dronecommunity verder helpen.',
-            ],
-        ],
-    ],
     'news' => [
         'title' => 'News',
         'eyebrow' => 'Updates',

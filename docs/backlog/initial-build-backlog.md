@@ -31,7 +31,7 @@ Recommended next tickets:
 
 1. finish and merge the current DDS-014 / DDS-012 / DDS-009 schema cluster;
 2. define the explicit DDS-009A season-ticket model before promoting season tickets publicly;
-3. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014A, DDS-014D, and DDS-014F;
+3. add the remaining foundational content schemas before their admin screens: DDS-013, DDS-014D, and DDS-014F, while DDS-014A establishes a deliberately code-owned project catalogue without a database model;
 4. establish DDS-011A and DDS-011B admin resource patterns, then build DDS-014H media-library selection and DDS-011 Event/Season management;
 5. complete DDS-010 and DDS-010A public Event work, then align season presentation through DDS-010B;
 6. build the public newcomer journey and all documented entry points in DDS-014L using the constrained managed-page foundation;
@@ -947,67 +947,75 @@ Acceptance criteria:
 - articles remain source-agnostic whether created manually or migrated selectively;
 - only published articles are public.
 
-### DDS-014A: Project Showcase Model
+### DDS-014A: Code-Owned Project Catalogue And Selection
 
-Goal: model public showcase projects for DDS-built tooling, software, plugins, apps, integrations, and selected community builds.
+Decision: phase 1 keeps the project showcase deliberately code-owned. DDS does not introduce a `Project` model, project tables, project permissions, or dashboard CRUD until the maintenance burden proves that a CMS is needed.
 
-Tasks:
-
-- create `Project` model and migration;
-- include title, slug, excerpt, content, status, project_type, visibility, featured flag, and sort order;
-- support project types such as `plugin`, `app`, `integration`, `event_tooling`, `community_build`, and `other`;
-- add optional links for GitHub, live demo, documentation, download, and contact;
-- add optional ownership/credit fields for maintainers or contributors;
-- add media references and only translate content fields where the editing workflow benefits from it.
-
-Acceptance criteria:
-
-- RotorHazard plugins, TrackDraw-style apps, race tooling, livestream overlays, and community utilities can be represented cleanly;
-- projects can distinguish open source, public platform, internal/private, and archived work;
-- only published and public projects are visible on the public site;
-- the model does not imply internal task or project-management workflows;
-- project records can be created through factories/tests.
-
-### DDS-014B: Public Project Showcase Pages
-
-Goal: show DDS projects publicly as a credible development and tooling showcase.
+Goal: define a small, curated source of truth for DDS-built tooling, software, plugins, apps, integrations, and selected community builds without constraining the public presentation to a generic content model.
 
 Tasks:
 
-- build `/projects` project index page;
-- build `/projects/{slug}` project detail page;
-- add filters or grouping by project type when useful;
-- show project links, status, media, and concise value proposition;
-- add useful empty states.
+- select the initial projects that have a clear public audience, credible outcome, and suitable supporting material;
+- create a typed code-owned catalogue, preferably in a dedicated configuration file, with stable slugs, titles, concise summaries, project-type labels, primary links, optional supporting links, credits, and static media paths;
+- include only projects intended for public presentation instead of storing internal or private work alongside public entries;
+- define which projects justify a dedicated case page and which belong only in the overview;
+- keep project imagery in versioned static assets while the catalogue remains code-owned;
+- validate unique slugs, required fields, safe external links, and referenced catalogue entries through focused automated tests;
+- record that catalogue changes are reviewed and deployed through the normal pull-request workflow.
 
 Acceptance criteria:
 
-- `/projects` lists published public projects;
-- `/projects/{slug}` shows a published public project;
-- project cards communicate type, purpose, status, and primary link clearly;
-- archived or internal-only projects are not publicly listed unless explicitly marked visible;
-- pages can support both software/tooling projects and selected community builds without separate content types.
+- the initial RotorHazard plugins, TrackDraw-style apps, race tooling, livestream overlays, or community utilities can be described without a database model;
+- every catalogue entry has a stable slug, clear purpose, primary destination, credit where relevant, and an explicit public audience;
+- internal planning data, private projects, task status, and operational project management do not enter the public catalogue;
+- catalogue mistakes such as duplicate slugs, missing required fields, and unsafe links are caught automatically;
+- adding or changing a project requires a reviewed code change and does not imply that dashboard management already exists.
 
-### DDS-014C: Admin Project CRUD
+### DDS-014B: Art-Directed Public Project Showcase
 
-Goal: manage project showcase content from the `/dashboard` management area.
+Goal: replace the temporary `/projects` shell with a distinctive public showcase that presents a small number of DDS projects as credible cases rather than generic CMS records.
 
 Tasks:
 
-- create `/dashboard/projects` project index;
-- create project create/edit forms;
-- add server-side validation through Form Requests;
-- add project policies;
-- add publish status and featured controls;
-- make link fields easy to add, remove, and validate.
+- build a dedicated `/projects` Inertia page from the code-owned catalogue;
+- give the overview a strong responsive composition with clear project purpose, outcome, credits, media, and primary action;
+- add `/projects/{slug}` only for projects with enough context, visuals, or documentation to justify a dedicated case page;
+- allow dedicated case components or explicit presentation variants when projects need different storytelling instead of forcing every case into one template;
+- add project-type grouping or filtering only when the catalogue becomes large enough for it to help visitors;
+- provide useful external links to GitHub, a live demo, documentation, downloads, or contact where they exist;
+- add project-specific SEO metadata, safe external-link behavior, useful not-found handling, and representative mobile, keyboard, and accessibility coverage.
 
 Acceptance criteria:
 
-- admins can create, edit, publish, feature, archive, and reorder projects;
-- editors can create and update projects according to their seeded permissions;
-- validation errors are shown clearly;
-- public visibility follows status and visibility fields;
-- forms are structured for concise project showcase editing, not task tracking.
+- `/projects` presents the curated public catalogue with a clearly designed DDS identity;
+- entries with dedicated cases have stable `/projects/{slug}` URLs, while smaller projects can remain overview-only;
+- each visible project communicates its purpose, value, ownership or credits, current public relevance, and one clear next action;
+- layouts can vary deliberately for flagship cases without losing navigation, accessibility, or responsive consistency;
+- visitors never see internal/private projects or an empty generic project-management state;
+- project content can be changed safely through code review without requiring a database or dashboard workflow.
+
+### DDS-014C: Project Showcase Maintenance Workflow And CMS Decision Gate
+
+Decision: there is no `/dashboard/projects` resource in phase 1. This ticket protects that choice and defines when it should be reconsidered instead of pre-emptively building CRUD.
+
+Goal: keep project-showcase maintenance predictable and lightweight while preserving a clear path to structured management if real editorial needs emerge.
+
+Tasks:
+
+- document the code-owned editing workflow, catalogue location, static-asset conventions, preview steps, required tests, and reviewer expectations;
+- remove or avoid dashboard navigation and placeholder actions that imply project CRUD is available or planned for immediate delivery;
+- review the catalogue after real use and record how often projects, ordering, links, credits, and case content change;
+- reconsider a `Project` model and dashboard workflow only when non-technical editors need independent access, catalogue changes become frequent, the catalogue grows enough to need operational filtering or archival state, or the same data needs multiple non-code consumers;
+- if the decision gate is reached, design a later migration that preserves public slugs, URLs, credits, media, and the art-directed presentation rather than replacing it with a generic page builder;
+- keep media-library attachment, permissions, publication states, and reordering out of scope until that later decision is approved.
+
+Acceptance criteria:
+
+- maintainers have one documented and tested way to add or change a project through a pull request;
+- the dashboard does not contain a dead-end project-management action;
+- the concrete CMS triggers are documented and can be evaluated using observed maintenance needs;
+- no project model, migration, policy, permission set, Form Request, or admin form is introduced in phase 1;
+- a future CMS migration can preserve existing public URLs and custom presentation if the decision changes.
 
 ### DDS-014D: Partner Model And Public Partner Pages
 
@@ -1113,7 +1121,7 @@ Acceptance criteria:
 - admins can upload and manage media assets;
 - existing assets can be selected and reused from Event and Location forms;
 - optional alt text defaults are editable in supported locales;
-- media records can be attached to events, articles, projects, partners, and locations later;
+- media records can be attached to events, articles, partners, locations, and future model-backed project content later;
 - imported WordPress media can coexist with manually uploaded media;
 - unused media can be reviewed without deleting it automatically.
 
@@ -1487,7 +1495,7 @@ Goal: verify the management area is efficient enough for repeated real use.
 
 Tasks:
 
-- audit dashboard, event CRUD, article CRUD, project CRUD, location CRUD, partner CRUD, media library, user management, contact submissions, redirects, and import review;
+- audit dashboard, event CRUD, article CRUD, location CRUD, partner CRUD, media library, user management, contact submissions, redirects, and import review;
 - test common admin workflows from empty state to published content;
 - check validation, save feedback, destructive confirmations, and permission behavior;
 - test mobile/tablet fallback for urgent admin tasks;
