@@ -123,6 +123,95 @@ ddev npm run build
 
 If `public/hot` exists, Laravel will keep using the dev server even after a build. Stop the dev server cleanly, or remove `public/hot` before checking built assets.
 
+## Mail And Contact Notifications
+
+DDEV includes Mailpit for catching local email. Messages sent to Mailpit never leave the local environment, so real-looking recipient addresses are safe during development.
+
+Use the following local settings in `.env`:
+
+```dotenv
+APP_NAME="Dutch Drone Squad"
+APP_URL=https://dds-platform.ddev.site
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS=no-reply@dutchdronesquad.nl
+MAIL_FROM_NAME="${APP_NAME}"
+
+QUEUE_CONNECTION=database
+```
+
+After changing `.env`, clear the cached configuration:
+
+```bash
+ddev artisan config:clear
+```
+
+The contact notification is queued. Keep a worker running in a separate terminal while testing:
+
+```bash
+ddev artisan queue:work
+```
+
+For a one-off test that stops when the queue is empty:
+
+```bash
+ddev artisan queue:work --stop-when-empty
+```
+
+Restart a long-running worker after changing notification code or mail configuration:
+
+```bash
+ddev artisan queue:restart
+```
+
+Open Mailpit with:
+
+```bash
+ddev mailpit
+```
+
+Its default project URL is `https://dds-platform.ddev.site:8026`.
+
+### Contact Notification Flow
+
+1. Ensure the roles and permissions are synchronized after pulling contact-flow changes:
+
+    ```bash
+    ddev artisan db:seed --class=Database\\Seeders\\RolesAndPermissionsSeeder --no-interaction
+    ```
+
+2. Ensure at least one active user has the `admin` role. Contact notifications are sent to all active administrators.
+3. Start the queue worker.
+4. Submit the public form at `/contact`.
+5. Inspect the captured message in Mailpit and the delivery status under `/dashboard/contact-submissions`.
+
+The message uses the configured global sender. The visitor's name and email address are set as the reply-to address, so replying from a real mailbox targets the visitor.
+
+The dashboard delivery states have the following meaning:
+
+- `In wachtrij`: the notification is waiting for a queue worker.
+- `Verzonden`: Laravel handed the message to the configured mail transport.
+- `Niet geconfigureerd`: the mailer is `log` or `array`, or there are no active administrators.
+- `Mislukt`: the queued notification exhausted its delivery attempts; the stored contact request still requires manual follow-up.
+
+Useful diagnostics:
+
+```bash
+ddev artisan config:show mail
+ddev artisan config:show queue.default
+ddev artisan queue:failed
+ddev artisan pail
+```
+
+### Production
+
+Do not use Mailpit in production. Configure a real SMTP or supported transactional mail provider through deployment secrets, use a sender address on a verified domain, and configure SPF, DKIM, and DMARC with that provider. Keep `QUEUE_CONNECTION` on a durable asynchronous connection and run `queue:work` as a supervised, continuously restarted process. Active administrator accounts remain the source of notification recipients.
+
 ## Representative Event Data
 
 Create or refresh the deterministic public event dataset locally with:

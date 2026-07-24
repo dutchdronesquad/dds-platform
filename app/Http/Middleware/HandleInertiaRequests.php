@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\ContactDeliveryStatus;
 use App\Enums\Permission;
+use App\Models\ContactSubmission;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use Illuminate\Http\Request;
@@ -55,14 +57,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'management' => fn (): ?array => $request->user() ? [
-                'canViewEvents' => $request->user()->can(Permission::ViewEvents->value),
-                'canViewMedia' => $request->user()->can('viewAny', MediaAsset::class),
-                'canManageSeasons' => $request->user()->can('viewAny', Season::class),
-                'canViewRedirects' => $request->user()->can(Permission::ViewRedirects->value),
-                'canViewUsers' => $request->user()->can(Permission::ViewUsers->value),
-                'canViewRoles' => $request->user()->can(Permission::ViewRoles->value),
-            ] : null,
+            'management' => fn (): ?array => $this->managementProps($request),
             'ui' => [
                 'authPhotoRotationInterval' => app()->environment('testing')
                     ? self::TEST_AUTH_PHOTO_ROTATION_INTERVAL
@@ -70,5 +65,40 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function managementProps(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        $canViewContact = $user->can(Permission::ViewContact->value);
+
+        return [
+            'canViewEvents' => $user->can(Permission::ViewEvents->value),
+            'canViewMedia' => $user->can('viewAny', MediaAsset::class),
+            'canManageSeasons' => $user->can('viewAny', Season::class),
+            'canViewRedirects' => $user->can(Permission::ViewRedirects->value),
+            'canViewContact' => $canViewContact,
+            'contactFollowUpCount' => $canViewContact ? $this->contactFollowUpCount() : 0,
+            'canViewUsers' => $user->can(Permission::ViewUsers->value),
+            'canViewRoles' => $user->can(Permission::ViewRoles->value),
+        ];
+    }
+
+    private function contactFollowUpCount(): int
+    {
+        return ContactSubmission::query()
+            ->whereIn('delivery_status', [
+                ContactDeliveryStatus::NotConfigured,
+                ContactDeliveryStatus::Failed,
+            ])
+            ->count();
     }
 }

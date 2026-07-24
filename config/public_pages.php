@@ -106,24 +106,26 @@ return [
     'contact' => [
         'title' => 'Contact',
         'eyebrow' => 'Bereik DDS',
-        'description' => 'Contact wordt de publieke route voor vragen over events, projecten, partnerschappen en deelname aan Dutch Drone Squad.',
+        'description' => 'Wil je meer weten over Dutch Drone Squad of over de vliegavonden die we organiseren? Neem dan gerust contact op.',
         'visual' => [
-            'src' => '/images/dds/racing/pilot-at-training.jpg',
-            'alt' => 'FPV-piloot bij een trainingsavond van Dutch Drone Squad',
-            'position' => '62% center',
+            'src' => '/images/dds/racing/trainingsavond-overzicht.jpg',
+            'alt' => 'Overzicht van het indoor FPV-parcours in het Sportpaleis Alkmaar tijdens een trainingsavond',
+            'position' => 'center 42%',
         ],
-        'primaryAction' => [
-            'label' => 'Bekijk events',
-            'href' => '/events',
+        'actions' => [
+            [
+                'label' => 'Bekijk events',
+                'href' => '/events',
+            ],
         ],
         'sections' => [
             [
                 'heading' => 'Waarvoor contact',
-                'body' => 'Bezoekers kunnen hier straks de juiste route vinden voor deelname, samenwerking, persvragen of projectvoorstellen.',
+                'body' => 'Gebruik het formulier voor deelname, samenwerking, persvragen of projectvoorstellen.',
             ],
             [
-                'heading' => 'Vervolg',
-                'body' => 'Een formulier of contactblok kan later worden toegevoegd zonder de publieke URL-structuur te wijzigen.',
+                'heading' => 'Zorgvuldige opvolging',
+                'body' => 'Iedere aanvraag wordt opgeslagen en blijft beschikbaar voor onze beheerders, ook bij een tijdelijk mailprobleem.',
             ],
         ],
     ],

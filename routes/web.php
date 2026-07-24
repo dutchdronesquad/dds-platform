@@ -2,6 +2,7 @@
 
 use App\Enums\Permission;
 use App\Enums\Role;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
+use App\Http\Controllers\Public\ContactController as PublicContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PartnerController;
@@ -58,10 +60,10 @@ Route::inertia('/house-rules', 'public/shell', [
 
 Route::get('/partners', [PartnerController::class, 'index'])->name('partners');
 
-Route::inertia('/contact', 'public/shell', [
-    'page' => $publicPages['contact'],
-    'seo' => $seoMetadata->forPage('contact'),
-])->name('contact');
+Route::get('/contact', [PublicContactController::class, 'index'])->name('contact');
+Route::post('/contact', [PublicContactController::class, 'store'])
+    ->middleware('throttle:contact-submissions')
+    ->name('contact.store');
 
 Route::middleware([
     'auth',
@@ -88,6 +90,14 @@ Route::middleware([
             ->name('events.cancel');
         Route::resource('events', AdminEventController::class)->except('show');
         Route::resource('seasons', AdminSeasonController::class)->except('show');
+        Route::resource('contact-submissions', AdminContactController::class)
+            ->parameters(['contact-submissions' => 'contactSubmission'])
+            ->only(['index', 'show'])
+            ->names([
+                'index' => 'contact.index',
+                'show' => 'contact.show',
+            ])
+            ->middleware('can:'.Permission::ViewContact->value);
         Route::patch('users/{user}/block', [UserStatusController::class, 'block'])
             ->name('users.block');
         Route::patch('users/{user}/unblock', [UserStatusController::class, 'unblock'])
