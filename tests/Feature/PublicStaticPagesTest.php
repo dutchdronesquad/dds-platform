@@ -6,7 +6,7 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
-test('homepage exposes its temporary news and partner contract alongside database events', function () {
+test('homepage exposes its temporary news contract alongside database events and catalogue partners', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
@@ -14,12 +14,9 @@ test('homepage exposes its temporary news and partner contract alongside databas
             ->has('upcomingEvents', 0)
             ->has('latestNews', 3)
             ->where('latestNewsAreLegacy', true)
-            ->has('partnerLogos', 1)
-            ->has('partnerLogos.0', fn (Assert $partner) => $partner
-                ->where('alt', 'Droneshop.nl')
-                ->where('href', 'https://droneshop.nl')
-                ->has('src'),
-            ),
+            ->has('partners', 2)
+            ->where('partners.0.name', 'Droneshop.nl')
+            ->where('partners.1.name', 'Sportpaleis Alkmaar')
         );
 });
 
@@ -43,6 +40,5 @@ test('public static routes expose their page contract', function (string $routeN
     'locations' => ['locations.index', 'Locations'],
     'about' => ['about', 'About'],
     'house rules' => ['house_rules', 'House Rules'],
-    'partners' => ['partners', 'Partners'],
     'contact' => ['contact', 'Contact'],
 ]);

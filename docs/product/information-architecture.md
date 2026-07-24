@@ -380,6 +380,16 @@ Catalogue fields:
 
 The catalogue contains public presentation data only. Private contact notes, agreements, invoices, campaign administration, and unverified entries remain outside it. A later model and `/dashboard/partners` workflow may be designed only after the DDS-014E decision gate is reached.
 
+Partner catalogue maintenance workflow:
+
+1. Add or update the public entry in `config/partner_catalogue.php`. Use a stable lowercase key, the partner's canonical HTTPS URL, explicit homepage visibility, and a manual sort order.
+2. Place the approved official logo in `public/images/dds/partners`. Keep its aspect ratio, prefer the source vector or highest-quality transparent raster supplied by the partner, and never recreate or approximate a partner mark. Record the source and confirm DDS may publish it in the pull request.
+3. Preview both `/` and `/partners` at representative mobile and desktop widths. Check logo sharpness, visual weight, wrapping, contrast, keyboard focus, accessible naming, and the external destination.
+4. Run `php artisan test --compact tests/Feature/PartnerCatalogueTest.php tests/Feature/PublicPartnerPagesTest.php tests/Feature/PublicStaticPagesTest.php tests/Feature/DashboardTest.php`, the focused partner browser test in `tests/Browser/PublicSiteTest.php`, `npm run format:check`, `npm run lint:check`, `npm run types:check`, and `npm run build`.
+5. Have a reviewer verify the partner identity, public description, URL, logo approval, ordering, homepage visibility, and rendered pages before merging.
+
+The catalogue validator rejects duplicate or malformed keys, unsafe URLs, unsupported fields, invalid visibility or ordering values, and missing logo files. The public mapper exposes only the fields needed by the homepage and partner overview, so operational or private partner information cannot be serialized accidentally.
+
 ### ContactSubmission
 
 For contact requests.
