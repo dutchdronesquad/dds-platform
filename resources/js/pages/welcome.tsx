@@ -5,8 +5,9 @@ import PublicEventCard from '@/components/public/public-event-card';
 import PublicPartnerLogo from '@/components/public/public-partner-logo';
 import { PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
-import { about, contact, partners as partnersPage } from '@/routes';
+import { about, partners as partnersPage } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
+import { index as gettingStartedIndex } from '@/routes/getting_started';
 import { index as locationsIndex } from '@/routes/locations';
 import { index as newsIndex } from '@/routes/news';
 import type { PublicEventSummary, PublicPartner, SeoMetadata } from '@/types';
@@ -232,7 +233,9 @@ export default function Welcome({
                             in De Goorn.
                         </p>
                         <Link
-                            href={contact()}
+                            href={gettingStartedIndex({
+                                query: { source: 'homepage' },
+                            })}
                             prefetch
                             className="group mt-8 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-deep-signal px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-dds-blue focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:ring-offset-warmup focus-visible:outline-none"
                         >

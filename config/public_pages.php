@@ -33,7 +33,7 @@ return [
     ],
     'house_rules' => [
         'title' => 'House Rules',
-        'eyebrow' => 'Afspraken',
+        'eyebrow' => 'Regels',
         'description' => 'De huisregels geven straks duidelijke verwachtingen voor deelname, veiligheid en gedrag binnen de DDS-community.',
         'visual' => [
             'src' => '/images/dds/racing/pilot-preparing-drone.jpg',
@@ -47,7 +47,7 @@ return [
         'sections' => [
             [
                 'heading' => 'Veilig deelnemen',
-                'body' => 'Deze pagina krijgt ruimte voor basisafspraken rond vliegen, privacy, materiaal en omgang met elkaar.',
+                'body' => 'Deze pagina krijgt ruimte voor basisregels rond vliegen, privacy, materiaal en omgang met elkaar.',
             ],
             [
                 'heading' => 'Praktische toepassing',

@@ -74,6 +74,13 @@ return [
             'image_path' => '/images/dds/locations/sporthal-koggenhal.jpg',
             'image_alt' => 'Sporthal waar Dutch Drone Squad activiteiten organiseert',
         ],
+        'getting_started' => [
+            'title' => 'Beginnen met FPV',
+            'description' => 'Ontdek wat FPV-droneracen inhoudt, welke uitrusting je nodig hebt en hoe je een geschikt eerste event bij Dutch Drone Squad kiest.',
+            'canonical_path' => '/getting-started',
+            'image_path' => '/images/dds/racing/pilot-at-training.jpg',
+            'image_alt' => 'Piloot tijdens een indoor training van Dutch Drone Squad',
+        ],
         'about' => [
             'title' => 'Over DDS',
             'description' => 'Lees hoe Dutch Drone Squad dronepiloten, makers en partners samenbrengt rond veilig vliegen, kennisdeling en FPV-racing.',
@@ -83,7 +90,7 @@ return [
         ],
         'house_rules' => [
             'title' => 'Huisregels',
-            'description' => 'Lees de afspraken voor veilige, respectvolle deelname aan activiteiten van Dutch Drone Squad.',
+            'description' => 'Lees de regels voor veilige, respectvolle deelname aan activiteiten van Dutch Drone Squad.',
             'canonical_path' => '/house-rules',
             'image_path' => '/images/dds/racing/pilot-preparing-drone.jpg',
             'image_alt' => 'FPV-piloot bereidt veilig een racedrone voor',
