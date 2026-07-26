@@ -37,7 +37,6 @@ test('public static routes expose their page contract', function (string $routeN
         );
 })->with([
     'news' => ['news.index', 'News'],
-    'locations' => ['locations.index', 'Locations'],
     'about' => ['about', 'About'],
     'house rules' => ['house_rules', 'House Rules'],
 ]);

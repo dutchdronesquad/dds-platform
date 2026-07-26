@@ -59,5 +59,11 @@ class AppServiceProvider extends ServiceProvider
             fn (Request $request): Limit => Limit::perMinute(5)
                 ->by('contact-submissions:'.$request->ip()),
         );
+
+        RateLimiter::for(
+            'location-geocoding',
+            fn (Request $request): Limit => Limit::perMinute(20)
+                ->by('location-geocoding:'.$request->user()->id),
+        );
     }
 }

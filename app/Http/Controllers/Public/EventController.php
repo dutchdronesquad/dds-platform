@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use App\Models\Location;
 use App\Support\PublicEventData;
+use App\Support\PublicLocationData;
 use App\Support\PublicSeasonData;
 use App\Support\SeoMetadata;
 use Illuminate\Http\Request;
@@ -19,6 +19,7 @@ final class EventController extends Controller
     public function __construct(
         private PublicEventData $eventData,
         private PublicSeasonData $seasonData,
+        private PublicLocationData $locationData,
     ) {}
 
     public function index(Request $request, SeoMetadata $seoMetadata): Response
@@ -119,7 +120,7 @@ final class EventController extends Controller
                     'street' => $event->location->street,
                     'houseNumber' => $event->location->house_number,
                     'postalCode' => $event->location->postal_code,
-                    ...$this->googleMapsUrls($event->location),
+                    ...$this->locationData->googleMapsUrls($event->location),
                 ],
                 'registrationUrl' => $event->registration_url,
                 'seasonContext' => $seasonContext,
@@ -132,29 +133,6 @@ final class EventController extends Controller
                 'image_alt' => $image['alt'],
             ]),
         ]);
-    }
-
-    /** @return array{mapEmbedUrl: string, mapUrl: string} */
-    private function googleMapsUrls(Location $location): array
-    {
-        $query = implode(', ', [
-            $location->name,
-            "{$location->street} {$location->house_number}",
-            "{$location->postal_code} {$location->city}",
-            $location->country_code,
-        ]);
-
-        return [
-            'mapEmbedUrl' => 'https://maps.google.com/maps?'.http_build_query([
-                'q' => $query,
-                'z' => 15,
-                'output' => 'embed',
-            ], encoding_type: PHP_QUERY_RFC3986),
-            'mapUrl' => 'https://www.google.com/maps/search/?'.http_build_query([
-                'api' => 1,
-                'query' => $query,
-            ], encoding_type: PHP_QUERY_RFC3986),
-        ];
     }
 
     /** @return list<array{value: string, label: string}> */

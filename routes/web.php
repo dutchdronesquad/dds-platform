@@ -6,9 +6,13 @@ use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
+use App\Http\Controllers\Admin\LocationAddressLookupController;
+use App\Http\Controllers\Admin\LocationAddressSuggestController;
+use App\Http\Controllers\Admin\LocationController as AdminLocationController;
 use App\Http\Controllers\Admin\MediaAssetArchiveController;
 use App\Http\Controllers\Admin\MediaAssetController;
 use App\Http\Controllers\Admin\MediaAssetPickerController;
+use App\Http\Controllers\Admin\MediaAssetQuickUploadController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
@@ -17,6 +21,7 @@ use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\ContactController as PublicContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\LocationController;
 use App\Http\Controllers\Public\PartnerController;
 use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\SeasonController;
@@ -43,10 +48,8 @@ Route::inertia('/news', 'public/shell', [
     'seo' => $seoMetadata->forPage('news'),
 ])->name('news.index');
 
-Route::inertia('/locations', 'public/shell', [
-    'page' => $publicPages['locations'],
-    'seo' => $seoMetadata->forPage('locations'),
-])->name('locations.index');
+Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+Route::get('/locations/{location:slug}', [LocationController::class, 'show'])->name('locations.show');
 
 Route::inertia('/about', 'public/shell', [
     'page' => $publicPages['about'],
@@ -75,6 +78,8 @@ Route::middleware([
     Route::prefix('dashboard')->name('admin.')->group(function () {
         Route::get('media/picker', MediaAssetPickerController::class)
             ->name('media.picker');
+        Route::post('media/quick-upload', MediaAssetQuickUploadController::class)
+            ->name('media.quick-upload');
         Route::patch('media/{mediaAsset}/archive', [MediaAssetArchiveController::class, 'archive'])
             ->name('media.archive');
         Route::patch('media/{mediaAsset}/restore', [MediaAssetArchiveController::class, 'restore'])
@@ -89,6 +94,13 @@ Route::middleware([
         Route::patch('events/{event}/cancel', [EventStatusController::class, 'cancel'])
             ->name('events.cancel');
         Route::resource('events', AdminEventController::class)->except('show');
+        Route::get('locations/address-suggestions', LocationAddressSuggestController::class)
+            ->middleware('throttle:location-geocoding')
+            ->name('locations.address-suggestions');
+        Route::get('locations/lookup-address', LocationAddressLookupController::class)
+            ->middleware('throttle:location-geocoding')
+            ->name('locations.lookup-address');
+        Route::resource('locations', AdminLocationController::class)->except('show');
         Route::resource('seasons', AdminSeasonController::class)->except('show');
         Route::resource('contact-submissions', AdminContactController::class)
             ->parameters(['contact-submissions' => 'contactSubmission'])

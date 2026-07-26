@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Arr;
 
 /**
  * @property int $id
  * @property int|null $cover_image_id
  * @property string $name
  * @property string $slug
- * @property array<string, string> $description
+ * @property array<string, mixed> $description
  * @property string $street
  * @property string $house_number
  * @property string $postal_code
@@ -68,6 +69,25 @@ final class Location extends Model
     public function events(): HasMany
     {
         return $this->hasMany(Event::class);
+    }
+
+    public function localizedDescription(): ?string
+    {
+        $description = $this->description;
+
+        $value = Arr::get($description, app()->getLocale()) ?? Arr::get($description, 'en');
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        foreach ($description as $translation) {
+            if (is_string($translation) && $translation !== '') {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 
     /**

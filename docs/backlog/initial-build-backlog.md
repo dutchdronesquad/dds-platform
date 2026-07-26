@@ -17,9 +17,9 @@ This backlog translates the preparation docs into the first practical implementa
 
 ## Current Backlog Position
 
-`main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, and reusable media-library management through DDS-014H.
+`main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, reusable media-library management through DDS-014H, the public contact form and dashboard review flow, and public Location pages with admin Location management.
 
-DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-014G is complete and merged in pull request #27 with the public contact form, stored submissions, and dashboard review flow. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
 
 Projects, partners, and fixed informational pages are deliberately code-owned in phase 1. They do not get database models, permissions, or dashboard CRUD unless observed maintenance needs pass their documented CMS decision gates.
 

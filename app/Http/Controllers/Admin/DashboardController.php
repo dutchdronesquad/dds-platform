@@ -8,6 +8,7 @@ use App\Enums\Permission;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Location;
 use App\Models\Season;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -38,6 +39,7 @@ final class DashboardController extends Controller
             'resources' => $this->resources($user, $isAdmin, $canViewEvents),
             'capabilities' => [
                 'createEvents' => $user->can('create', Event::class),
+                'createLocations' => $user->can('create', Location::class),
                 'createSeasons' => $user->can('create', Season::class),
                 'viewUsers' => $user->can(Permission::ViewUsers->value),
             ],
@@ -64,7 +66,6 @@ final class DashboardController extends Controller
      * @return array{
      *     events: bool,
      *     articles: bool,
-     *     locations: bool,
      *     media: bool,
      *     users: bool,
      *     roles: bool,
@@ -76,7 +77,6 @@ final class DashboardController extends Controller
         return [
             'events' => $canViewEvents,
             'articles' => $isAdmin,
-            'locations' => $isAdmin,
             'media' => $isAdmin,
             'users' => $user->can(Permission::ViewUsers->value),
             'roles' => $user->can(Permission::ViewRoles->value),

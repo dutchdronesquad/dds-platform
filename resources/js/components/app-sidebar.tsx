@@ -4,6 +4,7 @@ import {
     Home,
     LayoutDashboard,
     Images,
+    MapPin,
     MessageSquareText,
     Route as RouteIcon,
     ShieldCheck,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 import { index as contactIndex } from '@/actions/App/Http/Controllers/Admin/ContactController';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
+import { index as locationsIndex } from '@/actions/App/Http/Controllers/Admin/LocationController';
 import { index as mediaIndex } from '@/actions/App/Http/Controllers/Admin/MediaAssetController';
 import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
@@ -59,6 +61,15 @@ export function AppSidebar() {
                       title: 'Events',
                       href: eventsIndex(),
                       icon: CalendarDays,
+                  },
+              ]
+            : []),
+        ...(management?.canViewLocations
+            ? [
+                  {
+                      title: 'Locaties',
+                      href: locationsIndex(),
+                      icon: MapPin,
                   },
               ]
             : []),

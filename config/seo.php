@@ -60,6 +60,13 @@ return [
             'image_path' => '/images/dds/locations/sporthal-koggenhal.jpg',
             'image_alt' => 'Sporthal waar Dutch Drone Squad activiteiten organiseert',
         ],
+        'location' => [
+            'title' => 'Locatie',
+            'description' => 'Bekijk de praktische informatie voor deze vlieglocatie van Dutch Drone Squad.',
+            'canonical_path' => '/locations',
+            'image_path' => '/images/dds/locations/sporthal-koggenhal.jpg',
+            'image_alt' => 'Sporthal waar Dutch Drone Squad activiteiten organiseert',
+        ],
         'about' => [
             'title' => 'Over DDS',
             'description' => 'Lees hoe Dutch Drone Squad dronepiloten, makers en partners samenbrengt rond veilig vliegen, kennisdeling en FPV-racing.',

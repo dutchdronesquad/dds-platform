@@ -20,6 +20,7 @@ import {
     edit as editEvent,
     index as eventsIndex,
 } from '@/actions/App/Http/Controllers/Admin/EventController';
+import { create as createLocation } from '@/actions/App/Http/Controllers/Admin/LocationController';
 import {
     create as createSeason,
     edit as editSeason,
@@ -32,13 +33,7 @@ import { Button } from '@/components/ui/button';
 import { dashboard, home } from '@/routes';
 
 type ResourceId =
-    | 'events'
-    | 'articles'
-    | 'locations'
-    | 'media'
-    | 'users'
-    | 'roles'
-    | 'redirects';
+    'events' | 'articles' | 'media' | 'users' | 'roles' | 'redirects';
 
 type Props = {
     openPoints: {
@@ -51,6 +46,7 @@ type Props = {
     };
     capabilities: {
         createEvents: boolean;
+        createLocations: boolean;
         createSeasons: boolean;
         viewUsers: boolean;
     };
@@ -101,7 +97,6 @@ type DashboardAction = {
 
 const plannedAreas = [
     { id: 'articles', title: 'Artikelen', icon: Newspaper },
-    { id: 'locations', title: 'Locaties', icon: MapPin },
     { id: 'media', title: 'Media', icon: Images },
 ] satisfies Array<{
     id: ResourceId;
@@ -210,6 +205,16 @@ export default function Dashboard({
                       description: 'Bundel events in een kalenderperiode.',
                       href: createSeason(),
                       icon: Tags,
+                  },
+              ]
+            : []),
+        ...(capabilities.createLocations
+            ? [
+                  {
+                      title: 'Nieuwe locatie',
+                      description: 'Leg adres, omgeving en faciliteiten vast.',
+                      href: createLocation(),
+                      icon: MapPin,
                   },
               ]
             : []),
