@@ -359,9 +359,13 @@ export function AdminFormOutline({
         }
 
         const updateActiveSection = () => {
+            const isScrollable =
+                document.documentElement.scrollHeight >
+                window.innerHeight + 1;
             const isAtBottom =
+                isScrollable &&
                 window.innerHeight + window.scrollY >=
-                document.documentElement.scrollHeight - 1;
+                    document.documentElement.scrollHeight - 1;
 
             if (isAtBottom) {
                 setActiveItemId(sections[sections.length - 1].id);
