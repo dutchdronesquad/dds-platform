@@ -18,6 +18,7 @@ declare module '@inertiajs/core' {
                 canManageSeasons: boolean;
                 canViewContact: boolean;
                 canViewEvents: boolean;
+                canViewLocations: boolean;
                 canViewMedia: boolean;
                 canViewRedirects: boolean;
                 canViewRoles: boolean;

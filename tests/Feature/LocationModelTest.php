@@ -79,3 +79,23 @@ test('locations referenced by events cannot be deleted', function () {
     expect(fn () => $event->location->delete())
         ->toThrow(QueryException::class);
 });
+
+test('localized description resolves the current locale, then english, then any non-empty translation', function () {
+    $bothLocales = Location::factory()->make([
+        'description' => ['en' => 'English copy.', 'nl' => 'Nederlandse tekst.'],
+    ]);
+
+    app()->setLocale('nl');
+    expect($bothLocales->localizedDescription())->toBe('Nederlandse tekst.');
+
+    app()->setLocale('en');
+    expect($bothLocales->localizedDescription())->toBe('English copy.');
+
+    $dutchOnly = Location::factory()->make([
+        'description' => ['nl' => 'Alleen Nederlands.'],
+    ]);
+    expect($dutchOnly->localizedDescription())->toBe('Alleen Nederlands.');
+
+    $empty = Location::factory()->make(['description' => []]);
+    expect($empty->localizedDescription())->toBeNull();
+});

@@ -23,6 +23,11 @@ enum Permission: string
 
     case ViewRoles = 'roles.view';
 
+    case ViewLocations = 'locations.view';
+    case CreateLocations = 'locations.create';
+    case UpdateLocations = 'locations.update';
+    case DeleteLocations = 'locations.delete';
+
     public function label(): string
     {
         return match ($this) {
@@ -39,6 +44,10 @@ enum Permission: string
             self::ViewUsers => 'Gebruikers bekijken',
             self::UpdateUsers => 'Gebruikers bijwerken',
             self::ViewRoles => 'Rollen en rechten bekijken',
+            self::ViewLocations => 'Locaties bekijken',
+            self::CreateLocations => 'Locaties aanmaken',
+            self::UpdateLocations => 'Locaties bijwerken',
+            self::DeleteLocations => 'Locaties verwijderen',
         };
     }
 
@@ -58,6 +67,10 @@ enum Permission: string
             self::ViewUsers => 'Geeft toegang tot het gebruikersoverzicht.',
             self::UpdateUsers => 'Maakt het wijzigen van profielen, rollen en accountstatus mogelijk.',
             self::ViewRoles => 'Geeft toegang tot het alleen-lezen rollen- en rechtenoverzicht.',
+            self::ViewLocations => 'Geeft toegang tot het locatieoverzicht en locatiedetails.',
+            self::CreateLocations => 'Maakt het aanmaken van nieuwe locaties mogelijk.',
+            self::UpdateLocations => 'Maakt het wijzigen van locatiegegevens mogelijk.',
+            self::DeleteLocations => 'Maakt het definitief verwijderen van ongebruikte locaties mogelijk.',
         };
     }
 
@@ -70,6 +83,7 @@ enum Permission: string
             self::ViewContact => 'contact',
             self::ViewUsers, self::UpdateUsers => 'users',
             self::ViewRoles => 'roles',
+            self::ViewLocations, self::CreateLocations, self::UpdateLocations, self::DeleteLocations => 'locations',
         };
     }
 
@@ -82,6 +96,7 @@ enum Permission: string
             self::ViewContact => 'Contact',
             self::ViewUsers, self::UpdateUsers => 'Gebruikers',
             self::ViewRoles => 'Rollen en rechten',
+            self::ViewLocations, self::CreateLocations, self::UpdateLocations, self::DeleteLocations => 'Locaties',
         };
     }
 }

@@ -36,6 +36,9 @@ enum Role: string
                 Permission::CreateMedia,
                 Permission::UpdateMedia,
                 Permission::ViewRedirects,
+                Permission::ViewLocations,
+                Permission::CreateLocations,
+                Permission::UpdateLocations,
             ],
         };
     }

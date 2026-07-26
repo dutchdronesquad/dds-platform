@@ -31,30 +31,6 @@ return [
             ],
         ],
     ],
-    'locations' => [
-        'title' => 'Locations',
-        'eyebrow' => 'Vliegplekken',
-        'description' => 'Locaties verzamelen straks clubplekken, eventlocaties en relevante regionale context voor activiteiten.',
-        'visual' => [
-            'src' => '/images/dds/racing/indoor-track.jpg',
-            'alt' => 'Indoor trainingslocatie met FPV-raceparcours',
-            'position' => '50% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Bekijk huisregels',
-            'href' => '/house-rules',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Locatie-informatie',
-                'body' => 'Elke locatie kan later praktische gegevens, aandachtspunten en gekoppelde events tonen.',
-            ],
-            [
-                'heading' => 'Veiligheidscontext',
-                'body' => 'De pagina maakt ruimte voor heldere verwijzingen naar regels, afspraken en lokale beperkingen.',
-            ],
-        ],
-    ],
     'about' => [
         'title' => 'About',
         'eyebrow' => 'Dutch Drone Squad',

@@ -1,7 +1,9 @@
 import { useHttp } from '@inertiajs/react';
-import { FileImage, Images, Search, X } from 'lucide-react';
-import { useState } from 'react';
+import { Check, FileImage, Images, Search, Upload, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import MediaAssetPickerController from '@/actions/App/Http/Controllers/Admin/MediaAssetPickerController';
+import MediaAssetQuickUploadController from '@/actions/App/Http/Controllers/Admin/MediaAssetQuickUploadController';
+import { MediaUploadDropzone } from '@/components/admin/media-upload-dropzone';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -17,6 +19,14 @@ import type { MediaPickerAsset } from '@/types/media';
 
 type PickerResponse = {
     data: MediaPickerAsset[];
+};
+
+type QuickUploadResponse = {
+    data: MediaPickerAsset;
+};
+
+type QuickUploadForm = {
+    file: File | null;
 };
 
 export function MediaAssetPicker({
@@ -35,9 +45,14 @@ export function MediaAssetPicker({
     selected: MediaPickerAsset | null;
 }) {
     const [open, setOpen] = useState(false);
+    const [tab, setTab] = useState<'library' | 'upload'>('library');
     const [search, setSearch] = useState('');
     const [results, setResults] = useState<MediaPickerAsset[]>([]);
     const request = useHttp<Record<string, never>, PickerResponse>({});
+    const upload = useHttp<QuickUploadForm, QuickUploadResponse>({
+        file: null,
+    });
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     function loadResults(query: string): void {
         void request.get(
@@ -50,14 +65,55 @@ export function MediaAssetPicker({
         );
     }
 
+    function handleSearchChange(value: string): void {
+        setSearch(value);
+
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => loadResults(value), 300);
+    }
+
     function changeOpen(nextOpen: boolean): void {
         setOpen(nextOpen);
+        setTab('library');
 
         if (nextOpen) {
             loadResults(search);
         } else {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+
             request.cancel();
+            upload.cancel();
+            upload.reset();
+            upload.clearErrors();
         }
+    }
+
+    function selectUploadedFiles(files: File[]): void {
+        const [file] = files;
+
+        upload.setData('file', file ?? null);
+        upload.clearErrors('file');
+    }
+
+    function submitUpload(): void {
+        if (!upload.data.file) {
+            upload.setError('file', 'Kies een bestand om toe te voegen.');
+
+            return;
+        }
+
+        void upload.post(MediaAssetQuickUploadController.url(), {
+            onSuccess: (response) => {
+                onChange(response.data);
+                setOpen(false);
+                upload.reset();
+            },
+        });
     }
 
     return (
@@ -123,79 +179,138 @@ export function MediaAssetPicker({
             )}
 
             <Dialog open={open} onOpenChange={changeOpen}>
-                <DialogContent className="max-h-[85vh] overflow-hidden p-0 sm:max-w-4xl">
+                <DialogContent className="max-h-[88vh] w-[95vw] overflow-hidden p-0 sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
                     <DialogHeader className="border-b px-5 py-4 pr-12">
                         <DialogTitle>Afbeelding kiezen</DialogTitle>
                         <DialogDescription>
-                            Zoek op de oorspronkelijke bestandsnaam of
-                            alternatieve tekst. Gearchiveerde media zijn niet
-                            selecteerbaar.
+                            {tab === 'library'
+                                ? 'Zoek op de oorspronkelijke bestandsnaam of alternatieve tekst. Gearchiveerde media zijn niet selecteerbaar.'
+                                : 'Upload een nieuwe afbeelding. Deze wordt direct geselecteerd en blijft ook beschikbaar in de mediabibliotheek.'}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form
-                        className="flex gap-2 px-5"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            loadResults(search);
-                        }}
-                    >
-                        <div className="relative min-w-0 flex-1">
-                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-500" />
-                            <Input
-                                value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
-                                maxLength={100}
-                                placeholder="Zoek media…"
-                                className="pl-9"
-                                autoFocus
-                            />
-                        </div>
-                        <Button type="submit" variant="outline">
-                            Zoeken
-                        </Button>
-                    </form>
-
-                    <div className="min-h-64 overflow-y-auto px-5 pb-5">
-                        {request.processing ? (
-                            <div className="flex min-h-64 items-center justify-center gap-2 text-sm text-neutral-500">
-                                <Spinner /> Media laden…
-                            </div>
-                        ) : results.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                                {results.map((mediaAsset) => (
-                                    <button
-                                        key={mediaAsset.id}
-                                        type="button"
-                                        onClick={() => {
-                                            onChange(mediaAsset);
-                                            setOpen(false);
-                                        }}
-                                        className="group overflow-hidden rounded-lg border bg-white text-left shadow-xs transition hover:border-signal-400 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:bg-neutral-950 dark:hover:border-signal-500"
-                                    >
-                                        <MediaPreview mediaAsset={mediaAsset} />
-                                        <span className="group-hover:text-signal-800 dark:group-hover:text-signal-200 block truncate px-3 py-2 text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                                            {mediaAsset.filename}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="flex min-h-64 flex-col items-center justify-center gap-2 text-center">
-                                <FileImage className="size-8 text-neutral-400" />
-                                <p className="font-medium text-neutral-950 dark:text-white">
-                                    Geen afbeeldingen gevonden
-                                </p>
-                                <p className="max-w-sm text-sm text-neutral-500">
-                                    Upload eerst een afbeelding in de
-                                    mediabibliotheek of probeer een andere
-                                    zoekterm.
-                                </p>
-                            </div>
-                        )}
+                    <div className="flex gap-1 border-b px-5 pt-3">
+                        <button
+                            type="button"
+                            onClick={() => setTab('library')}
+                            className={cn(
+                                'rounded-t-md px-3 py-2 text-sm font-medium transition-colors',
+                                tab === 'library'
+                                    ? 'text-signal-800 dark:text-signal-200 border-b-2 border-signal-500'
+                                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200',
+                            )}
+                        >
+                            Bibliotheek
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setTab('upload')}
+                            className={cn(
+                                'rounded-t-md px-3 py-2 text-sm font-medium transition-colors',
+                                tab === 'upload'
+                                    ? 'text-signal-800 dark:text-signal-200 border-b-2 border-signal-500'
+                                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200',
+                            )}
+                        >
+                            Uploaden
+                        </button>
                     </div>
+
+                    {tab === 'upload' ? (
+                        <div className="grid gap-4 overflow-y-auto px-5 py-5">
+                            <MediaUploadDropzone
+                                disabled={upload.processing}
+                                error={upload.errors.file}
+                                file={upload.data.file}
+                                onFilesSelected={selectUploadedFiles}
+                                onRemove={() => upload.setData('file', null)}
+                                progress={
+                                    upload.processing
+                                        ? (upload.progress?.percentage ?? null)
+                                        : null
+                                }
+                            />
+                            <Button
+                                type="button"
+                                disabled={
+                                    upload.processing || !upload.data.file
+                                }
+                                onClick={submitUpload}
+                                className="justify-self-start"
+                            >
+                                {upload.processing ? <Spinner /> : <Upload />}
+                                {upload.processing
+                                    ? 'Uploaden…'
+                                    : 'Uploaden en selecteren'}
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="relative px-5">
+                                <Search className="pointer-events-none absolute top-1/2 left-8 size-4 -translate-y-1/2 text-neutral-500" />
+                                <Input
+                                    value={search}
+                                    onChange={(event) =>
+                                        handleSearchChange(event.target.value)
+                                    }
+                                    maxLength={100}
+                                    placeholder="Zoek media…"
+                                    className="pr-9 pl-9"
+                                    autoFocus
+                                />
+                                {request.processing && (
+                                    <Spinner className="absolute top-1/2 right-8 size-4 -translate-y-1/2 text-neutral-400" />
+                                )}
+                            </div>
+
+                            <div className="h-112 overflow-y-auto px-5 pb-5">
+                                {results.length === 0 && request.processing ? (
+                                    <div className="flex h-112 items-center justify-center gap-2 text-sm text-neutral-500">
+                                        <Spinner /> Media laden…
+                                    </div>
+                                ) : results.length > 0 ? (
+                                    <div
+                                        className={cn(
+                                            'grid grid-cols-2 gap-4 transition-opacity duration-150 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+                                            request.processing &&
+                                                'pointer-events-none opacity-50',
+                                        )}
+                                    >
+                                        {results.map((mediaAsset) => (
+                                            <button
+                                                key={mediaAsset.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    onChange(mediaAsset);
+                                                    setOpen(false);
+                                                }}
+                                                className="group overflow-hidden rounded-lg border bg-white text-left shadow-xs transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-signal-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:bg-neutral-950 dark:hover:border-signal-500"
+                                            >
+                                                <MediaPreview
+                                                    mediaAsset={mediaAsset}
+                                                />
+                                                <span className="group-hover:text-signal-800 dark:group-hover:text-signal-200 block truncate px-3 py-2 text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                                                    {mediaAsset.filename}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex h-112 flex-col items-center justify-center gap-2 text-center">
+                                        <FileImage className="size-8 text-neutral-400" />
+                                        <p className="font-medium text-neutral-950 dark:text-white">
+                                            Geen afbeeldingen gevonden
+                                        </p>
+                                        <p className="max-w-sm text-sm text-neutral-500">
+                                            Upload eerst een afbeelding in de
+                                            mediabibliotheek of probeer een
+                                            andere zoekterm.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
@@ -203,15 +318,24 @@ export function MediaAssetPicker({
 }
 
 function MediaPreview({ mediaAsset }: { mediaAsset: MediaPickerAsset }) {
-    return mediaAsset.isImage ? (
-        <img
-            src={mediaAsset.url}
-            alt=""
-            className="aspect-video h-full w-full bg-neutral-100 object-cover dark:bg-neutral-900"
-        />
-    ) : (
-        <span className="flex aspect-video h-full w-full items-center justify-center bg-neutral-100 text-neutral-400 dark:bg-neutral-900">
-            <FileImage className="size-8" />
+    return (
+        <span className="relative block aspect-video w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+            {mediaAsset.isImage ? (
+                <img
+                    src={mediaAsset.url}
+                    alt=""
+                    className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-110"
+                />
+            ) : (
+                <span className="flex size-full items-center justify-center text-neutral-400">
+                    <FileImage className="size-8" />
+                </span>
+            )}
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 ease-out group-hover:bg-black/25 group-hover:opacity-100">
+                <span className="flex size-9 scale-75 items-center justify-center rounded-full bg-white text-signal-700 shadow-md transition-transform duration-200 ease-out group-hover:scale-100">
+                    <Check className="size-4" />
+                </span>
+            </span>
         </span>
     );
 }

@@ -1,6 +1,7 @@
 export type * from './auth';
 export type * from './events';
 export type * from './localization';
+export type * from './locations';
 export type * from './media';
 export type * from './navigation';
 export type * from './partners';
