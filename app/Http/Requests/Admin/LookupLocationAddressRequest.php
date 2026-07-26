@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\Permission;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class LookupLocationAddressRequest extends FormRequest
 {
@@ -19,12 +20,16 @@ class LookupLocationAddressRequest extends FormRequest
     {
         return [
             'id' => ['required', 'string', 'max:255'],
+            'source' => ['required', Rule::in(['pdok', 'photon'])],
         ];
     }
 
     /** @return array<string, string> */
     public function attributes(): array
     {
-        return ['id' => 'adres'];
+        return [
+            'id' => 'adres',
+            'source' => 'bron',
+        ];
     }
 }

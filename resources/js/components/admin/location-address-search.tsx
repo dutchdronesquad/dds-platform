@@ -6,18 +6,21 @@ import LocationAddressSuggestController from '@/actions/App/Http/Controllers/Adm
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-type AddressSuggestion = {
-    id: string;
-    label: string;
-};
-
 export type ResolvedAddress = {
     city: string;
+    countryCode: string;
     houseNumber: string;
     latitude: string;
     longitude: string;
     postalCode: string;
     street: string;
+};
+
+type AddressSuggestion = {
+    id: string;
+    label: string;
+    resolved: ResolvedAddress | null;
+    source: string;
 };
 
 const MIN_QUERY_LENGTH = 4;
@@ -103,9 +106,19 @@ export function LocationAddressSearch({
         setOpen(false);
         setSuggestions([]);
 
+        if (suggestion.resolved) {
+            onSelect(suggestion.resolved);
+            setStatus({
+                type: 'success',
+                text: 'Adres en coördinaten ingevuld.',
+            });
+
+            return;
+        }
+
         void lookup.get(
             LocationAddressLookupController.url({
-                query: { id: suggestion.id },
+                query: { id: suggestion.id, source: suggestion.source },
             }),
             {
                 onSuccess: (response) => {

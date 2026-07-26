@@ -128,7 +128,7 @@ export function LocationForm({
         setCity(address.city);
         setLatitude(address.latitude);
         setLongitude(address.longitude);
-        setCountryCode('NL');
+        setCountryCode(address.countryCode);
         setManualAddressEditing(false);
     }
 
@@ -378,7 +378,7 @@ export function LocationForm({
                             >
                                 <FormField
                                     id="address_search"
-                                    label="Adres opzoeken (Nederland)"
+                                    label="Adres opzoeken"
                                     hint={
                                         hasResolvedAddress
                                             ? undefined

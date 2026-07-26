@@ -13,7 +13,9 @@ final class LocationAddressLookupController extends Controller
 
     public function __invoke(LookupLocationAddressRequest $request): JsonResponse
     {
-        $address = $this->geocoder->lookup($request->validated('id'));
+        $validated = $request->validated();
+
+        $address = $this->geocoder->lookup($validated['source'], $validated['id']);
 
         if ($address === null) {
             return response()->json([
