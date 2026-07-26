@@ -1,29 +1,34 @@
 # Information Architecture
 
-## Proposed Navigation
+## Public Navigation
 
-The DDS-007D public hierarchy keeps the desktop header focused: the logo links home, followed by `Projecten`, `Nieuws`, `Over DDS`, `Beginnen`, `Locaties`, and `Contact`, with `Bekijk agenda` as the primary action. `Beginnen` opens the curated Getting Started knowledge hub for new pilots. `Huisregels` is a practical footer-only link, while `Partners` is available in the footer and represented by verified partner logos on the homepage. Login and admin access are private operational entry points and are therefore not linked from the public shell; their direct routes remain available to authorized users.
+The DDS-007D public hierarchy keeps the desktop header focused: the logo links home, followed by `Starten met FPV`, `Locaties`, `Nieuws`, an `Informatie` menu containing `Over DDS`, `Projecten`, and `Partners`, and `Contact`, with `Bekijk agenda` as the primary action. `Starten met FPV` opens the curated Getting Started knowledge hub for new pilots. The mobile menu exposes the same destinations in the same groups without hiding them behind an additional disclosure.
+
+`Huisregels` is a practical footer-only link. `Partners` remains available in the footer and through verified partner logos on the homepage. Contact remains directly available from the primary and mobile navigation; the footer does not duplicate the general email address or a demo, workshop, or collaboration contact entry. Login and admin access are private operational entry points and are therefore not linked from the public shell; their direct routes remain available to authorized users.
 
 Current Dutch homepage navigation language:
 
 - Home
 - Agenda
-- Projecten
+- Starten met FPV
+- Locaties
 - Nieuws
-- Over DDS
-- Beginnen
+- Informatie
+    - Over DDS
+    - Projecten
+    - Partners
 - Contact
 
-When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Projects`, `News`, `About`, `Getting Started`, and `Contact`.
+When the multilingual public content layer is active, labels follow the selected locale. The English-default equivalents are `Home`, `Events`, `Getting Started`, `Locations`, `News`, `Information`, `About`, `Projects`, `Partners`, and `Contact`.
 
-Secondary or footer navigation:
+Secondary-navigation decisions:
 
-- Locations
-- House Rules
-- Partners
-- In The Media
-- Results
-- Privacy
+- `Locations` remains a primary destination and is repeated in the footer.
+- `House Rules` remains footer-only.
+- `Partners` lives in the Information menu, footer, and homepage partner presentation.
+- `In The Media` belongs in News through an appropriate article category when imported content justifies it; no empty standalone route is added.
+- `Results` belongs in race reports and event content until structured public race results exist; no empty standalone route is added.
+- `Privacy` will be footer-only once an approved policy exists. The shell must not invent or link to placeholder legal copy.
 
 Recommended public label policy:
 
