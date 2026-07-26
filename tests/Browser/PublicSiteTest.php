@@ -262,6 +262,23 @@ test('getting started guidance consistently calls mandatory requirements rules',
         ->assertNoSmoke();
 });
 
+test('getting started guide links preserve a real entry source without inventing one', function () {
+    visit('/getting-started')
+        ->assertNoJavaScriptErrors()
+        ->assertPresent('a[href="/getting-started/first-fpv-flight"]')
+        ->assertMissing(
+            'a[href="/getting-started/first-fpv-flight?source=navigation"]',
+        )
+        ->assertNoSmoke();
+
+    visit('/getting-started?source=footer')
+        ->assertNoJavaScriptErrors()
+        ->assertPresent(
+            'a[href="/getting-started/first-fpv-flight?source=footer"]',
+        )
+        ->assertNoSmoke();
+});
+
 test('the equipment guide does not offer personal parts list approval', function () {
     visit('/getting-started/choosing-equipment')
         ->assertNoJavaScriptErrors()

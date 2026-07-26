@@ -71,7 +71,9 @@ export default function GettingStartedIndex({
     guides,
     seo,
 }: Props) {
-    const guideEntrySource = entrySource ?? 'navigation';
+    const guideLinkOptions = entrySource
+        ? { query: { source: entrySource } }
+        : undefined;
 
     return (
         <>
@@ -84,9 +86,10 @@ export default function GettingStartedIndex({
                 actions={[
                     {
                         label: 'Start bij de basis',
-                        href: gettingStartedShow.url('first-fpv-flight', {
-                            query: { source: guideEntrySource },
-                        }),
+                        href: gettingStartedShow.url(
+                            'first-fpv-flight',
+                            guideLinkOptions,
+                        ),
                     },
                     {
                         label: 'Stel een gerichte vraag',
@@ -170,11 +173,10 @@ export default function GettingStartedIndex({
                         {guides.map((guide, index) => (
                             <li key={guide.slug}>
                                 <Link
-                                    href={gettingStartedShow(guide.slug, {
-                                        query: {
-                                            source: guideEntrySource,
-                                        },
-                                    })}
+                                    href={gettingStartedShow(
+                                        guide.slug,
+                                        guideLinkOptions,
+                                    )}
                                     prefetch
                                     className="group flex h-full flex-col overflow-hidden rounded-sm border border-paddock-rule bg-white transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:outline-none dark:border-white/10 dark:bg-night-900 dark:hover:border-dds-cyan"
                                 >
