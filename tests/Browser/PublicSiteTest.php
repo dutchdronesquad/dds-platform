@@ -96,13 +96,234 @@ test('mobile navigation opens, reflows, and follows public links', function () {
             'expanded',
             'true',
         )
+        ->assertSeeIn('#mobile-public-navigation', 'Starten met FPV')
+        ->assertSeeIn('#mobile-public-navigation > nav > div > p', 'Informatie')
         ->assertSeeIn('#mobile-public-navigation', 'Projecten')
+        ->assertSeeIn('#mobile-public-navigation', 'Partners')
         ->assertSeeIn('#mobile-public-navigation', 'Contact')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
         ->click('#mobile-public-navigation a[href="/contact"]')
         ->assertPathIs('/contact')
         ->assertMissing('#mobile-public-navigation')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoSmoke();
+});
+
+test('desktop navigation groups DDS pages in the information submenu', function () {
+    $page = visit('/projects')->on()->desktop();
+
+    $page->assertNoJavaScriptErrors()
+        ->assertSeeIn(
+            'nav[aria-label="Hoofdnavigatie"]',
+            'Starten met FPV',
+        )
+        ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Locaties')
+        ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Nieuws')
+        ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Informatie')
+        ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Contact')
+        ->click('button[aria-label="Open Informatie menu"]')
+        ->assertAriaAttribute(
+            'button[aria-label="Open Informatie menu"]',
+            'expanded',
+            'true',
+        )
+        ->assertVisible('[data-testid="information-navigation-content"]')
+        ->assertScript(
+            'getComputedStyle(document.querySelector(\'[data-testid="information-navigation-content"]\')).backgroundColor === "rgb(23, 39, 46)"',
+        )
+        ->assertVisible(
+            '[data-testid="information-navigation-content"] a[href="/projects"]',
+        )
+        ->assertVisible(
+            '[data-testid="information-navigation-content"] a[href="/partners"]',
+        )
+        ->assertScript(
+            'document.querySelector(\'[data-testid="information-navigation-content"] a[href="/about"]\').scrollWidth <= document.querySelector(\'[data-testid="information-navigation-content"] a[href="/about"]\').clientWidth',
+        )
+        ->assertScript(
+            'document.querySelector(\'[data-testid="information-navigation-content"]\').getBoundingClientRect().width <= 164',
+        )
+        ->assertScript(
+            'document.querySelector(\'[data-testid="information-navigation-content"] svg\') === null',
+        )
+        ->assertScript(
+            '!document.querySelector(\'[data-testid="information-navigation-content"]\').textContent.includes("Wie we zijn en waar we voor staan.")',
+        )
+        ->assertScript(
+            '!document.querySelector(\'[data-testid="information-navigation-content"]\').textContent.includes("Tooling en communityprojecten van DDS.")',
+        )
+        ->hover(
+            '[data-testid="information-navigation-content"] a[href="/partners"]',
+        )
+        ->assertScript(
+            'getComputedStyle(document.querySelector(\'[data-testid="information-navigation-content"] a[href="/partners"]\')).backgroundColor !== "rgba(0, 0, 0, 0)"',
+        )
+        ->assertAttribute(
+            '[data-testid="information-navigation-content"] a[href="/projects"]',
+            'aria-current',
+            'page',
+        )
+        ->click(
+            '[data-testid="information-navigation-content"] a[href="/partners"]',
+        )
+        ->assertPathIs('/partners')
+        ->assertNoSmoke();
+});
+
+test('the first FPV guide explains core systems and simulator choices', function () {
+    visit('/getting-started/first-fpv-flight')
+        ->assertNoJavaScriptErrors()
+        ->assertSee('Jij stuurt de drone')
+        ->assertSee(
+            'De verbinding voor besturing staat los van het videosignaal',
+        )
+        ->assertSee(
+            'Controleer daarom of camera, videozender en goggles hetzelfde systeem gebruiken',
+        )
+        ->assertSee('welke regels op het event gelden')
+        ->assertDontSee('welke afspraken op het event gelden')
+        ->assertSee('Welke simulator kun je gebruiken?')
+        ->assertSee('VelociDrone')
+        ->assertSee('DDS-aanrader')
+        ->assertSee('Liftoff')
+        ->assertSee('DCL – The Game')
+        ->assertSee('DRL Simulator')
+        ->assertSee('De race director bewaakt daarbij')
+        ->assertDontSee('Race control bewaakt daarbij')
+        ->assertScript(
+            'getComputedStyle(document.querySelector(\'[data-testid="simulators-grid"]\')).gridTemplateColumns.split(" ").length === 4',
+        )
+        ->assertAttribute(
+            'a[href="https://www.velocidrone.com/"]',
+            'target',
+            '_blank',
+        )
+        ->assertDontSee('Jouw besturing gaat terug')
+        ->assertDontSee('video-ecosystemen')
+        ->assertNoSmoke();
+});
+
+test('getting started guidance consistently calls mandatory requirements rules', function () {
+    visit('/getting-started')
+        ->assertNoJavaScriptErrors()
+        ->assertSee('Bindende regels en event-specifieke vereisten')
+        ->assertSee('Waar kunnen we je mee helpen?')
+        ->assertSee('Vertel kort waar je vraag over gaat')
+        ->assertDontSee('Een goede vraag begint met wat context')
+        ->assertDontSee('Bindende afspraken')
+        ->assertNoSmoke();
+
+    visit('/getting-started/first-dds-event')
+        ->assertNoJavaScriptErrors()
+        ->assertSee(
+            'Tijdens een reguliere training vlieg je zelfstandig op een vast parcours',
+        )
+        ->assertSee('Na de opbouw loop je samen de trackwalk')
+        ->assertSee('daarna vlieg je volgens de heatindeling')
+        ->assertSee('De trainingsavond in zeven stappen')
+        ->assertSee('Betaal je deelname')
+        ->assertSee('Heb je geen seizoensticket, betaal dan na je aanmelding')
+        ->assertSee('Help de baan opbouwen')
+        ->assertSee('Loop de trackwalk')
+        ->assertSee('Baanopbouw')
+        ->assertSee('Race director')
+        ->assertSee('Wacht met inschakelen tot de race director dat toestaat')
+        ->assertScript(
+            <<<'JS'
+                (() => {
+                    const sections = [...document.querySelectorAll('section')];
+                    const terms = sections.find((section) => section.textContent.includes('Begrijp de woorden op de avond.'));
+                    const equipment = sections.find((section) => section.textContent.includes('Materiaal en tas: laatste check.'));
+
+                    return getComputedStyle(terms).backgroundColor !== getComputedStyle(equipment).backgroundColor;
+                })()
+                JS,
+        )
+        ->assertDontSee('Aanmelden en deelnemen')
+        ->assertDontSee('Event, seizoen en ticket zijn niet hetzelfde')
+        ->assertDontSee('Race control')
+        ->assertDontSee('Kom je ergens niet uit? Vertel via')
+        ->assertMissing(
+            'a[href="/contact?source=getting-started-training-help"]',
+        )
+        ->assertDontSee('Doe mee aan controle en briefing')
+        ->assertDontSee('Volg de technische controle')
+        ->assertDontSee('eventbriefing')
+        ->assertDontSee('Je kunt al zelfstandig vliegen en komt voorbereid')
+        ->assertDontSee('geen vrije inloop en geen eerste vlieglessen')
+        ->assertDontSee('Controleer of de training past')
+        ->assertDontSee(
+            'Lees de locatie, tijden, deelnamevereisten en het verwachte niveau',
+        )
+        ->assertSee('Vlieg en laad volgens de regels')
+        ->assertSee('binnen de regels vallen')
+        ->assertDontSee('Vlieg en laad volgens de afspraken')
+        ->assertDontSee('binnen de afspraken vallen')
+        ->assertNoSmoke();
+});
+
+test('the equipment guide does not offer personal parts list approval', function () {
+    visit('/getting-started/choosing-equipment')
+        ->assertNoJavaScriptErrors()
+        ->assertSee('Controleer daarna welke configuraties bij de DDS-activiteiten passen')
+        ->assertSee('Begin met de vraag wat voor vlieger je wilt worden')
+        ->assertSee('wil je racen, freestylen of vooral recreatief vliegen?')
+        ->assertSee('Van aanmelden en opbouwen tot de trackwalk')
+        ->assertDontSee('Van persoonlijke bevestiging en voorbereiding')
+        ->assertDontSee('voor de activiteiten die je wilt bezoeken')
+        ->assertDontSee('Vraag DDS om een onderdelenlijst te controleren')
+        ->assertMissing(
+            'a[href="/contact?source=getting-started-equipment-check"]',
+        )
+        ->assertNoSmoke();
+});
+
+test('beginners can find the DDS community channels', function () {
+    $whatsAppCommunityUrl = 'https://chat.whatsapp.com/HInatYEIAAPEhtj3WNJy9V';
+    $discordServerUrl = 'https://discord.com/invite/4eUYVrhMuk';
+    $facebookGroupUrl = 'https://www.facebook.com/groups/518582471633220/';
+
+    visit('/getting-started')
+        ->assertNoJavaScriptErrors()
+        ->assertSee('Ben je nieuw? Begin in een simulator')
+        ->assertSee('WhatsApp-community')
+        ->assertAttribute(
+            sprintf('a[href="%s"]', $whatsAppCommunityUrl),
+            'target',
+            '_blank',
+        )
+        ->assertAttribute(
+            sprintf('a[href="%s"]', $whatsAppCommunityUrl),
+            'rel',
+            'noopener noreferrer',
+        )
+        ->assertNoSmoke();
+
+    visit('/contact')
+        ->assertNoJavaScriptErrors()
+        ->assertSeeIn('#community', 'WhatsApp-community')
+        ->assertSeeIn('#community', 'Discord-server')
+        ->assertSeeIn('#community', 'Facebook-groep')
+        ->assertAttribute(
+            'a[href="https://wa.me/31638235409"]',
+            'target',
+            '_blank',
+        )
+        ->assertAttribute(
+            sprintf('a[href="%s"]', $whatsAppCommunityUrl),
+            'target',
+            '_blank',
+        )
+        ->assertAttribute(
+            sprintf('a[href="%s"]', $discordServerUrl),
+            'target',
+            '_blank',
+        )
+        ->assertAttribute(
+            sprintf('a[href="%s"]', $facebookGroupUrl),
+            'target',
+            '_blank',
+        )
         ->assertNoSmoke();
 });
 

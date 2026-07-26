@@ -4,6 +4,14 @@ import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import DdsBrand from '@/components/dds-brand';
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
 import {
     about,
@@ -13,6 +21,7 @@ import {
     partners,
 } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
+import { index as gettingStartedIndex } from '@/routes/getting_started';
 import { index as locationsIndex } from '@/routes/locations';
 import { index as newsIndex } from '@/routes/news';
 import { index as projectsIndex } from '@/routes/projects';
@@ -24,19 +33,32 @@ type PublicNavItem = {
 };
 
 const headerNavItems: PublicNavItem[] = [
-    { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
-    { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
-    { title: 'Over DDS', href: about(), activePath: '/about' },
+    {
+        title: 'Starten met FPV',
+        href: gettingStartedIndex({ query: { source: 'navigation' } }),
+        activePath: '/getting-started',
+    },
     { title: 'Locaties', href: locationsIndex(), activePath: '/locations' },
+    { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
     { title: 'Contact', href: contact(), activePath: '/contact' },
 ];
 
-const mobileNavItems: PublicNavItem[] = [
-    { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
-    { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
-    { title: 'Over DDS', href: about(), activePath: '/about' },
-    { title: 'Locaties', href: locationsIndex(), activePath: '/locations' },
-    { title: 'Contact', href: contact(), activePath: '/contact' },
+const informationNavItems: PublicNavItem[] = [
+    {
+        title: 'Over DDS',
+        href: about(),
+        activePath: '/about',
+    },
+    {
+        title: 'Projecten',
+        href: projectsIndex(),
+        activePath: '/projects',
+    },
+    {
+        title: 'Partners',
+        href: partners(),
+        activePath: '/partners',
+    },
 ];
 
 const footerExploreItems = [
@@ -52,6 +74,10 @@ const footerDdsItems = [
 ];
 
 const footerPracticalItems = [
+    {
+        title: 'Starten met FPV',
+        href: gettingStartedIndex({ query: { source: 'footer' } }),
+    },
     { title: 'Huisregels', href: houseRules() },
     { title: 'Contact', href: contact() },
 ];
@@ -176,29 +202,71 @@ export default function PublicLayout({ children }: Props) {
 
                     <nav
                         aria-label="Hoofdnavigatie"
-                        className="ml-auto hidden items-center gap-7 lg:flex"
+                        className="ml-auto hidden lg:block"
                     >
-                        {headerNavItems.map((item) => {
-                            const isActive = currentPath.startsWith(
-                                item.activePath,
-                            );
+                        <NavigationMenu viewport={false}>
+                            <NavigationMenuList className="gap-7">
+                                {headerNavItems.slice(0, 3).map((item) => (
+                                    <DesktopNavigationLink
+                                        key={item.title}
+                                        item={item}
+                                        currentPath={currentPath}
+                                    />
+                                ))}
 
-                            return (
-                                <Link
-                                    key={item.title}
-                                    href={item.href}
-                                    prefetch
-                                    aria-current={isActive ? 'page' : undefined}
-                                    className={cn(
-                                        'rounded-sm border-b border-transparent py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 transition-colors hover:border-flight-500 hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none motion-reduce:transition-none dark:focus-visible:ring-signal-400',
-                                        isActive &&
-                                            'border-flight-400 text-white',
-                                    )}
-                                >
-                                    {item.title}
-                                </Link>
-                            );
-                        })}
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger
+                                        aria-label="Open Informatie menu"
+                                        className={cn(
+                                            'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
+                                            informationNavItems.some((item) =>
+                                                currentPath.startsWith(
+                                                    item.activePath,
+                                                ),
+                                            ) && 'border-flight-400 text-white',
+                                        )}
+                                    >
+                                        Informatie
+                                    </NavigationMenuTrigger>
+                                    <NavigationMenuContent
+                                        data-testid="information-navigation-content"
+                                        className="right-0 left-auto w-40 border-white/12 bg-ink! p-2 text-white! shadow-2xl shadow-black/30 md:w-40"
+                                    >
+                                        <div className="grid gap-1">
+                                            {informationNavItems.map((item) => {
+                                                const isActive =
+                                                    currentPath.startsWith(
+                                                        item.activePath,
+                                                    );
+
+                                                return (
+                                                    <NavigationMenuLink
+                                                        key={item.title}
+                                                        asChild
+                                                        active={isActive}
+                                                        className="rounded-sm border border-transparent px-4 py-3.5 text-white/72 transition-[background-color,border-color,color] hover:border-white/12 hover:bg-white/10 hover:text-white focus:border-white/12 focus:bg-white/10 focus:text-white data-[active=true]:border-flight-400/30 data-[active=true]:bg-white/8 data-[active=true]:text-flight-400"
+                                                    >
+                                                        <Link
+                                                            href={item.href}
+                                                            prefetch
+                                                        >
+                                                            <span className="font-semibold whitespace-nowrap">
+                                                                {item.title}
+                                                            </span>
+                                                        </Link>
+                                                    </NavigationMenuLink>
+                                                );
+                                            })}
+                                        </div>
+                                    </NavigationMenuContent>
+                                </NavigationMenuItem>
+
+                                <DesktopNavigationLink
+                                    item={headerNavItems[3]}
+                                    currentPath={currentPath}
+                                />
+                            </NavigationMenuList>
+                        </NavigationMenu>
                     </nav>
 
                     <Link
@@ -236,28 +304,79 @@ export default function PublicLayout({ children }: Props) {
                             aria-label="Mobiele hoofdnavigatie"
                             className="mx-auto flex min-h-[calc(100dvh-4.5rem)] w-full max-w-7xl flex-col px-public-gutter pt-6 pb-8"
                         >
-                            {mobileNavItems.map((item) => {
+                            {headerNavItems.slice(0, 3).map((item) => {
                                 const isActive = currentPath.startsWith(
                                     item.activePath,
                                 );
 
                                 return (
-                                    <Link
+                                    <MobileNavigationLink
                                         key={item.title}
-                                        href={item.href}
-                                        prefetch
-                                        aria-current={
-                                            isActive ? 'page' : undefined
-                                        }
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className={cn(
-                                            'flex min-h-14 items-center justify-between border-b border-white/10 py-4 font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
-                                            isActive && 'text-flight-400',
-                                        )}
-                                    >
-                                        {item.title}
-                                        <ArrowUpRight className="size-4 opacity-45" />
-                                    </Link>
+                                        item={item}
+                                        isActive={isActive}
+                                        onNavigate={() => setIsMenuOpen(false)}
+                                    />
+                                );
+                            })}
+
+                            <div className="border-b border-white/10 py-4">
+                                <p
+                                    className={cn(
+                                        'font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72',
+                                        informationNavItems.some((item) =>
+                                            currentPath.startsWith(
+                                                item.activePath,
+                                            ),
+                                        ) && 'text-flight-400',
+                                    )}
+                                >
+                                    Informatie
+                                </p>
+                                <div className="mt-3 grid gap-1.5 border-l border-white/14 pl-4">
+                                    {informationNavItems.map((item) => {
+                                        const isActive = currentPath.startsWith(
+                                            item.activePath,
+                                        );
+
+                                        return (
+                                            <Link
+                                                key={item.title}
+                                                href={item.href}
+                                                prefetch
+                                                aria-current={
+                                                    isActive
+                                                        ? 'page'
+                                                        : undefined
+                                                }
+                                                onClick={() =>
+                                                    setIsMenuOpen(false)
+                                                }
+                                                className={cn(
+                                                    'flex min-h-10 items-center justify-between rounded-sm px-2 text-sm font-semibold text-white/58 transition-colors hover:bg-white/6 hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
+                                                    isActive &&
+                                                        'text-flight-400',
+                                                )}
+                                            >
+                                                {item.title}
+                                                <ArrowUpRight className="size-3.5 opacity-45" />
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {headerNavItems.slice(3).map((item) => {
+                                const isActive = currentPath.startsWith(
+                                    item.activePath,
+                                );
+
+                                return (
+                                    <MobileNavigationLink
+                                        key={item.title}
+                                        item={item}
+                                        isActive={isActive}
+                                        onNavigate={() => setIsMenuOpen(false)}
+                                    />
                                 );
                             })}
 
@@ -349,6 +468,60 @@ type FooterLinksProps = {
     items: { href: NonNullable<InertiaLinkProps['href']>; title: string }[];
     title: string;
 };
+
+function DesktopNavigationLink({
+    currentPath,
+    item,
+}: {
+    currentPath: string;
+    item: PublicNavItem;
+}) {
+    const isActive = currentPath.startsWith(item.activePath);
+
+    return (
+        <NavigationMenuItem>
+            <NavigationMenuLink asChild active={isActive}>
+                <Link
+                    href={item.href}
+                    prefetch
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                        'rounded-sm border-b border-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 transition-colors hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[active=true]:bg-transparent data-[active=true]:text-white motion-reduce:transition-none dark:focus-visible:ring-signal-400',
+                        isActive && 'border-flight-400 text-white',
+                    )}
+                >
+                    {item.title}
+                </Link>
+            </NavigationMenuLink>
+        </NavigationMenuItem>
+    );
+}
+
+function MobileNavigationLink({
+    isActive,
+    item,
+    onNavigate,
+}: {
+    isActive: boolean;
+    item: PublicNavItem;
+    onNavigate: () => void;
+}) {
+    return (
+        <Link
+            href={item.href}
+            prefetch
+            aria-current={isActive ? 'page' : undefined}
+            onClick={onNavigate}
+            className={cn(
+                'flex min-h-14 items-center justify-between border-b border-white/10 py-4 font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
+                isActive && 'text-flight-400',
+            )}
+        >
+            {item.title}
+            <ArrowUpRight className="size-4 opacity-45" />
+        </Link>
+    );
+}
 
 function FooterLinks({ items, title }: FooterLinksProps) {
     return (

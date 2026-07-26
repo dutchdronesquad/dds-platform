@@ -6,6 +6,7 @@ import PublicSeoHead from '@/components/public/public-seo-head';
 import { eventTypeLabels, formatSeasonDateRange } from '@/lib/event-formatting';
 import { cn } from '@/lib/utils';
 import { index as eventsIndex } from '@/routes/events';
+import { show as gettingStartedShow } from '@/routes/getting_started';
 import { show as seasonShow } from '@/routes/seasons';
 import type {
     EventType,
@@ -74,6 +75,16 @@ export default function EventsIndex({
                                     ? '1 event staat klaar.'
                                     : `${events.total} events staan klaar.`}
                             </p>
+                            <Link
+                                href={gettingStartedShow('first-dds-event', {
+                                    query: { source: 'event' },
+                                })}
+                                prefetch
+                                className="mt-3 inline-flex min-h-8 items-center gap-1 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                            >
+                                Nog niet zeker welk event bij je past? Bekijk de
+                                beginnersgids.
+                            </Link>
                         </div>
 
                         <nav

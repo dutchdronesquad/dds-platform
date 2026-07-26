@@ -1,12 +1,15 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import {
+    ArrowUpRight,
     CheckCircle2,
     Handshake,
     Mail,
     MessageCircle,
+    MessagesSquare,
     Newspaper,
     Phone,
     Send,
+    UsersRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -21,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { index as gettingStartedIndex } from '@/routes/getting_started';
 import type { SeoMetadata } from '@/types';
 
 type ContactPage = {
@@ -78,7 +82,7 @@ const directContactChannels: ContactChannel[] = [
     },
     {
         title: 'WhatsApp',
-        body: 'Stuur direct een bericht via WhatsApp.',
+        body: 'Stuur ons direct een bericht.',
         icon: MessageCircle,
         href: 'https://wa.me/31638235409',
         external: true,
@@ -100,6 +104,30 @@ const directContactChannels: ContactChannel[] = [
         body: 'partners@dutchdronesquad.nl',
         icon: Handshake,
         href: 'mailto:partners@dutchdronesquad.nl',
+    },
+];
+
+const communityChannels: ContactChannel[] = [
+    {
+        title: 'WhatsApp-community',
+        body: 'Vraag snel advies over materiaal, instellingen of je eerste stappen.',
+        icon: MessageCircle,
+        href: 'https://chat.whatsapp.com/HInatYEIAAPEhtj3WNJy9V',
+        external: true,
+    },
+    {
+        title: 'Discord-server',
+        body: 'Praat mee over FPV, techniek, trainingen en projecten.',
+        icon: MessagesSquare,
+        href: 'https://discord.com/invite/4eUYVrhMuk',
+        external: true,
+    },
+    {
+        title: 'Facebook-groep',
+        body: 'Volg berichten van DDS en blijf verbonden met andere piloten.',
+        icon: UsersRound,
+        href: 'https://www.facebook.com/groups/518582471633220/',
+        external: true,
     },
 ];
 
@@ -141,6 +169,18 @@ export default function Contact({ page, seo, sourceContext, topics }: Props) {
                                 We lezen elk bericht persoonlijk en reageren zo
                                 snel mogelijk.
                             </p>
+
+                            <Link
+                                href={gettingStartedIndex({
+                                    query: { source: 'contact' },
+                                })}
+                                prefetch
+                                className="group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                            >
+                                Nog beginnersvragen? Bekijk eerst de
+                                beginnersgids
+                                <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+                            </Link>
 
                             <ul className="mt-10 border-t border-deep-signal/18 dark:border-white/15">
                                 {directContactChannels.map((channel) => (
@@ -426,6 +466,59 @@ export default function Contact({ page, seo, sourceContext, topics }: Props) {
                                 </div>
                             )}
                         </Form>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="community"
+                aria-labelledby="community-heading"
+                className="border-t border-paddock-rule bg-paper py-14 text-deep-signal sm:py-20 dark:border-white/12 dark:bg-night-950 dark:text-white"
+            >
+                <div className="mx-auto w-full max-w-7xl px-public-gutter">
+                    <div className="max-w-3xl">
+                        <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan">
+                            Praat mee
+                        </p>
+                        <h2
+                            id="community-heading"
+                            className="mt-4 font-public-display text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"
+                        >
+                            Sluit aan bij de DDS-community.
+                        </h2>
+                        <p className="mt-4 text-base leading-7 text-signal-muted dark:text-night-400">
+                            Stel vragen, wissel ervaringen uit en blijf op de
+                            hoogte via het kanaal dat jij prettig vindt.
+                        </p>
+                    </div>
+
+                    <div className="mt-8 grid gap-4 md:grid-cols-3">
+                        {communityChannels.map((channel) => (
+                            <a
+                                key={channel.title}
+                                href={channel.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group flex min-h-52 flex-col rounded-sm border border-paddock-rule bg-white p-6 transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:outline-none dark:border-white/12 dark:bg-night-900 dark:hover:border-dds-cyan dark:focus-visible:ring-offset-night-950"
+                            >
+                                <span className="flex size-10 items-center justify-center border border-deep-signal/15 text-dds-blue transition-colors group-hover:border-dds-blue dark:border-white/15 dark:text-dds-cyan dark:group-hover:border-dds-cyan">
+                                    <channel.icon
+                                        aria-hidden="true"
+                                        className="size-4"
+                                    />
+                                </span>
+                                <h3 className="mt-5 font-public-display text-xl font-semibold tracking-[-0.03em]">
+                                    {channel.title}
+                                </h3>
+                                <p className="mt-2 text-sm leading-6 text-signal-muted dark:text-night-400">
+                                    {channel.body}
+                                </p>
+                                <span className="mt-auto flex items-center justify-end gap-2 pt-5 text-sm font-semibold text-dds-blue dark:text-dds-cyan">
+                                    Open kanaal
+                                    <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+                                </span>
+                            </a>
+                        ))}
                     </div>
                 </div>
             </section>

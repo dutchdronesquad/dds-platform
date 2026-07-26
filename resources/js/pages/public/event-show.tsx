@@ -24,6 +24,7 @@ import {
     isEventRegistrationUpcoming,
 } from '@/lib/event-formatting';
 import { index as eventsIndex } from '@/routes/events';
+import { show as gettingStartedShow } from '@/routes/getting_started';
 import { show as seasonShow } from '@/routes/seasons';
 import type { PublicEventDetail, SeoMetadata } from '@/types';
 
@@ -303,6 +304,17 @@ function RegistrationPanel({
                             (opent in een nieuw tabblad)
                         </span>
                     </a>
+                )}
+                {event.type === 'training' && (
+                    <Link
+                        href={gettingStartedShow('first-dds-event', {
+                            query: { source: 'event' },
+                        })}
+                        prefetch
+                        className="mt-4 inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                    >
+                        Nieuw? Bekijk hoe je eerste event verloopt
+                    </Link>
                 )}
             </div>
             {!isCancelled && (

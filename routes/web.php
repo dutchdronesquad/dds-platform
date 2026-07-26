@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\ArticleController;
 use App\Http\Controllers\Public\ContactController as PublicContactController;
 use App\Http\Controllers\Public\EventController;
+use App\Http\Controllers\Public\GettingStartedController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\LocationController;
 use App\Http\Controllers\Public\PartnerController;
@@ -50,6 +51,9 @@ Route::get('/news/{article:slug}', [ArticleController::class, 'show'])->name('ne
 
 Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
 Route::get('/locations/{location:slug}', [LocationController::class, 'show'])->name('locations.show');
+
+Route::get('/getting-started', [GettingStartedController::class, 'index'])->name('getting_started.index');
+Route::get('/getting-started/{guide}', [GettingStartedController::class, 'show'])->name('getting_started.show');
 
 Route::inertia('/about', 'public/shell', [
     'page' => $publicPages['about'],

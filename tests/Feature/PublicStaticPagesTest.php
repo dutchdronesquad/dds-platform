@@ -38,6 +38,15 @@ test('the homepage news teaser is absent without published articles', function (
         );
 });
 
+test('house rules consistently describes mandatory guidance as rules', function () {
+    $this->get(route('house_rules'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('page.eyebrow', 'Regels')
+            ->where('page.sections.0.body', 'Deze pagina krijgt ruimte voor basisregels rond vliegen, privacy, materiaal en omgang met elkaar.'),
+        );
+});
+
 test('public static routes expose their page contract', function (string $routeName, string $expectedTitle) {
     $this->get(route($routeName))
         ->assertOk()

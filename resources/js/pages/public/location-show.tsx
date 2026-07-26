@@ -12,6 +12,7 @@ import PublicEventCard from '@/components/public/public-event-card';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as eventsIndex } from '@/routes/events';
+import { index as gettingStartedIndex } from '@/routes/getting_started';
 import { index as locationsIndex } from '@/routes/locations';
 import type {
     PublicEventSummary,
@@ -111,6 +112,17 @@ export default function LocationShow({ location, seo, upcomingEvents }: Props) {
                             {location.description ??
                                 'De uitgebreide omschrijving van deze locatie volgt binnenkort. De adresgegevens en faciliteiten vind je hiernaast.'}
                         </div>
+
+                        <Link
+                            href={gettingStartedIndex({
+                                query: { source: 'location' },
+                            })}
+                            prefetch
+                            className="mt-5 inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                        >
+                            Twijfel je of deze locatie bij jouw niveau past?
+                            Bekijk de beginnersgids.
+                        </Link>
 
                         {location.facilities.length > 0 && (
                             <div className="mt-10">

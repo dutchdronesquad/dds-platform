@@ -23,7 +23,7 @@ type PublicHeroProps = {
     description?: string;
     kicker?: string;
     media: Media;
-    separatorTone?: 'air' | 'deep-signal' | 'paper';
+    separatorTone?: 'air' | 'deep-signal' | 'muted' | 'paper';
     showSeparator?: boolean;
     size?: 'default' | 'compact';
     title: ReactNode;
@@ -131,7 +131,7 @@ export function PublicHero({
 }
 
 type HeroSeparatorProps = {
-    tone: 'air' | 'deep-signal' | 'paper';
+    tone: 'air' | 'deep-signal' | 'muted' | 'paper';
 };
 
 export function HeroSeparator({ tone }: HeroSeparatorProps) {
@@ -143,6 +143,7 @@ export function HeroSeparator({ tone }: HeroSeparatorProps) {
                 'relative z-10 -mt-10 h-10 overflow-hidden sm:-mt-14 sm:h-14',
                 tone === 'air' && 'text-air',
                 tone === 'deep-signal' && 'text-deep-signal',
+                tone === 'muted' && 'text-night-50 dark:text-night-900',
                 tone === 'paper' && 'text-paper dark:text-night-950',
             )}
         >
@@ -218,7 +219,7 @@ export function PageIntro({
             <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-public-gutter lg:grid-cols-[0.9fr_1.1fr]">
                 <div className="flex items-center">
                     <div className="max-w-3xl">
-                        <Eyebrow>{eyebrow}</Eyebrow>
+                        <Eyebrow line={false}>{eyebrow}</Eyebrow>
                         <h1 className="mt-5 font-public-display text-4xl font-bold tracking-[-0.04em] text-balance text-night-950 sm:text-5xl lg:text-6xl dark:text-white">
                             {title}
                         </h1>
@@ -249,21 +250,26 @@ type ContentBandProps = {
     children: ReactNode;
     description?: string;
     eyebrow: string;
+    size?: 'default' | 'compact';
     title: string;
     tone?: 'light' | 'muted' | 'dark';
+    wideContent?: ReactNode;
 };
 
 export function ContentBand({
     children,
     description,
     eyebrow,
+    size = 'default',
     title,
     tone = 'light',
+    wideContent,
 }: ContentBandProps) {
     return (
         <section
             className={cn(
-                'py-public-section',
+                size === 'default' && 'py-public-section',
+                size === 'compact' && 'py-12 sm:py-16',
                 tone === 'light' && 'bg-white dark:bg-night-950',
                 tone === 'muted' && 'bg-night-50 dark:bg-night-900',
                 tone === 'dark' && 'bg-night-950 text-white',
@@ -272,7 +278,9 @@ export function ContentBand({
             <div className="mx-auto w-full max-w-7xl px-public-gutter">
                 <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
                     <div className="max-w-xl">
-                        <Eyebrow inverse={tone === 'dark'}>{eyebrow}</Eyebrow>
+                        <Eyebrow inverse={tone === 'dark'} line={false}>
+                            {eyebrow}
+                        </Eyebrow>
                         <h2
                             className={cn(
                                 'mt-4 font-public-display text-3xl font-bold tracking-[-0.035em] text-balance sm:text-4xl',
@@ -298,6 +306,7 @@ export function ContentBand({
                     </div>
                     <div>{children}</div>
                 </div>
+                {wideContent && <div className="mt-12">{wideContent}</div>}
             </div>
         </section>
     );
