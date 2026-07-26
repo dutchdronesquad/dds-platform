@@ -332,7 +332,7 @@ export function FeatureCard({
                     <Icon className="size-5" />
                 </span>
                 {index && (
-                    <span className="text-xs font-medium tracking-[0.1em] text-night-400">
+                    <span className="text-xs font-medium tracking-[0.1em] text-night-500 dark:text-night-400">
                         {index}
                     </span>
                 )}

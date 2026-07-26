@@ -181,7 +181,7 @@ export default function Welcome({
                                 <span className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange" />
                                 <span className="absolute bottom-0 left-0 h-1.5 w-1/4 bg-dds-cyan" />
                             </div>
-                            <figcaption className="mt-4 text-xs leading-5 text-white/42">
+                            <figcaption className="mt-4 text-xs leading-5 text-white/70">
                                 Het gebruikelijke vliegseizoen loopt van
                                 september tot en met mei.
                             </figcaption>
@@ -198,7 +198,7 @@ export default function Welcome({
                         <h2 className="font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
                             Vlieg je de volgende keer mee?
                         </h2>
-                        <p className="mt-3 text-sm font-medium text-deep-signal/70">
+                        <p className="mt-3 text-sm font-medium text-deep-signal">
                             Bekijk de planning en meld je aan voor de volgende
                             event.
                         </p>

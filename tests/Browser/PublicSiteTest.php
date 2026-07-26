@@ -32,17 +32,17 @@ test('desktop visitors can use the public shell and safe external links', functi
         ->assertVisible('nav[aria-label="Hoofdnavigatie"]')
         ->assertMissing('button[aria-label="Open navigatie"]')
         ->assertAttribute(
-            'a[aria-label="Volg Dutch Drone Squad op Instagram"]',
+            'a[aria-label="Volg Dutch Drone Squad op Instagram (opent in een nieuw tabblad)"]',
             'href',
             'https://www.instagram.com/dutchdronesquad/',
         )
         ->assertAttribute(
-            'a[aria-label="Volg Dutch Drone Squad op Instagram"]',
+            'a[aria-label="Volg Dutch Drone Squad op Instagram (opent in een nieuw tabblad)"]',
             'target',
             '_blank',
         )
         ->assertAttribute(
-            'a[aria-label="Volg Dutch Drone Squad op Instagram"]',
+            'a[aria-label="Volg Dutch Drone Squad op Instagram (opent in een nieuw tabblad)"]',
             'rel',
             'noopener noreferrer',
         )
@@ -66,7 +66,22 @@ test('desktop visitors can use the public shell and safe external links', functi
             'rel',
             'noopener noreferrer',
         )
+        ->assertNotPresent('footer a[href="mailto:info@dutchdronesquad.nl"]')
+        ->assertNotPresent('footer a[href="/contact?source=footer-demo"]')
         ->keys('[class~="font-sans"]', 'Tab')
+        ->assertScript(
+            "document.activeElement?.textContent?.trim() === 'Ga naar hoofdinhoud'",
+        )
+        ->assertScript(
+            "(() => { const element = document.activeElement; const style = getComputedStyle(element); return element.matches(':focus-visible') && (style.outlineStyle !== 'none' || style.boxShadow !== 'none'); })()",
+        )
+        ->assertAttribute(
+            'a[href="#main-content"]',
+            'href',
+            '#main-content',
+        )
+        ->assertAttribute('main#main-content', 'tabindex', '-1')
+        ->keys('a[href="#main-content"]', 'Tab')
         ->assertScript(
             "document.activeElement?.getAttribute('aria-label')",
             'Dutch Drone Squad home',
@@ -101,6 +116,26 @@ test('mobile navigation opens, reflows, and follows public links', function () {
         ->assertSeeIn('#mobile-public-navigation', 'Projecten')
         ->assertSeeIn('#mobile-public-navigation', 'Partners')
         ->assertSeeIn('#mobile-public-navigation', 'Contact')
+        ->assertScript(
+            "document.activeElement?.getAttribute('href') === '/getting-started?source=navigation'",
+        )
+        ->assertScript("getComputedStyle(document.body).overflow === 'hidden'")
+        ->assertScript(
+            "document.querySelector('main')?.hasAttribute('inert') === true && document.querySelector('footer')?.hasAttribute('inert') === true",
+        )
+        ->keys(
+            '#mobile-public-navigation a[href="/getting-started?source=navigation"]',
+            'Escape',
+        )
+        ->assertMissing('#mobile-public-navigation')
+        ->assertScript(
+            "document.activeElement?.getAttribute('aria-label') === 'Open navigatie'",
+        )
+        ->assertScript("getComputedStyle(document.body).overflow !== 'hidden'")
+        ->assertScript(
+            "document.querySelector('main')?.hasAttribute('inert') === false && document.querySelector('footer')?.hasAttribute('inert') === false",
+        )
+        ->click('button[aria-label="Open navigatie"]')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
         ->click('#mobile-public-navigation a[href="/contact"]')
         ->assertPathIs('/contact')
@@ -162,6 +197,9 @@ test('desktop navigation groups DDS pages in the information submenu', function 
             '[data-testid="information-navigation-content"] a[href="/projects"]',
             'aria-current',
             'page',
+        )
+        ->assertScript(
+            'document.querySelectorAll(\'nav[aria-label="Hoofdnavigatie"] nav\').length === 0',
         )
         ->click(
             '[data-testid="information-navigation-content"] a[href="/partners"]',
@@ -484,7 +522,17 @@ test('event details render long content, dates, registration, and safe links on 
 
     $desktopPage->assertScript(
         "(() => { const items = [...document.querySelectorAll('[data-testid=\"event-quick-facts\"] > div')]; const widths = items.map((item) => Math.round(item.getBoundingClientRect().width)); return items.length === 4 && new Set(widths).size === 1; })()",
-    );
+    )
+        ->assertAttribute(
+            'header a[href="/events"]',
+            'aria-current',
+            'page',
+        )
+        ->assertAttribute(
+            'footer a[href="/events"]',
+            'aria-current',
+            'page',
+        );
 
     $page = visit("/events/{$event->slug}")
         ->on()->iPhone14Pro()
@@ -667,11 +715,13 @@ test('representative public pages render without browser errors', function () {
         '/projects',
         '/news',
         '/locations',
+        '/getting-started',
         '/about',
         '/house-rules',
         '/partners',
         '/contact',
-    ])->assertNoSmoke();
+    ])->assertNoAccessibilityIssues()
+        ->assertNoSmoke();
 });
 
 test('partner catalogue stays aligned and accessible on mobile', function () {

@@ -19,7 +19,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 `main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, reusable media-library management through DDS-014H, the public contact form and dashboard review flow, and public Location pages with admin Location management.
 
-DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-014G is complete and merged in pull request #27 with the public contact form, stored submissions, and dashboard review flow. DDS-007D remains partially open for its final cross-page navigation, footer, keyboard, and screen-reader review.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-014G is complete and merged in pull request #27 with the public contact form, stored submissions, and dashboard review flow. DDS-014J and DDS-014L are complete and merged in pull requests #29 and #30. DDS-014K is complete as a deliberate no-build decision: the Getting Started guides remain code-owned in phase 1. DDS-007D is implemented and awaiting review; DDS-014N is the next build ticket for the code-owned Over DDS page.
 
 Projects, partners, and fixed informational pages are deliberately code-owned in phase 1. They do not get database models, permissions, or dashboard CRUD unless observed maintenance needs pass their documented CMS decision gates.
 
@@ -429,7 +429,9 @@ Acceptance criteria:
 
 ### DDS-007D: Public Navigation And Footer Polish
 
-Status: partially implemented as part of DDS-007B and DDS-007C. The public shell now has refreshed desktop and mobile navigation, active-link treatment, the primary hierarchy `Projecten`, `Nieuws`, `Over DDS`, `Locaties`, and `Contact`, a separate agenda CTA, a sticky translucent homepage header on desktop, and a four-column footer with brand context and grouped links. `Huisregels` is intentionally footer-only. Login and admin access are hidden from the public shell while their direct routes remain available. Remaining work is to validate the hierarchy across every public page, add any required privacy, media, results, social, partner, or direct-contact pathways, and complete keyboard and screen-reader verification.
+Status: implemented and awaiting review. The final public hierarchy keeps `Starten met FPV`, `Locaties`, `Nieuws`, and `Contact` directly visible, groups `Over DDS`, `Projecten`, and `Partners` under a compact Information menu on desktop, exposes that group inline on mobile, and retains a separate agenda action. Section and detail routes now expose active states in the header, agenda action, mobile menu, and footer. Contact remains directly available in the primary and mobile navigation; the footer does not duplicate the general email address or a demo/workshop/collaboration contact path. Media coverage remains part of News and race results remain part of event or race-report content until either justifies a real standalone destination; Privacy is reserved as a footer destination once approved policy copy exists rather than publishing a legal placeholder.
+
+Keyboard and screen-reader verification now covers a visible-on-focus skip link, one labelled primary navigation landmark, menu focus containment, Escape close with focus restoration, background scroll and assistive-technology isolation while the mobile menu is open, meaningful current-page states, and safe external-link announcements. Representative public routes pass the Pest browser accessibility scan, including contrast corrections found on the homepage and shared fixed-page cards.
 
 Goal: make the public shell feel coherent across pages before real content models land.
 
@@ -439,7 +441,7 @@ Tasks:
 - decide where secondary links such as Locations, House Rules, Partners, In The Media, Results, and Privacy live;
 - add active states for section and detail pages;
 - improve mobile navigation ergonomics;
-- add footer contact pathways and partner/demo cues;
+- keep contact available through the public navigation without duplicate footer contact pathways;
 - keep login/admin entry private and available only through its direct route;
 - verify navigation with keyboard and screen reader basics.
 
@@ -1192,6 +1194,8 @@ Acceptance criteria:
 
 ### DDS-014J: Public News Pages And Admin Article CRUD
 
+Status: complete and merged in pull request #29.
+
 Goal: make the article model useful before WordPress import work begins.
 
 Tasks:
@@ -1212,6 +1216,29 @@ Acceptance criteria:
 - empty news states are useful before content exists.
 
 ### DDS-014K: Curated Guide Library And Admin Workflow
+
+Status: complete as a deliberate no-build decision. After reviewing the real Getting Started content delivered in DDS-014L, no managed guide library or admin workflow is needed in phase 1.
+
+Decision:
+
+- keep the three published guides code-owned through `config/getting_started_guides.php` and their dedicated React page templates;
+- retain the existing stable slugs, manual ordering, editorial owner, and review date metadata, which are already shared and covered by focused public feature tests;
+- do not add a `Guide` model, database table, policy, permissions, rich-text body, publication workflow, or `/dashboard/guides` resource merely to move a small, designed guide set into a second content system;
+- treat the entries in the guide catalogue as the explicitly published set; a guide that is not in that catalogue has no public route;
+- continue sourcing changing event, season, ticket, and location facts from their domain models rather than guide prose.
+
+The implemented evidence does not justify the original build scope: the catalogue contains three guides, each guide has a deliberately different long-form presentation, and no independent non-technical editing need or repeated pull-request maintenance problem has been observed. A constrained body editor would not replace those templates, while a flexible editor would become the generic page builder this ticket was intended to avoid.
+
+Reopen this ticket only when at least one of these conditions is observed:
+
+- non-technical editors need to publish or revise guides independently;
+- guide updates become frequent or urgent enough that pull-request maintenance creates measurable delay or errors;
+- the guide set grows enough to need operational draft, archive, category, ordering, ownership, or review-due workflows;
+- actively maintained English and Dutch variants require coordinated editorial fallback and review;
+- guide content needs structured reuse by another non-code consumer;
+- the current owner and review-date checks prove insufficient to keep safety or equipment guidance current.
+
+If reopened, preserve the public slugs, designed page templates, metadata, source-of-truth boundaries, and existing URLs while migrating to one managed source. Do not run code-owned and database-owned guide bodies in parallel.
 
 Goal: manage a curated library of newcomer guides without introducing a generic page builder.
 
@@ -1235,6 +1262,8 @@ Acceptance criteria:
 - authorization, validation, publication, and locale fallback behavior are covered by focused tests.
 
 ### DDS-014L: Public Getting Started Hub And Entry Points
+
+Status: complete and merged in pull request #30.
 
 Goal: give new pilots one coherent path from first interest to a suitable DDS event.
 
@@ -1279,6 +1308,31 @@ Acceptance criteria:
 - sent replies are stored and visible on the submission's detail view;
 - reply delivery failures are visible and do not silently lose the reply;
 - only authorized users can send replies, and sends are attributable to the sending admin.
+
+### DDS-014N: Art-Directed Over DDS Page
+
+Goal: replace the generic `/about` public shell with a distinctive, code-owned page that explains who Dutch Drone Squad is, what the group organizes, and why pilots, visitors, and partners should get involved.
+
+Tasks:
+
+- replace the shared `public/shell` presentation for `/about` with a dedicated Inertia React page while keeping the stable route and SEO contract;
+- turn the existing temporary copy into a clear Dutch-first narrative covering the DDS story, FPV racing, community, knowledge sharing, events, and collaborations;
+- move the team and community context reserved by DDS-007B onto this page without publishing private member information or unsupported claims;
+- use real, versioned DDS photography and the established public visual language instead of generic cards or placeholder sections;
+- provide deliberate next actions to the Agenda, Getting Started hub, Projects, and Contact without duplicating their content;
+- keep stable editorial copy and presentation code-owned in accordance with the DDS-014F decision, while sourcing changing event or location facts from their domain models when shown;
+- verify heading hierarchy, landmarks, alternative text, keyboard navigation, contrast, and representative mobile and desktop layouts;
+- add focused feature and browser coverage for content, routes, links, responsive behavior, and accessibility.
+
+Acceptance criteria:
+
+- `/about` no longer renders as a generic fixed-page shell;
+- visitors can understand DDS's identity, activities, community role, and relevant ways to participate;
+- team and community content has a deliberate home without bloating the homepage;
+- content uses verified DDS facts and imagery and avoids invented history, statistics, or member details;
+- the page remains code-owned and does not introduce a page model, dashboard CRUD, or generic page builder;
+- existing `/about` navigation, canonical URL, and SEO behavior remain stable;
+- the page passes focused feature, browser, responsive, and accessibility checks.
 
 ## Epic 6: WordPress Import Spike
 

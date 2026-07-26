@@ -210,9 +210,11 @@ Season context should be recognizable without overpowering the event itself:
 
 The public experience should use designed React templates and constrained content fields rather than a generic page builder.
 
-Phase 1 can publish the hub through a managed page with a fixed `getting_started` key. The implementation should keep dynamic event, season, location, and registration data outside the saved rich-text body.
+Phase 1 publishes the hub and its three guides through code-owned metadata and dedicated React templates. Dynamic event, season, location, and registration data remains outside guide prose.
 
-When the guide library grows, introduce curated `Guide` records with:
+The post-launch review for DDS-014K found no demonstrated need for a separate managed guide library. Stable slugs, ordering, editorial ownership, and review dates already live in the shared guide catalogue, while each guide uses a deliberately different long-form layout. Adding database CRUD now would either leave presentation changes in code anyway or introduce the generic page builder this strategy excludes.
+
+Reconsider curated `Guide` records only when observed maintenance needs justify them, such as independent non-technical publishing, frequent or urgent changes, a substantially larger catalogue, coordinated bilingual editing, operational review-due workflows, or structured reuse outside the website. A later migration can then introduce:
 
 - title and stable English slug;
 - short summary;
@@ -244,9 +246,9 @@ Possible later routes include:
 - render suitable upcoming events and current season information from backend data;
 - link to existing Event, Location, Contact, and House Rules pages.
 
-### Phase 2: Curated Guide Library
+### Phase 2: Curated Guide Library (conditional)
 
-- introduce guide records and admin workflow;
+- introduce guide records and admin workflow only after the DDS-014K decision gate is reached;
 - split long subjects into stable, searchable detail pages;
 - add review dates, ownership, and related-content links;
 - expand equipment, simulator, safety, and glossary content.

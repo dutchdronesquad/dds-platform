@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import type { InertiaLinkProps } from '@inertiajs/react';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import DdsBrand from '@/components/dds-brand';
 import {
@@ -32,6 +32,8 @@ type PublicNavItem = {
     title: string;
 };
 
+type FooterNavItem = PublicNavItem;
+
 const headerNavItems: PublicNavItem[] = [
     {
         title: 'Starten met FPV',
@@ -61,25 +63,26 @@ const informationNavItems: PublicNavItem[] = [
     },
 ];
 
-const footerExploreItems = [
-    { title: 'Agenda', href: eventsIndex() },
-    { title: 'Nieuws', href: newsIndex() },
-    { title: 'Locaties', href: locationsIndex() },
+const footerExploreItems: FooterNavItem[] = [
+    { title: 'Agenda', href: eventsIndex(), activePath: '/events' },
+    { title: 'Nieuws', href: newsIndex(), activePath: '/news' },
+    { title: 'Locaties', href: locationsIndex(), activePath: '/locations' },
 ];
 
-const footerDdsItems = [
-    { title: 'Over DDS', href: about() },
-    { title: 'Projecten', href: projectsIndex() },
-    { title: 'Partners', href: partners() },
+const footerDdsItems: FooterNavItem[] = [
+    { title: 'Over DDS', href: about(), activePath: '/about' },
+    { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
+    { title: 'Partners', href: partners(), activePath: '/partners' },
 ];
 
-const footerPracticalItems = [
+const footerPracticalItems: FooterNavItem[] = [
     {
         title: 'Starten met FPV',
         href: gettingStartedIndex({ query: { source: 'footer' } }),
+        activePath: '/getting-started',
     },
-    { title: 'Huisregels', href: houseRules() },
-    { title: 'Contact', href: contact() },
+    { title: 'Huisregels', href: houseRules(), activePath: '/house-rules' },
+    { title: 'Contact', href: contact(), activePath: '/contact' },
 ];
 
 const socialItems: { href: string; icon: ReactNode; title: string }[] = [
@@ -138,6 +141,8 @@ export default function PublicLayout({ children }: Props) {
     const currentPath = url.split('?')[0];
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         let animationFrameId: number | null = null;
@@ -177,8 +182,97 @@ export default function PublicLayout({ children }: Props) {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isMenuOpen) {
+            return;
+        }
+
+        const previousBodyOverflow = document.body.style.overflow;
+        const desktopMediaQuery = window.matchMedia('(min-width: 64rem)');
+
+        const focusableElements = (): HTMLElement[] => {
+            const menuButton = menuButtonRef.current;
+            const menuElements = Array.from(
+                mobileMenuRef.current?.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled])',
+                ) ?? [],
+            );
+
+            return menuButton ? [menuButton, ...menuElements] : menuElements;
+        };
+
+        const closeMenu = () => {
+            setIsMenuOpen(false);
+            window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeMenu();
+
+                return;
+            }
+
+            if (event.key !== 'Tab') {
+                return;
+            }
+
+            const elements = focusableElements();
+            const firstElement = elements[0];
+            const lastElement = elements.at(-1);
+
+            if (!firstElement || !lastElement) {
+                return;
+            }
+
+            if (event.shiftKey && document.activeElement === firstElement) {
+                event.preventDefault();
+                lastElement.focus();
+            } else if (
+                !event.shiftKey &&
+                document.activeElement === lastElement
+            ) {
+                event.preventDefault();
+                firstElement.focus();
+            }
+        };
+
+        const handleViewportChange = (event: MediaQueryListEvent) => {
+            if (event.matches) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', handleKeyDown);
+        desktopMediaQuery.addEventListener('change', handleViewportChange);
+        mobileMenuRef.current?.querySelector<HTMLElement>('a[href]')?.focus();
+
+        return () => {
+            document.body.style.overflow = previousBodyOverflow;
+            document.removeEventListener('keydown', handleKeyDown);
+            desktopMediaQuery.removeEventListener(
+                'change',
+                handleViewportChange,
+            );
+        };
+    }, [isMenuOpen]);
+
+    const isSectionActive = (activePath: string): boolean =>
+        currentPath === activePath || currentPath.startsWith(`${activePath}/`);
+
+    const isEventsActive = isSectionActive('/events');
+
     return (
         <div className="min-h-screen bg-paper text-ink dark:bg-night-950 dark:text-white">
+            <a
+                href="#main-content"
+                className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-sm bg-white px-4 py-3 text-sm font-semibold text-ink shadow-xl transition-transform focus-visible:translate-y-0 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:outline-none motion-reduce:transition-none"
+            >
+                Ga naar hoofdinhoud
+            </a>
+
             <header
                 className={cn(
                     'absolute inset-x-0 top-0 z-50 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none lg:sticky lg:-mb-18',
@@ -191,6 +285,7 @@ export default function PublicLayout({ children }: Props) {
                         href={home()}
                         prefetch
                         aria-label="Dutch Drone Squad home"
+                        aria-current={currentPath === '/' ? 'page' : undefined}
                         onClick={() => setIsMenuOpen(false)}
                         className="min-w-0 rounded-sm focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-3 focus-visible:outline-none dark:focus-visible:ring-signal-400 dark:focus-visible:ring-offset-night-950"
                     >
@@ -200,84 +295,91 @@ export default function PublicLayout({ children }: Props) {
                         />
                     </Link>
 
-                    <nav
+                    <NavigationMenu
                         aria-label="Hoofdnavigatie"
-                        className="ml-auto hidden lg:block"
+                        viewport={false}
+                        className="ml-auto hidden lg:flex"
                     >
-                        <NavigationMenu viewport={false}>
-                            <NavigationMenuList className="gap-7">
-                                {headerNavItems.slice(0, 3).map((item) => (
-                                    <DesktopNavigationLink
-                                        key={item.title}
-                                        item={item}
-                                        currentPath={currentPath}
-                                    />
-                                ))}
-
-                                <NavigationMenuItem>
-                                    <NavigationMenuTrigger
-                                        aria-label="Open Informatie menu"
-                                        className={cn(
-                                            'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
-                                            informationNavItems.some((item) =>
-                                                currentPath.startsWith(
-                                                    item.activePath,
-                                                ),
-                                            ) && 'border-flight-400 text-white',
-                                        )}
-                                    >
-                                        Informatie
-                                    </NavigationMenuTrigger>
-                                    <NavigationMenuContent
-                                        data-testid="information-navigation-content"
-                                        className="right-0 left-auto w-40 border-white/12 bg-ink! p-2 text-white! shadow-2xl shadow-black/30 md:w-40"
-                                    >
-                                        <div className="grid gap-1">
-                                            {informationNavItems.map((item) => {
-                                                const isActive =
-                                                    currentPath.startsWith(
-                                                        item.activePath,
-                                                    );
-
-                                                return (
-                                                    <NavigationMenuLink
-                                                        key={item.title}
-                                                        asChild
-                                                        active={isActive}
-                                                        className="rounded-sm border border-transparent px-4 py-3.5 text-white/72 transition-[background-color,border-color,color] hover:border-white/12 hover:bg-white/10 hover:text-white focus:border-white/12 focus:bg-white/10 focus:text-white data-[active=true]:border-flight-400/30 data-[active=true]:bg-white/8 data-[active=true]:text-flight-400"
-                                                    >
-                                                        <Link
-                                                            href={item.href}
-                                                            prefetch
-                                                        >
-                                                            <span className="font-semibold whitespace-nowrap">
-                                                                {item.title}
-                                                            </span>
-                                                        </Link>
-                                                    </NavigationMenuLink>
-                                                );
-                                            })}
-                                        </div>
-                                    </NavigationMenuContent>
-                                </NavigationMenuItem>
-
+                        <NavigationMenuList className="gap-7">
+                            {headerNavItems.slice(0, 3).map((item) => (
                                 <DesktopNavigationLink
-                                    item={headerNavItems[3]}
+                                    key={item.title}
+                                    item={item}
                                     currentPath={currentPath}
                                 />
-                            </NavigationMenuList>
-                        </NavigationMenu>
-                    </nav>
+                            ))}
+
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger
+                                    aria-label="Open Informatie menu"
+                                    className={cn(
+                                        'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
+                                        informationNavItems.some((item) =>
+                                            isSectionActive(item.activePath),
+                                        ) && 'border-flight-400 text-white',
+                                    )}
+                                >
+                                    Informatie
+                                </NavigationMenuTrigger>
+                                <NavigationMenuContent
+                                    data-testid="information-navigation-content"
+                                    className="right-0 left-auto w-40 border-white/12 bg-ink! p-2 text-white! shadow-2xl shadow-black/30 md:w-40"
+                                >
+                                    <div className="grid gap-1">
+                                        {informationNavItems.map((item) => {
+                                            const isActive = isSectionActive(
+                                                item.activePath,
+                                            );
+
+                                            return (
+                                                <NavigationMenuLink
+                                                    key={item.title}
+                                                    asChild
+                                                    active={isActive}
+                                                    className="rounded-sm border border-transparent px-4 py-3.5 text-white/72 transition-[background-color,border-color,color] hover:border-white/12 hover:bg-white/10 hover:text-white focus:border-white/12 focus:bg-white/10 focus:text-white data-[active=true]:border-flight-400/30 data-[active=true]:bg-white/8 data-[active=true]:text-flight-400"
+                                                >
+                                                    <Link
+                                                        href={item.href}
+                                                        prefetch
+                                                        aria-current={
+                                                            isActive
+                                                                ? 'page'
+                                                                : undefined
+                                                        }
+                                                    >
+                                                        <span className="font-semibold whitespace-nowrap">
+                                                            {item.title}
+                                                        </span>
+                                                    </Link>
+                                                </NavigationMenuLink>
+                                            );
+                                        })}
+                                    </div>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+
+                            <DesktopNavigationLink
+                                item={headerNavItems[3]}
+                                currentPath={currentPath}
+                            />
+                        </NavigationMenuList>
+                    </NavigationMenu>
 
                     <Link
                         href={eventsIndex()}
                         prefetch
-                        className="hidden min-h-10 items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-flight-400 hover:bg-flight-500 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none lg:inline-flex"
+                        aria-current={isEventsActive ? 'page' : undefined}
+                        className={cn(
+                            'hidden min-h-10 items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-flight-400 hover:bg-flight-500 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none lg:inline-flex',
+                            isEventsActive &&
+                                'border-flight-400 bg-flight-500 text-ink',
+                        )}
                     >
                         Bekijk agenda
                     </Link>
 
                     <button
+                        ref={menuButtonRef}
                         type="button"
                         aria-controls="mobile-public-navigation"
                         aria-expanded={isMenuOpen}
@@ -297,6 +399,7 @@ export default function PublicLayout({ children }: Props) {
 
                 {isMenuOpen && (
                     <div
+                        ref={mobileMenuRef}
                         id="mobile-public-navigation"
                         className="absolute inset-x-0 top-full min-h-[calc(100dvh-4.5rem)] border-t border-white/10 bg-ink text-white shadow-2xl shadow-black/30 lg:hidden"
                     >
@@ -305,7 +408,7 @@ export default function PublicLayout({ children }: Props) {
                             className="mx-auto flex min-h-[calc(100dvh-4.5rem)] w-full max-w-7xl flex-col px-public-gutter pt-6 pb-8"
                         >
                             {headerNavItems.slice(0, 3).map((item) => {
-                                const isActive = currentPath.startsWith(
+                                const isActive = isSectionActive(
                                     item.activePath,
                                 );
 
@@ -324,9 +427,7 @@ export default function PublicLayout({ children }: Props) {
                                     className={cn(
                                         'font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72',
                                         informationNavItems.some((item) =>
-                                            currentPath.startsWith(
-                                                item.activePath,
-                                            ),
+                                            isSectionActive(item.activePath),
                                         ) && 'text-flight-400',
                                     )}
                                 >
@@ -334,7 +435,7 @@ export default function PublicLayout({ children }: Props) {
                                 </p>
                                 <div className="mt-3 grid gap-1.5 border-l border-white/14 pl-4">
                                     {informationNavItems.map((item) => {
-                                        const isActive = currentPath.startsWith(
+                                        const isActive = isSectionActive(
                                             item.activePath,
                                         );
 
@@ -366,7 +467,7 @@ export default function PublicLayout({ children }: Props) {
                             </div>
 
                             {headerNavItems.slice(3).map((item) => {
-                                const isActive = currentPath.startsWith(
+                                const isActive = isSectionActive(
                                     item.activePath,
                                 );
 
@@ -384,8 +485,15 @@ export default function PublicLayout({ children }: Props) {
                                 <Link
                                     href={eventsIndex()}
                                     prefetch
+                                    aria-current={
+                                        isEventsActive ? 'page' : undefined
+                                    }
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="flex min-h-12 items-center justify-center rounded-full bg-flight-500 px-5 py-3 text-base font-semibold text-ink transition-colors hover:bg-flight-400 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none"
+                                    className={cn(
+                                        'flex min-h-12 items-center justify-center rounded-full bg-flight-500 px-5 py-3 text-base font-semibold text-ink transition-colors hover:bg-flight-400 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none',
+                                        isEventsActive &&
+                                            'ring-flight-200 ring-2 ring-offset-2 ring-offset-ink',
+                                    )}
                                 >
                                     Bekijk agenda
                                 </Link>
@@ -395,9 +503,20 @@ export default function PublicLayout({ children }: Props) {
                 )}
             </header>
 
-            <main>{children}</main>
+            <main
+                id="main-content"
+                tabIndex={-1}
+                inert={isMenuOpen}
+                aria-hidden={isMenuOpen ? true : undefined}
+            >
+                {children}
+            </main>
 
-            <footer className="bg-ink text-white">
+            <footer
+                inert={isMenuOpen}
+                aria-hidden={isMenuOpen ? true : undefined}
+                className="bg-ink text-white"
+            >
                 <div className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-10 sm:py-12 lg:grid-cols-[1.5fr_0.58fr_0.58fr_0.58fr] lg:gap-10 lg:py-14">
                     <div className="max-w-sm">
                         <DdsBrand inverse />
@@ -419,7 +538,7 @@ export default function PublicLayout({ children }: Props) {
                                         href={item.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        aria-label={`Volg Dutch Drone Squad op ${item.title}`}
+                                        aria-label={`Volg Dutch Drone Squad op ${item.title} (opent in een nieuw tabblad)`}
                                         className="flex size-10 items-center justify-center rounded-full border border-white/14 text-white/62 transition-colors hover:border-flight-400/60 hover:bg-flight-400 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none motion-reduce:transition-none"
                                     >
                                         <svg
@@ -444,11 +563,17 @@ export default function PublicLayout({ children }: Props) {
                         <FooterLinks
                             title="Ontdek"
                             items={footerExploreItems}
+                            currentPath={currentPath}
                         />
-                        <FooterLinks title="DDS" items={footerDdsItems} />
+                        <FooterLinks
+                            title="DDS"
+                            items={footerDdsItems}
+                            currentPath={currentPath}
+                        />
                         <FooterLinks
                             title="Praktisch"
                             items={footerPracticalItems}
+                            currentPath={currentPath}
                         />
                     </div>
                 </div>
@@ -465,7 +590,8 @@ export default function PublicLayout({ children }: Props) {
 }
 
 type FooterLinksProps = {
-    items: { href: NonNullable<InertiaLinkProps['href']>; title: string }[];
+    currentPath: string;
+    items: FooterNavItem[];
     title: string;
 };
 
@@ -476,7 +602,9 @@ function DesktopNavigationLink({
     currentPath: string;
     item: PublicNavItem;
 }) {
-    const isActive = currentPath.startsWith(item.activePath);
+    const isActive =
+        currentPath === item.activePath ||
+        currentPath.startsWith(`${item.activePath}/`);
 
     return (
         <NavigationMenuItem>
@@ -523,7 +651,7 @@ function MobileNavigationLink({
     );
 }
 
-function FooterLinks({ items, title }: FooterLinksProps) {
+function FooterLinks({ currentPath, items, title }: FooterLinksProps) {
     return (
         <div>
             <h2 className="text-xs font-semibold tracking-[0.12em] text-white/58 uppercase">
@@ -535,7 +663,20 @@ function FooterLinks({ items, title }: FooterLinksProps) {
                         key={item.title}
                         href={item.href}
                         prefetch
-                        className="rounded-sm transition-colors hover:text-flight-400 focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:outline-none motion-reduce:transition-none"
+                        aria-current={
+                            currentPath === item.activePath ||
+                            currentPath.startsWith(`${item.activePath}/`)
+                                ? 'page'
+                                : undefined
+                        }
+                        className={cn(
+                            'rounded-sm transition-colors hover:text-flight-400 focus-visible:ring-2 focus-visible:ring-signal-400 focus-visible:outline-none motion-reduce:transition-none',
+                            (currentPath === item.activePath ||
+                                currentPath.startsWith(
+                                    `${item.activePath}/`,
+                                )) &&
+                                'font-semibold text-flight-400',
+                        )}
                     >
                         {item.title}
                     </Link>
