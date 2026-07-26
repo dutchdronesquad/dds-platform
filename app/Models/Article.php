@@ -68,6 +68,12 @@ final class Article extends Model
             ->where('published_at', '<=', now());
     }
 
+    public function isPubliclyVisible(): bool
+    {
+        return $this->status === ArticleStatus::Published
+            && $this->published_at?->lte(now()) === true;
+    }
+
     /**
      * @return array<string, string>
      */

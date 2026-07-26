@@ -83,6 +83,7 @@ class HandleInertiaRequests extends Middleware
         return [
             'canViewEvents' => $user->can(Permission::ViewEvents->value),
             'canViewLocations' => $user->can(Permission::ViewLocations->value),
+            'canViewArticles' => $user->can(Permission::ViewArticles->value),
             'canViewMedia' => $user->can('viewAny', MediaAsset::class),
             'canManageSeasons' => $user->can('viewAny', Season::class),
             'canViewRedirects' => $user->can(Permission::ViewRedirects->value),

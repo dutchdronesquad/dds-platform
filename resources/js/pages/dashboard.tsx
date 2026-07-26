@@ -32,8 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { dashboard, home } from '@/routes';
 
-type ResourceId =
-    'events' | 'articles' | 'media' | 'users' | 'roles' | 'redirects';
+type ResourceId = 'events' | 'media' | 'users' | 'roles' | 'redirects';
 
 type Props = {
     openPoints: {
@@ -96,7 +95,6 @@ type DashboardAction = {
 };
 
 const plannedAreas = [
-    { id: 'articles', title: 'Artikelen', icon: Newspaper },
     { id: 'media', title: 'Media', icon: Images },
 ] satisfies Array<{
     id: ResourceId;

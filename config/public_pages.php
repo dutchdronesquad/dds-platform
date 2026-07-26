@@ -7,30 +7,6 @@
  * to first-class models or constrained managed content.
  */
 return [
-    'news' => [
-        'title' => 'News',
-        'eyebrow' => 'Updates',
-        'description' => 'Publieke updates, aankondigingen en terugblikken vormen straks de tijdlijn van Dutch Drone Squad.',
-        'visual' => [
-            'src' => '/images/dds/racing/pilot-at-training.jpg',
-            'alt' => 'Pilot tijdens een indoor trainingsavond van Dutch Drone Squad',
-            'position' => '62% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Bekijk events',
-            'href' => '/events',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Redactionele richting',
-                'body' => 'Nieuwsitems kunnen korte community-updates, eventverslagen, releases en partnerupdates bundelen.',
-            ],
-            [
-                'heading' => 'Volgende stap',
-                'body' => 'De shell is klaar voor import of handmatige invoer zodra het contentmodel wordt toegevoegd.',
-            ],
-        ],
-    ],
     'about' => [
         'title' => 'About',
         'eyebrow' => 'Dutch Drone Squad',

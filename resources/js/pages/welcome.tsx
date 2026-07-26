@@ -24,7 +24,6 @@ type NewsItem = {
 
 type WelcomeProps = {
     latestNews: NewsItem[];
-    latestNewsAreLegacy: boolean;
     partners: PublicPartner[];
     seo: SeoMetadata;
     upcomingEvents: PublicEventSummary[];
@@ -47,7 +46,6 @@ const pilotBenefits = [
 
 export default function Welcome({
     latestNews,
-    latestNewsAreLegacy,
     partners,
     seo,
     upcomingEvents,
@@ -286,59 +284,54 @@ export default function Welcome({
                 </div>
             </section>
 
-            <section id="latest-news" className="bg-paper text-ink">
-                <div className="mx-auto w-full max-w-7xl px-public-gutter py-20 sm:py-28 lg:py-32">
-                    <div className="flex items-end justify-between gap-8">
-                        <div>
-                            <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase">
-                                Uit de paddock
-                            </p>
-                            <h2 className="mt-4 font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-                                Laatste nieuws
-                            </h2>
+            {newsItems.length > 0 && (
+                <section id="latest-news" className="bg-paper text-ink">
+                    <div className="mx-auto w-full max-w-7xl px-public-gutter py-20 sm:py-28 lg:py-32">
+                        <div className="flex items-end justify-between gap-8">
+                            <div>
+                                <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase">
+                                    Uit de paddock
+                                </p>
+                                <h2 className="mt-4 font-public-display text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+                                    Laatste nieuws
+                                </h2>
+                            </div>
+                            <Link
+                                href={newsIndex()}
+                                prefetch
+                                className="hidden text-sm font-semibold text-dds-blue transition-colors hover:text-deep-signal sm:inline-flex"
+                            >
+                                Bekijk alles
+                            </Link>
                         </div>
+
+                        <div className="-mx-public-gutter mt-10 md:mx-0 md:mt-12">
+                            <ul
+                                aria-label="Laatste nieuws"
+                                tabIndex={0}
+                                className="flex snap-x snap-proximity scroll-px-public-gutter scrollbar-none gap-4 overflow-x-auto overscroll-x-contain px-public-gutter pb-4 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset md:grid md:snap-none md:grid-cols-3 md:gap-7 md:overflow-visible md:px-0 md:pb-0 lg:gap-10"
+                            >
+                                {newsItems.map((item) => (
+                                    <li
+                                        key={item.href}
+                                        className="w-[calc(100vw-3.5rem)] max-w-[22rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
+                                    >
+                                        <NewsCard item={item} />
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         <Link
                             href={newsIndex()}
                             prefetch
-                            className="hidden text-sm font-semibold text-dds-blue transition-colors hover:text-deep-signal sm:inline-flex"
+                            className="mt-10 inline-flex text-sm font-semibold text-dds-blue sm:hidden"
                         >
-                            Bekijk alles
+                            Bekijk al het nieuws
                         </Link>
                     </div>
-
-                    <div className="-mx-public-gutter mt-10 md:mx-0 md:mt-12">
-                        <ul
-                            aria-label="Laatste nieuws"
-                            tabIndex={0}
-                            className="flex snap-x snap-proximity scroll-px-public-gutter scrollbar-none gap-4 overflow-x-auto overscroll-x-contain px-public-gutter pb-4 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none focus-visible:ring-inset md:grid md:snap-none md:grid-cols-3 md:gap-7 md:overflow-visible md:px-0 md:pb-0 lg:gap-10"
-                        >
-                            {newsItems.map((item) => (
-                                <li
-                                    key={item.href}
-                                    className="w-[calc(100vw-3.5rem)] max-w-[22rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
-                                >
-                                    <NewsCard item={item} />
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {latestNewsAreLegacy && (
-                        <p className="mt-5 font-mono text-[0.68rem] tracking-[0.08em] text-signal-muted uppercase">
-                            Archiefselectie · wordt later gekoppeld aan de
-                            nieuwsmodule
-                        </p>
-                    )}
-
-                    <Link
-                        href={newsIndex()}
-                        prefetch
-                        className="mt-10 inline-flex text-sm font-semibold text-dds-blue sm:hidden"
-                    >
-                        Bekijk al het nieuws
-                    </Link>
-                </div>
-            </section>
+                </section>
+            )}
 
             <PartnerLogosSection partners={partners} />
         </>

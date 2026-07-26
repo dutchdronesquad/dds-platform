@@ -28,6 +28,11 @@ enum Permission: string
     case UpdateLocations = 'locations.update';
     case DeleteLocations = 'locations.delete';
 
+    case ViewArticles = 'articles.view';
+    case CreateArticles = 'articles.create';
+    case UpdateArticles = 'articles.update';
+    case DeleteArticles = 'articles.delete';
+
     public function label(): string
     {
         return match ($this) {
@@ -48,6 +53,10 @@ enum Permission: string
             self::CreateLocations => 'Locaties aanmaken',
             self::UpdateLocations => 'Locaties bijwerken',
             self::DeleteLocations => 'Locaties verwijderen',
+            self::ViewArticles => 'Artikelen bekijken',
+            self::CreateArticles => 'Artikelen aanmaken',
+            self::UpdateArticles => 'Artikelen bijwerken',
+            self::DeleteArticles => 'Artikelen verwijderen',
         };
     }
 
@@ -71,6 +80,10 @@ enum Permission: string
             self::CreateLocations => 'Maakt het aanmaken van nieuwe locaties mogelijk.',
             self::UpdateLocations => 'Maakt het wijzigen van locatiegegevens mogelijk.',
             self::DeleteLocations => 'Maakt het definitief verwijderen van ongebruikte locaties mogelijk.',
+            self::ViewArticles => 'Geeft toegang tot het nieuwsoverzicht en artikeldetails.',
+            self::CreateArticles => 'Maakt het aanmaken van nieuwe artikelen mogelijk.',
+            self::UpdateArticles => 'Maakt het wijzigen en publiceren van artikelen mogelijk.',
+            self::DeleteArticles => 'Maakt het definitief verwijderen van artikelen mogelijk.',
         };
     }
 
@@ -84,6 +97,7 @@ enum Permission: string
             self::ViewUsers, self::UpdateUsers => 'users',
             self::ViewRoles => 'roles',
             self::ViewLocations, self::CreateLocations, self::UpdateLocations, self::DeleteLocations => 'locations',
+            self::ViewArticles, self::CreateArticles, self::UpdateArticles, self::DeleteArticles => 'articles',
         };
     }
 
@@ -97,6 +111,7 @@ enum Permission: string
             self::ViewUsers, self::UpdateUsers => 'Gebruikers',
             self::ViewRoles => 'Rollen en rechten',
             self::ViewLocations, self::CreateLocations, self::UpdateLocations, self::DeleteLocations => 'Locaties',
+            self::ViewArticles, self::CreateArticles, self::UpdateArticles, self::DeleteArticles => 'Artikelen',
         };
     }
 }

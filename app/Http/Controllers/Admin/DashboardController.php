@@ -65,7 +65,6 @@ final class DashboardController extends Controller
     /**
      * @return array{
      *     events: bool,
-     *     articles: bool,
      *     media: bool,
      *     users: bool,
      *     roles: bool,
@@ -76,7 +75,6 @@ final class DashboardController extends Controller
     {
         return [
             'events' => $canViewEvents,
-            'articles' => $isAdmin,
             'media' => $isAdmin,
             'users' => $user->can(Permission::ViewUsers->value),
             'roles' => $user->can(Permission::ViewRoles->value),

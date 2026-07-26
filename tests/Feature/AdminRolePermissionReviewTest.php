@@ -53,7 +53,7 @@ test('admins can review the synchronized code owned access model', function () {
             ->where('roles.1.userCount', 1)
             ->where('roles.1.permissions', $editorPermissions)
             ->where('roles.1.isSynchronized', true)
-            ->has('permissionGroups', 7)
+            ->has('permissionGroups', 8)
             ->where('permissionGroups.1.key', 'media')
             ->where('permissionGroups.1.label', 'Media')
             ->has('permissionGroups.1.permissions', 4)
