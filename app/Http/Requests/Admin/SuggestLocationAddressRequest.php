@@ -18,7 +18,7 @@ class SuggestLocationAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'q' => ['required', 'string', 'min:3', 'max:255'],
+            'q' => ['required', 'string', 'min:4', 'max:255'],
         ];
     }
 

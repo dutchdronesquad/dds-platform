@@ -26,10 +26,8 @@ import {
     AdminFormOutline,
     AdminFormSection,
 } from '@/components/admin/admin-form';
-import {
-    LocationAddressSearch,
-    type ResolvedAddress,
-} from '@/components/admin/location-address-search';
+import { LocationAddressSearch } from '@/components/admin/location-address-search';
+import type { ResolvedAddress } from '@/components/admin/location-address-search';
 import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';

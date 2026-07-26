@@ -105,12 +105,12 @@ test('address suggestions fall back to Photon when PDOK has no match', function 
         ]);
 });
 
-test('address suggestions require at least three characters', function () {
+test('address suggestions require at least four characters, matching the frontend trigger', function () {
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);
 
     $this->actingAs($editor)
-        ->get(route('admin.locations.address-suggestions', ['q' => 'ab']))
+        ->get(route('admin.locations.address-suggestions', ['q' => 'abc']))
         ->assertInvalid(['q']);
 });
 

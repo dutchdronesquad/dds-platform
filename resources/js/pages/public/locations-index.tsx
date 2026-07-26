@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { ArrowUpRight, MapPin, MapPinX } from 'lucide-react';
 import { PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
+import { index as eventsIndex } from '@/routes/events';
 import { show as locationShow } from '@/routes/locations';
 import type { PublicLocationSummary, SeoMetadata } from '@/types';
 
@@ -24,7 +25,9 @@ export default function LocationsIndex({ locations, seo }: Props) {
             <PublicHero
                 title="Waar Dutch Drone Squad vliegt."
                 description="Bekijk onze vlieg- en eventlocaties met adres, faciliteiten en praktische informatie voor bezoekers."
-                actions={[{ label: 'Bekijk de agenda', href: '/events' }]}
+                actions={[
+                    { label: 'Bekijk de agenda', href: eventsIndex.url() },
+                ]}
                 media={{
                     src: '/images/dds/racing/indoor-track.jpg',
                     alt: 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',

@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { MapPin, Plus, Search, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import {
     create,
@@ -71,11 +71,15 @@ function LocationFilterBar({
     resultCount: number;
 }) {
     const [search, setSearch] = useState(filters.search);
+    const [previousFiltersSearch, setPreviousFiltersSearch] = useState(
+        filters.search,
+    );
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
+    if (filters.search !== previousFiltersSearch) {
+        setPreviousFiltersSearch(filters.search);
         setSearch(filters.search);
-    }, [filters.search]);
+    }
 
     const applyFilters = useCallback((nextSearch: string) => {
         router.get(
