@@ -39,6 +39,9 @@ enum Role: string
                 Permission::ViewLocations,
                 Permission::CreateLocations,
                 Permission::UpdateLocations,
+                Permission::ViewArticles,
+                Permission::CreateArticles,
+                Permission::UpdateArticles,
             ],
         };
     }

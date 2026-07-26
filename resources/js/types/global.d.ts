@@ -16,6 +16,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             management: {
                 canManageSeasons: boolean;
+                canViewArticles: boolean;
                 canViewContact: boolean;
                 canViewEvents: boolean;
                 canViewLocations: boolean;

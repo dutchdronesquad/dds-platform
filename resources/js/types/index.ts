@@ -1,3 +1,4 @@
+export type * from './articles';
 export type * from './auth';
 export type * from './events';
 export type * from './localization';

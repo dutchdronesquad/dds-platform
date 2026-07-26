@@ -2,6 +2,7 @@
 
 use App\Enums\Permission;
 use App\Enums\Role;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
+use App\Http\Controllers\Public\ArticleController;
 use App\Http\Controllers\Public\ContactController as PublicContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\HomeController;
@@ -43,10 +45,8 @@ Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('season
 
 Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 
-Route::inertia('/news', 'public/shell', [
-    'page' => $publicPages['news'],
-    'seo' => $seoMetadata->forPage('news'),
-])->name('news.index');
+Route::get('/news', [ArticleController::class, 'index'])->name('news.index');
+Route::get('/news/{article:slug}', [ArticleController::class, 'show'])->name('news.show');
 
 Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
 Route::get('/locations/{location:slug}', [LocationController::class, 'show'])->name('locations.show');
@@ -101,6 +101,7 @@ Route::middleware([
             ->middleware('throttle:location-geocoding')
             ->name('locations.lookup-address');
         Route::resource('locations', AdminLocationController::class)->except('show');
+        Route::resource('articles', AdminArticleController::class)->except('show');
         Route::resource('seasons', AdminSeasonController::class)->except('show');
         Route::resource('contact-submissions', AdminContactController::class)
             ->parameters(['contact-submissions' => 'contactSubmission'])

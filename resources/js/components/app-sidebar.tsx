@@ -6,11 +6,13 @@ import {
     Images,
     MapPin,
     MessageSquareText,
+    Newspaper,
     Route as RouteIcon,
     ShieldCheck,
     Tags,
     Users,
 } from 'lucide-react';
+import { index as articlesIndex } from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import { index as contactIndex } from '@/actions/App/Http/Controllers/Admin/ContactController';
 import { index as eventsIndex } from '@/actions/App/Http/Controllers/Admin/EventController';
 import { index as locationsIndex } from '@/actions/App/Http/Controllers/Admin/LocationController';
@@ -70,6 +72,15 @@ export function AppSidebar() {
                       title: 'Locaties',
                       href: locationsIndex(),
                       icon: MapPin,
+                  },
+              ]
+            : []),
+        ...(management?.canViewArticles
+            ? [
+                  {
+                      title: 'Artikelen',
+                      href: articlesIndex(),
+                      icon: Newspaper,
                   },
               ]
             : []),

@@ -53,6 +53,13 @@ return [
             'image_path' => '/images/dds/racing/pilot-at-training.jpg',
             'image_alt' => 'Piloot tijdens een indoor training van Dutch Drone Squad',
         ],
+        'article' => [
+            'title' => 'Artikel',
+            'description' => 'Lees dit nieuwsbericht van Dutch Drone Squad.',
+            'canonical_path' => '/news',
+            'image_path' => '/images/dds/racing/pilot-at-training.jpg',
+            'image_alt' => 'Piloot tijdens een indoor training van Dutch Drone Squad',
+        ],
         'locations' => [
             'title' => 'Locaties',
             'description' => 'Bekijk de vlieg- en eventlocaties van Dutch Drone Squad en de praktische informatie per locatie.',

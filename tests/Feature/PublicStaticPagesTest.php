@@ -1,22 +1,40 @@
 <?php
 
+use App\Models\Article;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutVite();
 });
 
-test('homepage exposes its temporary news contract alongside database events and catalogue partners', function () {
+test('homepage exposes its latest published articles alongside database events and catalogue partners', function () {
+    $newest = Article::factory()->published()->create([
+        'title' => 'Nieuw seizoen van start',
+        'published_at' => now()->subDay(),
+    ]);
+    Article::factory()->published()->create(['published_at' => now()->subWeek()]);
+    Article::factory()->published()->create(['published_at' => now()->subMonth()]);
+    Article::factory()->create();
+    Article::factory()->archived()->create();
+
     $this->get(route('home'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('welcome')
             ->has('upcomingEvents', 0)
             ->has('latestNews', 3)
-            ->where('latestNewsAreLegacy', true)
+            ->where('latestNews.0.title', $newest->title)
             ->has('partners', 2)
             ->where('partners.0.name', 'Droneshop.nl')
             ->where('partners.1.name', 'Sportpaleis Alkmaar')
+        );
+});
+
+test('the homepage news teaser is absent without published articles', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('latestNews', []),
         );
 });
 
@@ -36,7 +54,6 @@ test('public static routes expose their page contract', function (string $routeN
             ->has('page.sections.0.body'),
         );
 })->with([
-    'news' => ['news.index', 'News'],
     'about' => ['about', 'About'],
     'house rules' => ['house_rules', 'House Rules'],
 ]);
