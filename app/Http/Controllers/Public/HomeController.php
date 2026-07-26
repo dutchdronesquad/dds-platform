@@ -87,7 +87,7 @@ final class HomeController extends Controller
                 'category',
             ])
             ->publiclyVisible()
-            ->with(['coverImage:id,alt_text', 'coverImage.media'])
+            ->with(['author:id,name', 'coverImage:id,alt_text', 'coverImage.media'])
             ->orderByDesc('published_at')
             ->limit(3)
             ->get()
