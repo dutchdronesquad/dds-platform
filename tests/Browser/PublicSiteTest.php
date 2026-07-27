@@ -741,6 +741,12 @@ test('about page tells the DDS story and stays usable', function () {
     $mobilePage
         ->assertSee('FPV-trainingen en races')
         ->assertSee('organiseert sinds 2017 indoor FPV-trainingen')
+        ->assertAttribute('main a[href="/events"]', 'href', '/events')
+        ->assertAttribute(
+            'main a[href="/getting-started?source=about-hero"]',
+            'href',
+            '/getting-started?source=about-hero',
+        )
         ->assertSee('Over DDS')
         ->assertSee('Het begin')
         ->assertSee('Een plek om in de winter te vliegen.')

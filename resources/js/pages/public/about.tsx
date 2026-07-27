@@ -93,13 +93,13 @@ export default function About({ seo }: Props) {
                 actions={[
                     {
                         label: 'Bekijk de agenda',
-                        href: eventsIndex().url,
+                        href: eventsIndex.url(),
                     },
                     {
                         label: 'Lees hoe je begint',
-                        href: gettingStartedIndex({
+                        href: gettingStartedIndex.url({
                             query: { source: 'about-hero' },
-                        }).url,
+                        }),
                     },
                 ]}
                 media={{
