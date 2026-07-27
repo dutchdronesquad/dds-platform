@@ -8,6 +8,21 @@ Before native registration is introduced, DDS must approve a training policy tha
 
 This document is the product source of truth for those rules. Backlog tickets should describe implementation scope and link here instead of duplicating the full decision set.
 
+## Discovery Outcome
+
+DDS-011H is complete as a deliberate no-build decision. DDS keeps the current dedicated-digital-heat format email-based and manually administered. Native registration will only be reconsidered after DDS has tested and approved fully mixed heats and selected an intended implementation season.
+
+For the current workflow:
+
+- DDS manually confirms every registration;
+- first-in-first-out is the guiding principle, administered manually rather than enforced by the platform;
+- a pilot who cannot be placed joins a manually managed waiting list;
+- administrators may exercise judgment without selecting a predefined exception reason or recording an audit reason;
+- payment remains outside the platform;
+- no waiting-list response deadline is required while confirmation and payment remain manual.
+
+The candidate fully mixed profile set is Analog, HDZero, DJI O4 in race mode, and Walksnail in race mode. DJI O4 and Walksnail race mode have not yet been tested by DDS and are not approved for mixed heats. Field testing cannot take place during the current summer stop.
+
 ## Scope
 
 This document covers:
@@ -258,20 +273,26 @@ A season-ticket holder explicitly opts out for one training. Their allocation be
 
 A paid holder changes from a race-compatible profile to a digital-only profile after season-ticket sale. Their place remains guaranteed. The platform flags the capacity conflict for manual resolution and retains both the original registration snapshot and the change history.
 
-## Open Decisions And Implementation Gates
+## Reopening Conditions And Implementation Gates
 
-Native training registration, waitlists, and online payment remain blocked until DDS has:
+Native registration discovery may be reopened only after:
 
-- field-tested DJI O4 race mode and Walksnail race mode in the actual training environment;
-- approved the VTX profiles and admission classifications for the intended season;
-- decided whether the first native split-format workflow confirms all requests manually or automates safe cases;
-- defined response deadlines and reassignment behavior for a future waitlist;
-- decided when payment is collected for a request awaiting compatibility review;
-- approved holder, allocation, attendance, payment, cancellation, and refund states;
-- approved privacy, retention, and administrator-access rules;
-- confirmed that the public House Rules contain the binding `25 mW` and 24-hour single-ticket cancellation rules.
+- the summer stop has ended;
+- DDS has field-tested DJI O4 race mode and Walksnail race mode in the actual training environment;
+- DDS has approved a fully mixed format using Analog, HDZero, and the digital race-mode profiles proven compatible by those tests;
+- DDS has selected an intended season for native registration.
 
-Email remains the registration channel until these gates are explicitly approved.
+Before implementation then starts, DDS must also:
+
+- approve the final VTX admission classifications for that season;
+- reconfirm whether native requests still require manual confirmation;
+- define any response deadlines and reassignment behavior needed for a native waiting list;
+- decide whether payment remains external or when native payment is collected;
+- approve holder, allocation, attendance, payment, cancellation, and refund states;
+- approve privacy, retention, and administrator-access rules;
+- confirm that the public House Rules contain the binding `25 mW` and 24-hour single-ticket cancellation rules.
+
+Email remains the registration channel until all reopening and implementation gates are explicitly approved.
 
 ## Non-Goals For The First Implementation
 
@@ -288,4 +309,4 @@ Email remains the registration channel until these gates are explicitly approved
 - DDS-009A: Season Ticket Product And Eligibility Model;
 - DDS-010B: Public Season And Season Ticket Presentation;
 - DDS-011F: Season Ticket Holder And Attendance Workflow;
-- DDS-011H: Native Training Registration And Capacity Discovery.
+- DDS-011H: Native Training Registration And Capacity Discovery — complete as a deliberate no-build decision.

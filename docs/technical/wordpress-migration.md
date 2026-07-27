@@ -10,12 +10,25 @@ The migration should be repeatable, testable, and selective. Not everything from
 
 Use a staged import:
 
-1. Export WordPress content from the current site.
-2. Store raw export files outside the application runtime, for example in `storage/app/imports/wordpress` during local development.
-3. Build Laravel import commands for each content type.
-4. Normalize imported data into first-class models such as `Article`, `Location`, `Event`, and `MediaAsset`, while manually approved partner data moves into the code-owned partner catalogue.
-5. Generate a redirect map from old WordPress URLs to new Laravel routes.
-6. Run the importer repeatedly in a staging environment until the output is clean.
+1. Capture the public WordPress REST responses used by the migration.
+2. Store those source snapshots and the WordPress XML export outside the application runtime, for example in `storage/app/imports/wordpress` during local development.
+3. Generate a small, editable selection manifest whose published posts default to `import` but can be changed individually to `skip`.
+4. Use a few explicit Laravel import phases for selected media, posts, and redirects.
+5. Normalize imported data into first-class models such as `Article`, `Location`, `Event`, and `MediaAsset`, while manually approved partner data moves into the code-owned partner catalogue.
+6. Run dry-runs and repeat the import in staging until the output is clean.
+7. Remove the temporary source snapshots, manifest, diagnostics, and import-only code after cutover verification and the rollback window.
+
+## Keep The Importer Small
+
+This is a one-time migration, not a permanent integration. Prefer direct, readable migration code over a generalized import framework.
+
+- use the REST API as the only active import source;
+- retain the WordPress XML export as an archive and cross-check, but do not build a second XML adapter unless REST proves incomplete for approved content;
+- use a file-based selection manifest and generated text or Markdown report instead of database-backed import administration;
+- keep source IDs and mappings out of permanent domain tables;
+- implement only the content types and transformations approved below;
+- do not build extension points, plugin abstractions, background synchronization, an import dashboard, or a reusable ETL subsystem;
+- optimize for safe dry-runs, idempotent rehearsal, clear failures, and easy deletion after the migration.
 
 ## Current Site Import Priorities
 
@@ -31,9 +44,54 @@ Based on the current website audit, import priority should be:
 
 Do not import generic theme sections, comments, social sharing widgets, post view counters, duplicated navigation/footer content, or placeholder copy.
 
+## DDS-015 Approved Inventory And Selection
+
+The public REST inventory reviewed during DDS-015 contains:
+
+- 21 published posts from 2018 through 2025;
+- 12 published pages;
+- 8 categories and 16 tags;
+- 118 media records according to the REST response headers, while the paginated payload currently returns 115 unique records;
+- 7 comments referenced by published post metadata;
+- no publicly accessible author directory.
+
+Every returned media record currently has an empty reusable alt-text value. The count discrepancy and missing alt text must be reported during media rehearsal rather than silently accepted.
+
+| WordPress content                                       | Decision       | Laravel destination or handling                                                                                       |
+| ------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 21 published posts                                      | Import-select  | Default every post to `import` in the selection manifest; allow an explicit per-post `skip` before dry-run or import. |
+| Featured and inline media used by selected posts        | Import-select  | `MediaAsset`; import only referenced assets plus separately approved brand and partner assets.                        |
+| Categories                                              | Normalize      | Map to `News`, `Announcement`, `Community`, or `RaceReport`.                                                          |
+| Tags                                                    | Skip           | Use as temporary classification hints only; do not add permanent taxonomy tables.                                     |
+| Sportpaleis, Koggenhal, and Oosterhout pages            | Rewrite/merge  | Review useful facts and selected photography against the existing `Location` records.                                 |
+| Trainings page                                          | Rewrite        | Move only current, approved information into `Season` and `Event` records; do not import a generic page.              |
+| House Rules page                                        | Rewrite        | Manually maintain the code-owned `/house-rules` destination.                                                          |
+| In the media page                                       | Rewrite        | Create a small code-owned overview from the nine reviewed external mentions; do not create thin `Article` records.    |
+| Home, Contact, News, and About content                  | Rewrite        | Use the implemented public destinations; redirect legacy paths where the path changed.                                |
+| `/about-us/`                                            | Redirect       | Redirect to `/about`.                                                                                                 |
+| `/our-work/` and `/stories/`                            | Skip with 410  | Remove unused template pages deliberately without inventing replacement destinations.                                 |
+| Comments                                                | Skip           | Keep only in the XML archive; do not import the 7 legacy comments.                                                    |
+| Published-post authors                                  | Map            | Match XML authors to an existing Laravel user where possible; otherwise use a fixed `Team DDS` content author.        |
+| WordPress user accounts                                 | Skip           | Never create Laravel login accounts automatically from WordPress users.                                               |
+| Drafts and private content                              | Archive only   | Keep in the XML export when present; exclude from the Laravel import.                                                 |
+| Plugin data, theme markup, widgets, counters, and menus | Skip/normalize | Extract only approved content; do not reproduce WordPress presentation or runtime state.                              |
+
+The selection manifest must include at least the WordPress ID, slug, title, publication date, proposed Laravel category, decision, and optional reason. A dry-run must report the exact selected and skipped records before it writes anything.
+
+### Representative Source-To-Target Samples
+
+| Source sample                                                                   | Target review path                                                                                                                         |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Post `49916`, `seizoen-25-26`, with featured media `49925`                      | `Article` with category `Announcement`, reviewed through Article admin and `/news/{slug}` after its selected media is available.           |
+| Post `1158`, `dennis-mennema-wint-de-eerste-ranking-indoor-nk-2020`             | `Article` with category `RaceReport`, preserving its publication date and legacy URL redirect.                                             |
+| Page `49498`, `sportpaleis`                                                     | Manual comparison with the existing Sportpaleis `Location`; merge only approved facts and selected media instead of creating another page. |
+| Page `49764`, `media`, containing nine external mentions from 2017 through 2023 | Manual rewrite into a code-owned media overview; unresolved or dead external links remain visible in the review report.                    |
+
 ## Export Options
 
 ### WordPress REST API
+
+Decision: primary and only active import source.
 
 Useful for structured incremental imports:
 
@@ -59,7 +117,7 @@ Cons:
 
 ### WordPress XML Export
 
-Useful as a full backup-style import source.
+Decision: retain as an administrator-provided archive and completeness check. Do not implement an XML importer unless the comparison reveals approved content that REST cannot provide.
 
 Pros:
 
@@ -75,7 +133,7 @@ Cons:
 
 ### Direct Database Export
 
-Only use if REST/XML is insufficient.
+Not part of the approved migration. Reopen discovery before considering it if both REST and the XML archive prove insufficient for approved content.
 
 Pros:
 
@@ -179,17 +237,16 @@ Possible storage approaches were:
 
 The implemented approach uses a database-backed `Redirect` model. It stores the source path, target, HTTP status, active state, hit count, and review notes. Laravel checks active redirects only after normal routes fail to match, so regular application requests do not perform a redirect lookup. Admins and editors can review the map in the dashboard, and the importer can create or update records idempotently without requiring a deployment.
 
-Initial fixed mappings are provided by `RedirectSeeder`. Post, media, location, and other content-specific redirects remain the responsibility of the later WordPress importer because their final targets depend on imported records. Unused WordPress template pages such as `/about-us/`, `/our-work/`, and `/stories/` are not part of the migration map.
+Initial fixed mappings are provided by `RedirectSeeder`. Post, media, location, and other content-specific redirects remain the responsibility of the later WordPress importer because their final targets depend on imported records. The approved page policy redirects `/about-us/` to `/about`; the unused `/our-work/` and `/stories/` template pages should return `410 Gone` without replacement redirects.
 
 ## Import Commands
 
-Recommended command shape:
+Keep the command surface explicit and temporary. A suitable shape is:
 
 ```txt
-php artisan wordpress:import posts --source=rest
-php artisan wordpress:import pages --source=rest
-php artisan wordpress:import media --source=rest
-php artisan wordpress:build-redirects
+php artisan wordpress:import media --manifest=storage/app/imports/wordpress/selection.json --dry-run
+php artisan wordpress:import posts --manifest=storage/app/imports/wordpress/selection.json --dry-run
+php artisan wordpress:import redirects --manifest=storage/app/imports/wordpress/selection.json --dry-run
 ```
 
 Importer requirements:
@@ -231,11 +288,13 @@ Do not blindly preserve theme-specific markup. Convert content to clean HTML or 
 - theme-specific buttons and layout wrappers;
 - old search/sidebar widgets unless recreated deliberately.
 
-## Open Questions
+## DDS-015 Risks And Follow-Up Checks
 
-- Which WordPress posts should be migrated and which should be archived?
-- Should old authors become real users or static author names?
-- Do categories and tags matter in the new site?
-- Should house rules be a static markdown-like page or admin-managed content?
-- Do all media assets need to be migrated, or only media referenced by migrated content?
-- Should redirects be stored in the database or webserver config?
+- compare the administrator-provided XML export with the REST inventory before implementation;
+- explain or safely tolerate the REST media count discrepancy without importing duplicates;
+- verify every selected media URL and report missing files;
+- review alt text in its actual rendering context because WordPress provides no reusable alt text for the inventoried media;
+- map hidden WordPress author data without creating login accounts;
+- normalize Gutenberg classes, malformed legacy links, headings, tables, galleries, HTML entities, and absolute internal URLs;
+- review the nine external media-mention links for dead or missing destinations during the manual rewrite;
+- derive redirect sources from REST links, the XML archive, and the approved matrix because the public sitemap did not provide a usable inventory during discovery.

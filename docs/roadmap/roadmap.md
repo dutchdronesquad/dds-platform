@@ -48,7 +48,7 @@ Acceptance criteria:
 
 Goal: replace the current WordPress site visually and functionally with static or seeded content.
 
-Status: in progress. The public shell, brand direction, homepage conversion, baseline SEO, and legacy redirects are merged. Temporary homepage content remains server-backed until its intended domain model, managed-page source, or code-owned catalogue is wired in. Remaining Phase 2 work includes the DDS-007D navigation/accessibility review, secondary public pages, contact flow, and selective migration inventory.
+Status: in progress. The public shell, brand direction, homepage conversion, baseline SEO, legacy redirects, navigation/accessibility review, secondary public pages, and contact flow are merged. DDS-011H concluded with a deliberate no-build decision: training registration remains email-based until DDS has tested and approved fully mixed heats. The selective migration inventory is approved through DDS-015; the current migration focus is the referenced-media prototype.
 
 Tasks:
 

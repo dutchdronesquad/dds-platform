@@ -19,7 +19,7 @@ This backlog translates the preparation docs into the first practical implementa
 
 `main` contains the Laravel foundation, public shell and homepage, Event and Season domains, public Event experience, Event and Season management, user and permission management, operational dashboard, DDS authentication branding, reusable media-library management through DDS-014H, the public contact form and dashboard review flow, and public Location pages with admin Location management.
 
-DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-014G is complete and merged in pull request #27 with the public contact form, stored submissions, and dashboard review flow. DDS-014J and DDS-014L are complete and merged in pull requests #29 and #30. DDS-014K is complete as a deliberate no-build decision: the Getting Started guides remain code-owned in phase 1. DDS-007D is implemented and awaiting review; DDS-014N is the next build ticket for the code-owned Over DDS page.
+DDS-014A and DDS-014B are complete and merged in pull request #24. DDS-014C is complete and merged in pull request #25 with its maintenance workflow and CMS decision gate. DDS-014D, absorbing DDS-007E, is complete and merged in pull request #26 with the code-owned partner catalogue and public presentation. DDS-014G is complete and merged in pull request #27 with the public contact form, stored submissions, and dashboard review flow. DDS-014J and DDS-014L are complete and merged in pull requests #29 and #30. DDS-014K and DDS-011H are complete as deliberate no-build decisions. DDS-007D and DDS-014N are complete and merged in pull requests #31 and #33. DDS-015 is complete with an approved selective migration matrix and REST as the primary source. DDS-017 is the current media-import prototype.
 
 Projects, partners, and fixed informational pages are deliberately code-owned in phase 1. They do not get database models, permissions, or dashboard CRUD unless observed maintenance needs pass their documented CMS decision gates.
 
@@ -911,28 +911,31 @@ Acceptance criteria:
 
 ### DDS-011H: Native Training Registration And Capacity Discovery
 
+Status: complete as a deliberate no-build decision. DDS keeps the current split-heat workflow email-based and manually administered. Native registration is deferred until DDS has tested and approved fully mixed heats and selected an intended implementation season.
+
+Decision: current registrations are manually confirmed and administered broadly first-in-first-out. A full compatible group produces a manually managed waiting list; administrators may exercise judgment without a required exception taxonomy or audit reason. Payment remains outside the platform. The candidate fully mixed profile set is Analog, HDZero, DJI O4 in race mode, and Walksnail in race mode, but DJI O4 and Walksnail remain unapproved until DDS completes field testing after the summer stop. The effective native-registration season remains deliberately undecided.
+
 Goal: establish a safe and fair capacity model before DDS replaces email registration with native training registration, waitlists, or online payment.
 
 The confirmed current workflow, proposed training formats, capacity examples, vendor references, and implementation gates are maintained in [Training Registration And Capacity](../product/training-registration-and-capacity.md).
 
-Tasks:
+Discovery outcomes:
 
-- maintain the product document as decisions are approved instead of copying rules into implementation tickets;
-- verify Walksnail race mode and DJI O4 race mode in DDS's actual venue and channel plan before marking either profile as race-group compatible;
-- decide whether native registration uses immediate confirmation, a configurable review threshold, or administrator approval for all training requests;
-- define how first-in-first-out priority, compatibility exceptions, response deadlines, released places, and administrator reasons should work;
-- decide when payment is collected for a request that may still require compatibility review;
-- approve holder, allocation, attendance, payment, cancellation, refund, privacy, and retention states;
-- confirm that the public House Rules contain the binding `25 mW` and 24-hour single-ticket cancellation rules;
-- validate the proposed workflow with the people who currently compose the heats before implementation starts.
+- the current split-heat workflow remains email-based, manually confirmed, and manually administered using first-in-first-out as its guiding principle;
+- waiting pilots are managed manually, with administrator judgment and no required exception taxonomy or audit reason;
+- payment remains outside the platform;
+- native registration is not built for the split-heat format;
+- Analog, HDZero, DJI O4 race mode, and Walksnail race mode form the candidate fully mixed profile set;
+- DJI O4 and Walksnail race mode remain unapproved until DDS has field-tested them in its actual venue and channel plan;
+- the product document owns the detailed policy and records the gates for reopening discovery after the summer stop.
 
 Acceptance criteria:
 
-- DDS has an approved definition of when a training request is confirmed, awaiting review, waitlisted, or declined;
-- the product document records the approved policy, unresolved risks, and effective season without contradictory backlog copies;
-- DDS has field evidence for every VTX profile admitted to fully mixed heats;
-- payment timing and refund consequences are clear before native checkout is introduced;
-- email remains the registration channel until the discovery outcome is explicitly approved.
+- the current email workflow, manual confirmation, first-in-first-out principle, waiting-list handling, and external payment choice are documented without implying native platform behavior;
+- DDS introduces no native split-format registration, live availability, waiting list, or checkout;
+- no untested digital race-mode profile is described as approved for fully mixed heats;
+- field testing, mixed-format approval, and selection of an intended season are explicit conditions for reopening native-registration discovery;
+- privacy, retention, detailed workflow states, and any future payment timing remain implementation gates rather than invented decisions.
 
 ## Epic 5: Supporting Content Models
 
@@ -1311,6 +1314,8 @@ Acceptance criteria:
 
 ### DDS-014N: Art-Directed Over DDS Page
 
+Status: complete and merged in pull request #33.
+
 Goal: replace the generic `/about` public shell with a distinctive, code-owned page that explains who Dutch Drone Squad is, what the group organizes, and why pilots, visitors, and partners should get involved.
 
 Tasks:
@@ -1337,6 +1342,10 @@ Acceptance criteria:
 ## Epic 6: WordPress Import Spike
 
 ### DDS-015: WordPress Export Discovery
+
+Status: complete. The public REST API is the sole active import source, while an administrator-provided XML export is retained only as an archive and completeness check. All 21 published posts default to import but remain individually selectable through a file-based manifest. Only referenced media plus approved brand and partner assets are in scope. Static pages are mapped to explicit rewrite, redirect, or removal outcomes in [WordPress Migration](../technical/wordpress-migration.md).
+
+Implementation constraint: keep the one-time importer small, direct, and removable. Do not build a generic import framework, XML adapter, synchronization layer, database-backed import administration, or permanent WordPress schema unless a rehearsal proves a specific approved-content gap.
 
 Goal: define the approved migration scope and verify the best import source for the current site after the target content workflows are ready for review.
 
@@ -1403,6 +1412,8 @@ Acceptance criteria:
 - no manual copy-paste is required for posts.
 
 ### DDS-017: WordPress Media Import Prototype
+
+Status: current. Implement the smallest removable media-import phase that can resolve assets selected by the DDS-015 manifest, report failures and missing alt text, and run idempotently during rehearsal.
 
 Goal: prove repeatable media import before importing article and page bodies that reference media.
 
