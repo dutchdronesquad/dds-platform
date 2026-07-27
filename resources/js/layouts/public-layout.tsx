@@ -311,7 +311,7 @@ export default function PublicLayout({ children }: Props) {
 
                             <NavigationMenuItem>
                                 <NavigationMenuTrigger
-                                    aria-label="Open Dutch Drone Squad menu"
+                                    aria-label="Open Informatie menu"
                                     className={cn(
                                         'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
                                         informationNavItems.some((item) =>
@@ -319,7 +319,7 @@ export default function PublicLayout({ children }: Props) {
                                         ) && 'border-flight-400 text-white',
                                     )}
                                 >
-                                    Dutch Drone Squad
+                                    Informatie
                                 </NavigationMenuTrigger>
                                 <NavigationMenuContent
                                     data-testid="information-navigation-content"
@@ -431,7 +431,7 @@ export default function PublicLayout({ children }: Props) {
                                         ) && 'text-flight-400',
                                     )}
                                 >
-                                    Dutch Drone Squad
+                                    Informatie
                                 </p>
                                 <div className="mt-3 grid gap-1.5 border-l border-white/14 pl-4">
                                     {informationNavItems.map((item) => {

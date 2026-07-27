@@ -114,7 +114,7 @@ test('mobile navigation opens, reflows, and follows public links', function () {
         ->assertSeeIn('#mobile-public-navigation', 'Starten met FPV')
         ->assertSeeIn(
             '#mobile-public-navigation > nav > div > p',
-            'Dutch Drone Squad',
+            'Informatie',
         )
         ->assertSeeIn('#mobile-public-navigation', 'Over DDS')
         ->assertSeeIn('#mobile-public-navigation', 'Projecten')
@@ -148,7 +148,7 @@ test('mobile navigation opens, reflows, and follows public links', function () {
         ->assertNoSmoke();
 });
 
-test('desktop navigation groups DDS pages under the full name', function () {
+test('desktop navigation groups DDS pages in the information submenu', function () {
     $page = visit('/projects')->on()->desktop();
 
     $page->assertNoJavaScriptErrors()
@@ -160,12 +160,12 @@ test('desktop navigation groups DDS pages under the full name', function () {
         ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Nieuws')
         ->assertSeeIn(
             'nav[aria-label="Hoofdnavigatie"]',
-            'Dutch Drone Squad',
+            'Informatie',
         )
         ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Contact')
-        ->click('button[aria-label="Open Dutch Drone Squad menu"]')
+        ->click('button[aria-label="Open Informatie menu"]')
         ->assertAriaAttribute(
-            'button[aria-label="Open Dutch Drone Squad menu"]',
+            'button[aria-label="Open Informatie menu"]',
             'expanded',
             'true',
         )
