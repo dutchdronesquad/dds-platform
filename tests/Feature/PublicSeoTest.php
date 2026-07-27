@@ -10,7 +10,9 @@ beforeEach(function () {
 
 test('public pages expose their canonical metadata contract', function (string $routeName, string $expectedTitle, string $canonicalPath) {
     $canonicalUrl = rtrim((string) config('app.url'), '/').$canonicalPath;
-    $documentTitle = "{$expectedTitle} - Dutch Drone Squad";
+    $documentTitle = $expectedTitle === 'Dutch Drone Squad'
+        ? $expectedTitle
+        : "{$expectedTitle} - Dutch Drone Squad";
     $response = $this->get(route($routeName));
 
     $response
@@ -38,7 +40,7 @@ test('public pages expose their canonical metadata contract', function (string $
     'projects' => ['projects.index', 'Projecten', '/projects'],
     'news' => ['news.index', 'Nieuws', '/news'],
     'locations' => ['locations.index', 'Locaties', '/locations'],
-    'about' => ['about', 'Over DDS', '/about'],
+    'about' => ['about', 'Dutch Drone Squad', '/about'],
     'house rules' => ['house_rules', 'Huisregels', '/house-rules'],
     'partners' => ['partners', 'Partners', '/partners'],
     'contact' => ['contact', 'Contact', '/contact'],
