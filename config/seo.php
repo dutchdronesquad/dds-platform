@@ -82,8 +82,8 @@ return [
             'image_alt' => 'Piloot tijdens een indoor training van Dutch Drone Squad',
         ],
         'about' => [
-            'title' => 'Over DDS',
-            'description' => 'Lees hoe Dutch Drone Squad dronepiloten, makers en partners samenbrengt rond veilig vliegen, kennisdeling en FPV-racing.',
+            'title' => 'Dutch Drone Squad',
+            'description' => 'Lees over Dutch Drone Squad en de geschiedenis sinds 2017.',
             'canonical_path' => '/about',
             'image_path' => '/images/dds/racing/training-community.jpg',
             'image_alt' => 'Piloten en bezoekers tijdens een event van Dutch Drone Squad',

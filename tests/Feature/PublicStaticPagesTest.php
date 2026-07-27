@@ -47,6 +47,17 @@ test('house rules consistently describes mandatory guidance as rules', function 
         );
 });
 
+test('the about route renders its dedicated code-owned page', function () {
+    $this->get(route('about'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('public/about')
+            ->missing('page')
+            ->where('seo.title', 'Dutch Drone Squad')
+            ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/about'),
+        );
+});
+
 test('public static routes expose their page contract', function (string $routeName, string $expectedTitle) {
     $this->get(route($routeName))
         ->assertOk()
@@ -63,6 +74,5 @@ test('public static routes expose their page contract', function (string $routeN
             ->has('page.sections.0.body'),
         );
 })->with([
-    'about' => ['about', 'About'],
     'house rules' => ['house_rules', 'House Rules'],
 ]);

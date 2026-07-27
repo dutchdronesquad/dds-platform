@@ -277,7 +277,7 @@ export default function PublicLayout({ children }: Props) {
                 className={cn(
                     'absolute inset-x-0 top-0 z-50 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none lg:sticky lg:-mb-18',
                     isHeaderScrolled &&
-                        'lg:border-white/12 lg:bg-ink/68 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-xl',
+                        'lg:border-white/12 lg:bg-ink/94 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-md',
                 )}
             >
                 <div className="mx-auto flex min-h-18 w-full max-w-7xl items-center gap-5 px-public-gutter">
@@ -566,7 +566,7 @@ export default function PublicLayout({ children }: Props) {
                             currentPath={currentPath}
                         />
                         <FooterLinks
-                            title="DDS"
+                            title="Dutch Drone Squad"
                             items={footerDdsItems}
                             currentPath={currentPath}
                         />
