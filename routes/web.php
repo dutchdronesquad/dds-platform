@@ -55,8 +55,7 @@ Route::get('/locations/{location:slug}', [LocationController::class, 'show'])->n
 Route::get('/getting-started', [GettingStartedController::class, 'index'])->name('getting_started.index');
 Route::get('/getting-started/{guide}', [GettingStartedController::class, 'show'])->name('getting_started.show');
 
-Route::inertia('/about', 'public/shell', [
-    'page' => $publicPages['about'],
+Route::inertia('/about', 'public/about', [
     'seo' => $seoMetadata->forPage('about'),
 ])->name('about');
 

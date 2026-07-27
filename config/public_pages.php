@@ -7,30 +7,6 @@
  * to first-class models or constrained managed content.
  */
 return [
-    'about' => [
-        'title' => 'About',
-        'eyebrow' => 'Dutch Drone Squad',
-        'description' => 'Dutch Drone Squad brengt dronevliegers, makers en partners samen rond veilig vliegen, kennisdeling en zichtbare communityprojecten.',
-        'visual' => [
-            'src' => '/images/dds/racing/pilot-at-training.jpg',
-            'alt' => 'Lid van Dutch Drone Squad vliegt tijdens een indoor training',
-            'position' => '62% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Lees de huisregels',
-            'href' => '/house-rules',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Community',
-                'body' => 'DDS is de publieke plek waar activiteiten, projecten en praktische informatie samenkomen.',
-            ],
-            [
-                'heading' => 'Doelgroep',
-                'body' => 'De site bedient leden, geïnteresseerde vliegers, partners en bezoekers die willen begrijpen waar DDS voor staat.',
-            ],
-        ],
-    ],
     'house_rules' => [
         'title' => 'House Rules',
         'eyebrow' => 'Regels',

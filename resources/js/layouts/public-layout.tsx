@@ -277,7 +277,7 @@ export default function PublicLayout({ children }: Props) {
                 className={cn(
                     'absolute inset-x-0 top-0 z-50 border-b border-white/10 bg-linear-to-b from-ink/82 to-ink/38 backdrop-blur-lg transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none lg:sticky lg:-mb-18',
                     isHeaderScrolled &&
-                        'lg:border-white/12 lg:bg-ink/68 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-xl',
+                        'lg:border-white/12 lg:bg-ink/94 lg:bg-none lg:shadow-lg lg:shadow-ink/10 lg:backdrop-blur-md',
                 )}
             >
                 <div className="mx-auto flex min-h-18 w-full max-w-7xl items-center gap-5 px-public-gutter">
@@ -311,7 +311,7 @@ export default function PublicLayout({ children }: Props) {
 
                             <NavigationMenuItem>
                                 <NavigationMenuTrigger
-                                    aria-label="Open Informatie menu"
+                                    aria-label="Open Dutch Drone Squad menu"
                                     className={cn(
                                         'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
                                         informationNavItems.some((item) =>
@@ -319,7 +319,7 @@ export default function PublicLayout({ children }: Props) {
                                         ) && 'border-flight-400 text-white',
                                     )}
                                 >
-                                    Informatie
+                                    Dutch Drone Squad
                                 </NavigationMenuTrigger>
                                 <NavigationMenuContent
                                     data-testid="information-navigation-content"
@@ -431,7 +431,7 @@ export default function PublicLayout({ children }: Props) {
                                         ) && 'text-flight-400',
                                     )}
                                 >
-                                    Informatie
+                                    Dutch Drone Squad
                                 </p>
                                 <div className="mt-3 grid gap-1.5 border-l border-white/14 pl-4">
                                     {informationNavItems.map((item) => {
@@ -566,7 +566,7 @@ export default function PublicLayout({ children }: Props) {
                             currentPath={currentPath}
                         />
                         <FooterLinks
-                            title="DDS"
+                            title="Dutch Drone Squad"
                             items={footerDdsItems}
                             currentPath={currentPath}
                         />

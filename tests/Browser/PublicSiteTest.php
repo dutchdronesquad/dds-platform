@@ -112,7 +112,11 @@ test('mobile navigation opens, reflows, and follows public links', function () {
             'true',
         )
         ->assertSeeIn('#mobile-public-navigation', 'Starten met FPV')
-        ->assertSeeIn('#mobile-public-navigation > nav > div > p', 'Informatie')
+        ->assertSeeIn(
+            '#mobile-public-navigation > nav > div > p',
+            'Dutch Drone Squad',
+        )
+        ->assertSeeIn('#mobile-public-navigation', 'Over DDS')
         ->assertSeeIn('#mobile-public-navigation', 'Projecten')
         ->assertSeeIn('#mobile-public-navigation', 'Partners')
         ->assertSeeIn('#mobile-public-navigation', 'Contact')
@@ -144,7 +148,7 @@ test('mobile navigation opens, reflows, and follows public links', function () {
         ->assertNoSmoke();
 });
 
-test('desktop navigation groups DDS pages in the information submenu', function () {
+test('desktop navigation groups DDS pages under the full name', function () {
     $page = visit('/projects')->on()->desktop();
 
     $page->assertNoJavaScriptErrors()
@@ -154,15 +158,22 @@ test('desktop navigation groups DDS pages in the information submenu', function 
         )
         ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Locaties')
         ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Nieuws')
-        ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Informatie')
+        ->assertSeeIn(
+            'nav[aria-label="Hoofdnavigatie"]',
+            'Dutch Drone Squad',
+        )
         ->assertSeeIn('nav[aria-label="Hoofdnavigatie"]', 'Contact')
-        ->click('button[aria-label="Open Informatie menu"]')
+        ->click('button[aria-label="Open Dutch Drone Squad menu"]')
         ->assertAriaAttribute(
-            'button[aria-label="Open Informatie menu"]',
+            'button[aria-label="Open Dutch Drone Squad menu"]',
             'expanded',
             'true',
         )
         ->assertVisible('[data-testid="information-navigation-content"]')
+        ->assertSeeIn(
+            '[data-testid="information-navigation-content"]',
+            'Over DDS',
+        )
         ->assertScript(
             'getComputedStyle(document.querySelector(\'[data-testid="information-navigation-content"]\')).backgroundColor === "rgb(23, 39, 46)"',
         )
@@ -722,6 +733,139 @@ test('representative public pages render without browser errors', function () {
         '/contact',
     ])->assertNoAccessibilityIssues()
         ->assertNoSmoke();
+});
+
+test('about page tells the DDS story and stays usable', function () {
+    $mobilePage = visit('/about')->on()->iPhone14Pro();
+
+    $mobilePage
+        ->assertSee('FPV-trainingen en races')
+        ->assertSee('organiseert sinds 2017 indoor FPV-trainingen')
+        ->assertSee('Over DDS')
+        ->assertSee('Het begin')
+        ->assertSee('Een plek om in de winter te vliegen.')
+        ->assertSee('In 2017 zocht Klaas Schoute een indoorlocatie')
+        ->assertSee('kwam hij uit bij het Sportpaleis in Alkmaar')
+        ->assertSee(
+            'richtte hij samen met Richard de Wit Dutch Drone Squad op',
+        )
+        ->assertSee('Open opgezet')
+        ->assertSee('Vanaf de oprichting koos DDS voor een open opzet.')
+        ->assertSee('voor een volledig seizoen gepland')
+        ->assertSee('Kennismaken')
+        ->assertSee('We organiseren de events op vrijwillige basis.')
+        ->assertSee('reparaties aan het baanmateriaal')
+        ->assertSee('investeringen in techniek')
+        ->assertDontSee('meer dan een besloten groep')
+        ->assertDontSee('groep vrijwilligers')
+        ->assertDontSee('groep FPV-liefhebbers')
+        ->assertSee('Geschiedenis · sinds 2017')
+        ->assertSee('Oprichting en de eerste trainingsavond.')
+        ->assertSee('In juli richten Klaas Schoute en Richard de Wit DDS op.')
+        ->assertSee(
+            'Eind 2017 sluit Boudewijn Pilon aan bij het organisatieteam',
+        )
+        ->assertSee('richt hij zich vooral op de track.')
+        ->assertSee('De eerste Fly to Meat You BBQ.')
+        ->assertSee('De eerste wedstrijden.')
+        ->assertSee('Na een coronapauze hervat DDS de events.')
+        ->assertSee('Het vijfjarig jubileum.')
+        ->assertSee(
+            'In juli viert DDS het vijfjarig bestaan met een vliegavond, drinken, snacks en taart.',
+        )
+        ->assertSee(
+            'Ter gelegenheid van het jubileum is er ook een prijsvraag: hoeveel propellers zitten er in een vaas?',
+        )
+        ->assertSee('Zef en Dennis Molenaar sluiten aan.')
+        ->assertSee('Zef neemt het trackdesign op zich')
+        ->assertSee('verantwoordelijk voor de trackspullen.')
+        ->assertSee('Zeven vliegavonden en een seizoensticket.')
+        ->assertSee('Marijn Koesen sluit aan.')
+        ->assertSee('Hij neemt het trackdesign over van Zef')
+        ->assertSee('maakt deel uit van team track')
+        ->assertSee('bij afwezigheid van Klaas de tijdregistratie verzorgen')
+        ->assertDontSee('vormt hij het huidige team')
+        ->assertDontSee('Van startlicht tot stream')
+        ->assertDontSee(
+            'Voorbereiden, vliegen, terugkijken en opnieuw proberen',
+        )
+        ->assertSee('Piloten en bezoekers')
+        ->assertSee('Deelnemen of eerst komen kijken.')
+        ->assertSee('Tijdens een trainingsavond is er ruimte om vragen te stellen')
+        ->assertSee(
+            'Door de jaren heen hebben ook veel internationale piloten aan DDS-events deelgenomen.',
+        )
+        ->assertSee('Je kunt altijd eerst als bezoeker komen kijken.')
+        ->assertSee('helpen de aanwezige piloten mee')
+        ->assertSee('Het huidige team.')
+        ->assertSee('Klaas Schoute')
+        ->assertSee('Nico Kraakman')
+        ->assertSee('Zef Molenaar')
+        ->assertSee('Dennis Molenaar')
+        ->assertSee('Marijn Koesen')
+        ->assertSee('Oprichter · techniek en development')
+        ->assertSee('Financiën · lessen op maat')
+        ->assertSee('Team track')
+        ->assertSee('Trackdesigner · team track · tijdregistratie')
+        ->assertSee('Portret volgt')
+        ->assertDontSee('communityplatform')
+        ->assertDontSee('Meer informatie')
+        ->assertDontSee('Lees verder of neem contact op.')
+        ->assertScript(
+            'document.querySelectorAll("main h1").length === 1 && document.querySelectorAll("main h2").length >= 4',
+        )
+        ->assertScript(
+            '!document.querySelector("main").textContent.toLowerCase().includes("activiteit")',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=about-timeline] time").length === 8',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=team-portrait-placeholder]").length === 5',
+        )
+        ->assertAttribute('[data-testid="team-list"]', 'tabindex', '0')
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=team-list]")).overflowX === "auto"',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=team-list]").scrollWidth > document.querySelector("[data-testid=team-list]").clientWidth',
+        )
+        ->assertScript(
+            'document.querySelector("[data-testid=team-section] a") === null',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("footer h2, footer h3")].some((heading) => heading.textContent.trim() === "Dutch Drone Squad")',
+        )
+        ->assertScript(
+            'document.querySelector(\'footer a[href="/about"]\')?.textContent.trim() === "Over DDS"',
+        )
+        ->assertScript(
+            'document.querySelector("header [data-brand-variant=full]")?.textContent.includes("FPV racing community") === true',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=about-timeline] time")].every((item) => item.dateTime.length === 4)',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("main img")].every((image) => image.src.length > 0 && image.alt.trim().length > 0)',
+        )
+        ->assertScript(
+            'document.querySelector("main img").complete && document.querySelector("main img").naturalWidth > 0',
+        )
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertScript(
+            '[...document.querySelectorAll("main a[href]")].every((link) => link.tabIndex >= 0)',
+        )
+        ->assertNoAccessibilityIssues()
+        ->assertNoSmoke();
+
+    visit('/about')
+        ->on()->desktop()
+        ->assertScript(
+            'getComputedStyle(document.querySelector("[data-testid=team-list]")).display === "grid"',
+        )
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoAccessibilityIssues()
+        ->assertNoJavaScriptErrors();
 });
 
 test('partner catalogue stays aligned and accessible on mobile', function () {
