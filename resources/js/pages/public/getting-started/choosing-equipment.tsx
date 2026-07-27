@@ -101,7 +101,8 @@ export default function GettingStartedChoosingEquipment({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
-                    tone="muted"
+                    layout="stacked"
+                    tone="air"
                     eyebrow="De complete keten"
                     title="Dit hoort bij een vliegklare set."
                     description="Een advertentie met ‘complete drone’ bevat lang niet altijd alles om veilig te kunnen vliegen. Controleer ieder onderdeel en de verbinding ertussen."
@@ -126,6 +127,7 @@ export default function GettingStartedChoosingEquipment({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
+                    tone="paddock"
                     eyebrow="Tweedehands kopen"
                     title="Controleer meer dan alleen of hij opstijgt."
                     description="Tweedehands materiaal kan een slimme start zijn, maar een goedkope set wordt duur als cruciale onderdelen niet samenwerken, versleten zijn of nauwelijks nog ondersteund worden."
@@ -168,7 +170,7 @@ export default function GettingStartedChoosingEquipment({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
-                    tone="muted"
+                    tone="warmup"
                     eyebrow="Accu's en laders"
                     title="Veiligheid staat voorop."
                     description="De LiPo-accu’s die racedrones gebruiken zijn licht en krachtig, maar ook het grootste risico in je uitrusting: bij beschadiging, verkeerd laden of onjuiste opslag kunnen ze zwellen of vlam vatten. Dat risico is goed te beheersen zolang je een paar basisregels aanhoudt."

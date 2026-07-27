@@ -103,7 +103,7 @@ export default function GettingStartedIndex({
                     alt: 'Piloot tijdens een indoor training van Dutch Drone Squad',
                     position: '62% center',
                 }}
-                separatorTone="muted"
+                separatorTone="warmup"
             />
 
             <div
@@ -112,7 +112,8 @@ export default function GettingStartedIndex({
             >
                 <section
                     aria-labelledby="quick-answers-heading"
-                    className="border-b border-paddock-rule bg-night-50 dark:border-white/12 dark:bg-night-900"
+                    data-tone="warmup"
+                    className="border-b border-paddock-rule bg-warmup dark:border-white/12 dark:bg-night-900"
                 >
                     <div className="mx-auto w-full max-w-[86rem] px-public-gutter py-14 sm:py-16">
                         <div className="max-w-3xl">
@@ -178,7 +179,7 @@ export default function GettingStartedIndex({
                                         guideLinkOptions,
                                     )}
                                     prefetch
-                                    className="group flex h-full flex-col overflow-hidden rounded-sm border border-paddock-rule bg-white transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-3 focus-visible:outline-none dark:border-white/10 dark:bg-night-900 dark:hover:border-dds-cyan"
+                                    className="group flex h-full flex-col overflow-hidden rounded-sm border border-paddock-rule bg-white transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-blue focus-visible:ring-offset-3 focus-visible:outline-none dark:border-white/10 dark:bg-night-900 dark:hover:border-dds-cyan dark:focus-visible:ring-dds-cyan"
                                 >
                                     <div className="relative aspect-[16/9] overflow-hidden bg-deep-signal">
                                         <img
@@ -220,33 +221,36 @@ export default function GettingStartedIndex({
 
                 <section
                     aria-labelledby="elsewhere-heading"
-                    className="mx-auto w-full max-w-7xl px-public-gutter py-14 lg:py-20"
+                    data-tone="paddock"
+                    className="bg-paddock py-14 lg:py-20 dark:bg-white/4"
                 >
-                    <div className="flex items-center gap-3">
-                        <Route
-                            aria-hidden="true"
-                            className="size-5 text-dds-blue dark:text-dds-cyan"
-                        />
-                        <h2
-                            id="elsewhere-heading"
-                            className="font-public-display text-2xl font-semibold tracking-[-0.03em]"
-                        >
-                            Praktische informatie
-                        </h2>
-                    </div>
-                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                        <ResourceLink
-                            href={locationsIndex()}
-                            icon={Compass}
-                            title="Bekijk de actuele locaties"
-                            body="Adres, faciliteiten, bereikbaarheid en komende activiteiten staan op de locatiepagina’s."
-                        />
-                        <ResourceLink
-                            href={houseRules()}
-                            icon={ShieldCheck}
-                            title="Lees de huisregels"
-                            body="Bindende regels en event-specifieke vereisten gaan altijd vóór de samenvatting in deze gidsen."
-                        />
+                    <div className="mx-auto w-full max-w-7xl px-public-gutter">
+                        <div className="flex items-center gap-3">
+                            <Route
+                                aria-hidden="true"
+                                className="size-5 text-dds-blue dark:text-dds-cyan"
+                            />
+                            <h2
+                                id="elsewhere-heading"
+                                className="font-public-display text-2xl font-semibold tracking-[-0.03em]"
+                            >
+                                Praktische informatie
+                            </h2>
+                        </div>
+                        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                            <ResourceLink
+                                href={locationsIndex()}
+                                icon={Compass}
+                                title="Bekijk de actuele locaties"
+                                body="Adres, faciliteiten, bereikbaarheid en komende activiteiten staan op de locatiepagina’s."
+                            />
+                            <ResourceLink
+                                href={houseRules()}
+                                icon={ShieldCheck}
+                                title="Lees de huisregels"
+                                body="Bindende regels en event-specifieke vereisten gaan altijd vóór de samenvatting in deze gidsen."
+                            />
+                        </div>
                     </div>
                 </section>
             </div>
@@ -281,7 +285,7 @@ function ResourceLink({
         <Link
             href={href}
             prefetch
-            className="group flex items-center justify-between gap-4 rounded-sm border border-paddock-rule bg-white p-5 transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:border-white/10 dark:bg-night-900 dark:hover:border-dds-cyan"
+            className="group flex items-center justify-between gap-4 rounded-sm border border-paddock-rule bg-white p-5 transition-colors hover:border-dds-blue focus-visible:ring-2 focus-visible:ring-dds-blue focus-visible:outline-none dark:border-white/10 dark:bg-night-900 dark:hover:border-dds-cyan dark:focus-visible:ring-dds-cyan"
         >
             <span>
                 <span className="flex items-center gap-2 font-semibold text-deep-signal dark:text-white">

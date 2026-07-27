@@ -23,7 +23,7 @@ type PublicHeroProps = {
     description?: string;
     kicker?: string;
     media: Media;
-    separatorTone?: 'air' | 'deep-signal' | 'muted' | 'paper';
+    separatorTone?: 'air' | 'deep-signal' | 'muted' | 'paper' | 'warmup';
     showSeparator?: boolean;
     size?: 'default' | 'compact';
     title: ReactNode;
@@ -131,7 +131,7 @@ export function PublicHero({
 }
 
 type HeroSeparatorProps = {
-    tone: 'air' | 'deep-signal' | 'muted' | 'paper';
+    tone: 'air' | 'deep-signal' | 'muted' | 'paper' | 'warmup';
 };
 
 export function HeroSeparator({ tone }: HeroSeparatorProps) {
@@ -145,6 +145,7 @@ export function HeroSeparator({ tone }: HeroSeparatorProps) {
                 tone === 'deep-signal' && 'text-deep-signal',
                 tone === 'muted' && 'text-night-50 dark:text-night-900',
                 tone === 'paper' && 'text-paper dark:text-night-950',
+                tone === 'warmup' && 'text-warmup dark:text-night-900',
             )}
         >
             <svg
@@ -250,9 +251,10 @@ type ContentBandProps = {
     children: ReactNode;
     description?: string;
     eyebrow: string;
+    layout?: 'split' | 'stacked';
     size?: 'default' | 'compact';
     title: string;
-    tone?: 'light' | 'muted' | 'dark';
+    tone?: 'light' | 'muted' | 'paper' | 'air' | 'warmup' | 'paddock' | 'dark';
     wideContent?: ReactNode;
 };
 
@@ -260,24 +262,42 @@ export function ContentBand({
     children,
     description,
     eyebrow,
+    layout = 'split',
     size = 'default',
     title,
-    tone = 'light',
+    tone = 'paper',
     wideContent,
 }: ContentBandProps) {
     return (
         <section
+            data-layout={layout}
+            data-tone={tone}
             className={cn(
                 size === 'default' && 'py-public-section',
                 size === 'compact' && 'py-12 sm:py-16',
                 tone === 'light' && 'bg-white dark:bg-night-950',
                 tone === 'muted' && 'bg-night-50 dark:bg-night-900',
+                tone === 'paper' && 'bg-paper dark:bg-night-950',
+                tone === 'air' && 'bg-air dark:bg-signal-500/10',
+                tone === 'warmup' && 'bg-warmup dark:bg-flight-500/8',
+                tone === 'paddock' && 'bg-paddock dark:bg-white/4',
                 tone === 'dark' && 'bg-night-950 text-white',
             )}
         >
             <div className="mx-auto w-full max-w-7xl px-public-gutter">
-                <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
-                    <div className="max-w-xl">
+                <div
+                    className={cn(
+                        layout === 'split' &&
+                            'grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16',
+                        layout === 'stacked' && 'max-w-5xl',
+                    )}
+                >
+                    <div
+                        className={cn(
+                            layout === 'split' && 'max-w-xl',
+                            layout === 'stacked' && 'max-w-3xl',
+                        )}
+                    >
                         <Eyebrow inverse={tone === 'dark'} line={false}>
                             {eyebrow}
                         </Eyebrow>
@@ -304,7 +324,9 @@ export function ContentBand({
                             </p>
                         )}
                     </div>
-                    <div>{children}</div>
+                    <div className={cn(layout === 'stacked' && 'mt-10')}>
+                        {children}
+                    </div>
                 </div>
                 {wideContent && <div className="mt-12">{wideContent}</div>}
             </div>
@@ -326,9 +348,9 @@ export function FeatureCard({
     title,
 }: FeatureCardProps) {
     return (
-        <article className="group rounded-xl border border-night-200 bg-white p-6 shadow-sm transition duration-200 hover:border-flight-300 hover:shadow-md motion-reduce:transition-none dark:border-white/10 dark:bg-night-800 dark:hover:border-flight-400">
+        <article className="group rounded-sm border border-paddock-rule bg-white p-6 transition-colors duration-200 hover:border-dds-blue motion-reduce:transition-none dark:border-white/10 dark:bg-night-800 dark:hover:border-dds-cyan">
             <div className="flex items-start justify-between gap-6">
-                <span className="flex size-11 items-center justify-center rounded-lg bg-flight-50 text-flight-700 dark:bg-flight-500/10 dark:text-flight-300">
+                <span className="flex size-11 items-center justify-center rounded-sm bg-flight-50 text-flight-700 dark:bg-flight-500/10 dark:text-flight-300">
                     <Icon className="size-5" />
                 </span>
                 {index && (

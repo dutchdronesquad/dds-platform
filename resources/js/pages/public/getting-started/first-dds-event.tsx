@@ -140,10 +140,14 @@ export default function GettingStartedFirstDdsEvent({ guide, seo }: Props) {
             <div className="bg-paper text-deep-signal dark:bg-night-950 dark:text-white">
                 <section
                     aria-labelledby="journey-heading"
-                    className="py-public-section"
+                    data-testid="training-journey"
+                    className="bg-paper py-public-section dark:bg-night-950"
                 >
-                    <div className="mx-auto w-full max-w-7xl px-public-gutter">
-                        <div className="max-w-2xl">
+                    <div
+                        data-testid="training-journey-layout"
+                        className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter lg:grid-cols-[0.72fr_1.28fr] lg:gap-16"
+                    >
+                        <div className="max-w-xl">
                             <Eyebrow line={false}>Stap voor stap</Eyebrow>
                             <h2
                                 id="journey-heading"
@@ -160,7 +164,7 @@ export default function GettingStartedFirstDdsEvent({ guide, seo }: Props) {
                             </p>
                         </div>
 
-                        <ol className="mt-12 max-w-2xl space-y-10">
+                        <ol className="space-y-9">
                             {journeySteps.map((step, index) => (
                                 <li key={step.title} className="relative pl-14">
                                     {index < journeySteps.length - 1 && (
@@ -188,7 +192,8 @@ export default function GettingStartedFirstDdsEvent({ guide, seo }: Props) {
                 </section>
 
                 <ContentBand
-                    tone="muted"
+                    layout="stacked"
+                    tone="air"
                     eyebrow="Wie en wat"
                     title="Begrijp de woorden op de avond."
                     description="Met deze vier begrippen begrijp je hoe de trainingsavond vanaf de baanopbouw tot de heats verloopt."
@@ -212,6 +217,7 @@ export default function GettingStartedFirstDdsEvent({ guide, seo }: Props) {
 
                 <ContentBand
                     size="compact"
+                    tone="paddock"
                     eyebrow="Voor je vertrekt"
                     title="Materiaal en tas: laatste check."
                     description="Iedereen vliegt op hetzelfde parcours, op videokanalen die elkaar kunnen storen. Bij een training is dit je eigen verantwoordelijkheid: controleer zelf of je zender en videosysteem binnen de regels vallen, zodat jouw signaal andere piloten niet stoort en andersom."
@@ -262,7 +268,7 @@ export default function GettingStartedFirstDdsEvent({ guide, seo }: Props) {
                                 instelling of beschadiging. De{' '}
                                 <Link
                                     href={houseRules()}
-                                    className="font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                                    className="font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-blue focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white dark:focus-visible:ring-dds-cyan"
                                 >
                                     huisregels
                                 </Link>{' '}

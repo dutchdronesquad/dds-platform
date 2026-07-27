@@ -174,7 +174,7 @@ export default function GettingStartedFirstFpvFlight({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
-                    tone="muted"
+                    tone="air"
                     eyebrow="Besturing"
                     title="Vier bewegingen, tegelijk gecombineerd."
                     description="Bij de gebruikelijke Mode 2-indeling bedient de linker stick gas en draaien; de rechter stick kantelen. Je vliegt vrijwel nooit met maar één beweging: een vloeiende bocht combineert meerdere assen."
@@ -216,6 +216,7 @@ export default function GettingStartedFirstFpvFlight({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
+                    layout="stacked"
                     eyebrow="Leren vliegen"
                     title="De simulator is je eerste veilige oefenplek."
                     description="Een FPV-drone remt niet vanzelf wanneer je de sticks loslaat. In acro-modus bepaal je voortdurend de hoek en draairichting. Een simulator geeft je de herhaling om die besturing automatisch te maken, zonder dat iedere fout reparatiewerk oplevert."
@@ -300,7 +301,7 @@ export default function GettingStartedFirstFpvFlight({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
-                    tone="muted"
+                    tone="paddock"
                     eyebrow="DDS-activiteiten"
                     title="Wat je bij DDS kunt doen."
                     description="DDS organiseert verschillende activiteiten rond FPV. Het type vertelt wat er die dag gebeurt, maar niet automatisch welk ervaringsniveau past. Lees daarom altijd ook de eventbeschrijving en deelnamevereisten."
@@ -325,6 +326,8 @@ export default function GettingStartedFirstFpvFlight({ guide, seo }: Props) {
                 </ContentBand>
 
                 <ContentBand
+                    layout="stacked"
+                    tone="warmup"
                     eyebrow="Welke route past bij jou?"
                     title="Kies je startpunt."
                     description="Deze indeling is een richting, geen toelatingstest. Twijfel je, beschrijf dan eerst je simulatorervaring, vliegervaring en materiaal in een bericht aan DDS."
@@ -333,7 +336,7 @@ export default function GettingStartedFirstFpvFlight({ guide, seo }: Props) {
                         {visitorPaths.map((path) => (
                             <div
                                 key={path.title}
-                                className="flex flex-col gap-4 rounded-xl border border-night-200 bg-white p-6 dark:border-white/10 dark:bg-night-800"
+                                className="flex flex-col gap-4 rounded-sm border border-paddock-rule bg-white p-6 dark:border-white/10 dark:bg-night-800"
                             >
                                 <h3 className="text-lg font-semibold tracking-[-0.02em] text-night-950 dark:text-white">
                                     {path.title}

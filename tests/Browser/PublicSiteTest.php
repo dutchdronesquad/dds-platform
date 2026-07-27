@@ -239,6 +239,9 @@ test('the first FPV guide explains core systems and simulator choices', function
         ->assertSee('DRL Simulator')
         ->assertSee('De race director bewaakt daarbij')
         ->assertDontSee('Race control bewaakt daarbij')
+        ->assertPresent('section[data-tone="air"][data-layout="split"]')
+        ->assertPresent('section[data-tone="paddock"]')
+        ->assertPresent('section[data-tone="warmup"][data-layout="stacked"]')
         ->assertScript(
             'getComputedStyle(document.querySelector(\'[data-testid="simulators-grid"]\')).gridTemplateColumns.split(" ").length === 4',
         )
@@ -258,6 +261,11 @@ test('getting started guidance consistently calls mandatory requirements rules',
         ->assertSee('Bindende regels en event-specifieke vereisten')
         ->assertSee('Waar kunnen we je mee helpen?')
         ->assertSee('Vertel kort waar je vraag over gaat')
+        ->assertPresent('section[data-tone="warmup"]')
+        ->assertPresent('section[data-tone="paddock"]')
+        ->assertScript(
+            'getComputedStyle(document.querySelector(\'[data-testid="hero-separator"]\')).color === getComputedStyle(document.querySelector(\'section[data-tone="warmup"]\')).backgroundColor',
+        )
         ->assertDontSee('Een goede vraag begint met wat context')
         ->assertDontSee('Bindende afspraken')
         ->assertNoSmoke();
@@ -277,16 +285,10 @@ test('getting started guidance consistently calls mandatory requirements rules',
         ->assertSee('Baanopbouw')
         ->assertSee('Race director')
         ->assertSee('Wacht met inschakelen tot de race director dat toestaat')
+        ->assertPresent('section[data-tone="air"][data-layout="stacked"]')
+        ->assertPresent('section[data-tone="paddock"]')
         ->assertScript(
-            <<<'JS'
-                (() => {
-                    const sections = [...document.querySelectorAll('section')];
-                    const terms = sections.find((section) => section.textContent.includes('Begrijp de woorden op de avond.'));
-                    const equipment = sections.find((section) => section.textContent.includes('Materiaal en tas: laatste check.'));
-
-                    return getComputedStyle(terms).backgroundColor !== getComputedStyle(equipment).backgroundColor;
-                })()
-                JS,
+            'getComputedStyle(document.querySelector(\'[data-testid="training-journey-layout"]\')).gridTemplateColumns.split(" ").length === 2',
         )
         ->assertDontSee('Aanmelden en deelnemen')
         ->assertDontSee('Event, seizoen en ticket zijn niet hetzelfde')
@@ -335,6 +337,9 @@ test('the equipment guide does not offer personal parts list approval', function
         ->assertSee('Begin met de vraag wat voor vlieger je wilt worden')
         ->assertSee('wil je racen, freestylen of vooral recreatief vliegen?')
         ->assertSee('Van aanmelden en opbouwen tot de trackwalk')
+        ->assertPresent('section[data-tone="air"][data-layout="stacked"]')
+        ->assertPresent('section[data-tone="paddock"]')
+        ->assertPresent('section[data-tone="warmup"]')
         ->assertDontSee('Van persoonlijke bevestiging en voorbereiding')
         ->assertDontSee('voor de activiteiten die je wilt bezoeken')
         ->assertDontSee('Vraag DDS om een onderdelenlijst te controleren')
@@ -342,6 +347,32 @@ test('the equipment guide does not offer personal parts list approval', function
             'a[href="/contact?source=getting-started-equipment-check"]',
         )
         ->assertNoSmoke();
+});
+
+test('getting started guides keep their semantic structure across themes and viewports', function () {
+    visit([
+        '/getting-started',
+        '/getting-started/first-fpv-flight',
+        '/getting-started/choosing-equipment',
+        '/getting-started/first-dds-event',
+    ])->assertNoAccessibilityIssues()
+        ->assertNoSmoke();
+
+    visit('/getting-started/first-fpv-flight')
+        ->on()->mobile()
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertPresent('section[data-tone="air"]')
+        ->assertPresent('section[data-tone="warmup"]')
+        ->assertNoAccessibilityIssues()
+        ->assertNoJavaScriptErrors();
+
+    visit('/getting-started/choosing-equipment')
+        ->on()->desktop()
+        ->inDarkMode()
+        ->assertScript(
+            'getComputedStyle(document.querySelector(\'section[data-tone="air"]\')).backgroundColor !== getComputedStyle(document.querySelector(\'section[data-tone="paper"]\')).backgroundColor',
+        )
+        ->assertNoJavaScriptErrors();
 });
 
 test('beginners can find the DDS community channels', function () {
