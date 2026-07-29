@@ -79,7 +79,7 @@ jobs:
 
       - name: Tests with Coverage
         if: matrix.suite == 'php'
-        run: php artisan test --compact --coverage --min=95
+        run: ./vendor/bin/pest --compact --coverage --min=95
 
       - name: Browser Tests
         if: matrix.suite == 'browser'

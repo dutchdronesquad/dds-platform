@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Models\SeasonTicket;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -184,7 +185,10 @@ test('a public season page shows one ticket for all published events', function 
             ->where('season.events.0.registrationDeadlineAt', $openingEvent->registration_deadline_at?->toIso8601String())
             ->where('season.events.1.id', $finalEvent->id)
             ->where('season.events.1.priceCents', 1750)
-            ->where('season.events', fn ($events): bool => collect($events)->doesntContain('id', $draftEvent->id))
+            ->where(
+                'season.events',
+                fn (Collection $events): bool => $events->doesntContain('id', $draftEvent->id),
+            )
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/')."/seasons/{$season->slug}"),
         );
 

@@ -46,7 +46,7 @@ test('locations expose structured venue casts and their cover image relationship
         ->ceiling_height_metres->toBe('8.50')
         ->latitude->toBe('52.6320000')
         ->longitude->toBe('4.7450000')
-        ->coverImage->id->toBe($coverImage->id);
+        ->and($location->coverImage?->id)->toBe($coverImage->id);
 });
 
 test('location environments are enforced by the database', function () {

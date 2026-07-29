@@ -57,7 +57,8 @@ test('visitors can submit contact requests and trigger a configured notification
         ->source_context->toBe('partners-page')
         ->delivery_status->toBe(ContactDeliveryStatus::Pending)
         ->consented_at->not->toBeNull()
-        ->delivered_at->toBeNull();
+        ->delivered_at->toBeNull()
+        ->and($contactSubmission->email)->toBeEmail();
 
     Notification::assertSentTo(
         $administrator,

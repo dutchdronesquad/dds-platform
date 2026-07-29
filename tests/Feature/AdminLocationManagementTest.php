@@ -204,7 +204,10 @@ test('deleting a location with events fails cleanly with a flash message instead
     $this->assertModelExists($location);
 });
 
-/** @param array<string, mixed> $overrides */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validLocationPayload(array $overrides = []): array
 {
     return [

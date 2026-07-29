@@ -296,13 +296,16 @@ test('inactive users cannot authenticate and existing sessions are ended', funct
     $this->assertGuest();
 });
 
-/** @param array<string, mixed> $overrides */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validUserPayload(array $overrides = [], ?User $user = null): array
 {
     return [
-        'name' => $user?->name ?? 'Platformgebruiker',
-        'email' => $user?->email ?? 'platform@example.com',
-        'locale' => $user?->locale ?? 'en',
+        'name' => $user instanceof User ? $user->name : 'Platformgebruiker',
+        'email' => $user instanceof User ? $user->email : 'platform@example.com',
+        'locale' => $user instanceof User ? $user->locale : 'en',
         'roles' => [Role::Editor->value],
         ...$overrides,
     ];

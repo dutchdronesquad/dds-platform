@@ -9,6 +9,7 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
+        "pestphp/pest-plugin-agent",
         "spatie/laravel-permission"
     ],
     "sail": false,
@@ -19,6 +20,7 @@
         "pest-testing",
         "inertia-react-development",
         "tailwindcss-development",
-        "laravel-permission-development"
+        "laravel-permission-development",
+        "pest-plugin-agent"
     ]
 }

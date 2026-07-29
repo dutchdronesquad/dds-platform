@@ -123,12 +123,11 @@ test('the guide catalogue has unique ordered entries with matching React pages a
     );
 
     expect($slugs)
-        ->toHaveCount(count(array_unique($slugs)))
+        ->toHaveSameSize(array_unique($slugs))
         ->and($sortOrders)->toBe(array_values(array_unique($sortOrders)));
 
     foreach ($guides as $guide) {
-        expect(is_file(resource_path("js/pages/public/getting-started/{$guide->slug}.tsx")))
-            ->toBeTrue()
+        expect(resource_path("js/pages/public/getting-started/{$guide->slug}.tsx"))->toBeFile()
             ->and($guide->editorialOwner)->not->toBeEmpty()
             ->and($guide->reviewedAt)->toMatch('/^\d{4}-\d{2}-\d{2}$/');
     }

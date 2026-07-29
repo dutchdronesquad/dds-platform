@@ -7,6 +7,8 @@ use App\Models\MediaAsset;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Vite;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Api\Webpage;
 
 beforeEach(function () {
     Vite::useHotFile(storage_path('framework/testing/vite.hot'));
@@ -274,7 +276,7 @@ test('event forms search the media library and store the selected cover id', fun
         ->assertNoJavaScriptErrors();
 });
 
-function selectMediaUploadImage($page): void
+function selectMediaUploadImage(AwaitableWebpage|Webpage $page): void
 {
     $page->script(<<<'JS'
         async () => {

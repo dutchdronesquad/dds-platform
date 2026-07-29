@@ -18,7 +18,13 @@ test('the project overview presents the curated public catalogue', function () {
             ->has('seo'),
         );
 
-    $projects = collect($response->inertiaProps('projects'));
+    $projectProperties = $response->inertiaProps('projects');
+
+    if (! is_array($projectProperties)) {
+        throw new LogicException('The projects Inertia property must be an array.');
+    }
+
+    $projects = collect($projectProperties);
     $projectsBySlug = $projects->keyBy('slug');
     $slugs = $projects->pluck('slug');
     $trackdraw = $projectsBySlug['trackdraw'];

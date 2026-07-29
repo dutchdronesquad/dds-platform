@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 test('it creates a verified admin user', function () {
-    $this->artisan('dds:make-admin', [
+    $this->pendingArtisan('dds:make-admin', [
         'email' => 'admin@example.com',
         '--name' => 'DDS Admin',
         '--password' => 'password',
@@ -16,6 +16,7 @@ test('it creates a verified admin user', function () {
 
     expect($user)
         ->name->toBe('DDS Admin')
+        ->email->toBeEmail()
         ->email_verified_at->not->toBeNull()
         ->and(Hash::check('password', $user->password))->toBeTrue()
         ->and($user->hasRole(Role::Admin->value))->toBeTrue()
@@ -24,7 +25,7 @@ test('it creates a verified admin user', function () {
 });
 
 test('it generates a password when creating a new admin without a password option', function () {
-    $this->artisan('dds:make-admin', [
+    $this->pendingArtisan('dds:make-admin', [
         'email' => 'generated@example.com',
         '--name' => 'Generated Admin',
     ])
@@ -47,7 +48,7 @@ test('it promotes an existing user to admin without changing the password', func
         'password' => 'current-password',
     ]);
 
-    $this->artisan('dds:make-admin', [
+    $this->pendingArtisan('dds:make-admin', [
         'email' => 'editor@example.com',
     ])->assertSuccessful();
 
@@ -61,7 +62,7 @@ test('it promotes an existing user to admin without changing the password', func
 });
 
 test('it rejects invalid admin details without creating a user', function () {
-    $this->artisan('dds:make-admin', [
+    $this->pendingArtisan('dds:make-admin', [
         'email' => 'not-an-email',
         '--name' => 'Invalid Admin',
         '--password' => 'password',
