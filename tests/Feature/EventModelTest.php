@@ -51,11 +51,11 @@ test('events expose their domain casts and relationships', function () {
         ->status->toBe(EventStatus::Published)
         ->type->toBe(EventType::Training)
         ->registration_status->toBe(EventRegistrationStatus::Open)
-        ->location->id->toBe($location->id)
-        ->season->id->toBe($season->id)
-        ->coverImage->id->toBe($coverImage->id)
         ->price_cents->toBe(1500)
-        ->capacity->toBe(16);
+        ->capacity->toBe(16)
+        ->and($event->location->id)->toBe($location->id)
+        ->and($event->season?->id)->toBe($season->id)
+        ->and($event->coverImage?->id)->toBe($coverImage->id);
 });
 
 test('event enum values are enforced by the database', function (string $column) {

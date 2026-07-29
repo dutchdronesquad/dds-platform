@@ -16,6 +16,7 @@ web_environment:
 nodejs_version: "24"
 corepack_enable: false
 webimage_extra_packages:
+    - gh
     - libasound2t64
     - libatk-bridge2.0-0t64
     - libatk1.0-0t64

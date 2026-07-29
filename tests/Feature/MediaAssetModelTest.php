@@ -24,13 +24,12 @@ test('media assets expose package-managed file metadata and translated alt text'
 
     $this->assertModelExists($mediaAsset);
 
-    expect($mediaAsset)
-        ->filename()->toBe('winter-race.jpg')
-        ->mimeType()->toBe('image/jpeg')
-        ->sizeBytes()->toBe(2048)
-        ->width()->toBe(1920)
-        ->height()->toBe(1080)
-        ->alt_text->toBe([
+    expect($mediaAsset->filename())->toBe('winter-race.jpg')
+        ->and($mediaAsset->mimeType())->toBe('image/jpeg')
+        ->and($mediaAsset->sizeBytes())->toBe(2048)
+        ->and($mediaAsset->width())->toBe(1920)
+        ->and($mediaAsset->height())->toBe(1080)
+        ->and($mediaAsset->alt_text)->toBe([
             'en' => 'Pilots racing FPV drones indoors.',
             'nl' => 'Piloten racen binnen met FPV-drones.',
         ])

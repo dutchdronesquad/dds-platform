@@ -150,8 +150,8 @@ test('admins can create articles with a generated slug and automatic publication
 
     expect($article)
         ->title->toBe('Nieuw seizoen van start')
-        ->status->toBe(ArticleStatus::Published);
-    expect($article->published_at)->not->toBeNull();
+        ->status->toBe(ArticleStatus::Published)
+        ->and($article->published_at)->not->toBeNull();
 });
 
 test('article requests reject missing titles and invalid categories', function () {
@@ -182,7 +182,10 @@ test('admins can delete articles', function () {
     $this->assertModelMissing($article);
 });
 
-/** @param array<string, mixed> $overrides */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validArticlePayload(array $overrides = []): array
 {
     return [

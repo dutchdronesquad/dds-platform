@@ -24,14 +24,14 @@ afterEach(function () {
 });
 
 test('the local demo event command creates the same representative dataset on repeated runs', function () {
-    $this->artisan('dds:seed-demo-events')
+    $this->pendingArtisan('dds:seed-demo-events')
         ->expectsOutput('10 demo-events zijn aangemaakt of bijgewerkt.')
         ->assertSuccessful();
 
     $firstRun = demoEventsSnapshot();
     $firstIds = demoRecordIds();
 
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     $events = Event::query()
         ->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)
@@ -112,7 +112,7 @@ test('demo event dates stay in a rolling window around the current date', functi
         CarbonImmutable::parse('2027-12-20 10:00:00', 'Europe/Amsterdam'),
     );
 
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     $firstEvent = Event::query()
         ->where('slug', DevelopmentEventSeeder::EVENT_SLUGS[0])
@@ -133,7 +133,7 @@ test('demo event dates stay in a rolling window around the current date', functi
 });
 
 test('the dataset mirrors the published DDS training and location information', function () {
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     $season = Season::query()
         ->with(['events', 'seasonTicket'])
@@ -177,7 +177,7 @@ test('demo events open registration on Monday at nine two weeks before they star
         CarbonImmutable::parse('2026-03-15 10:00:00', 'Europe/Amsterdam'),
     );
 
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     Event::query()
         ->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)
@@ -200,7 +200,7 @@ test('demo events open registration on Monday at nine two weeks before they star
 });
 
 test('reset removes only unreferenced demo records and preserves real content', function () {
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     $demoLocation = Location::query()
         ->where('slug', DevelopmentEventSeeder::LOCATION_SLUG_PREFIX.'sportpaleis-alkmaar')
@@ -237,7 +237,7 @@ test('reset removes only unreferenced demo records and preserves real content', 
         'slug' => DevelopmentEventSeeder::EVENT_SLUG_PREFIX.'community-record',
     ]);
 
-    $this->artisan('dds:seed-demo-events --reset')
+    $this->pendingArtisan('dds:seed-demo-events --reset')
         ->expectsOutput('10 demo-events verwijderd; overige content is behouden.')
         ->assertSuccessful();
 
@@ -257,7 +257,7 @@ test('reset removes only unreferenced demo records and preserves real content', 
 });
 
 test('reset works before the optional articles migration is applied', function () {
-    $this->artisan('dds:seed-demo-events')->assertSuccessful();
+    $this->pendingArtisan('dds:seed-demo-events')->assertSuccessful();
 
     $connection = DB::connection();
     $connection->flushQueryLog();
@@ -269,7 +269,7 @@ test('reset works before the optional articles migration is applied', function (
         ->andReturnFalse();
 
     try {
-        $this->artisan('dds:seed-demo-events --reset')
+        $this->pendingArtisan('dds:seed-demo-events --reset')
             ->expectsOutput('10 demo-events verwijderd; overige content is behouden.')
             ->assertSuccessful();
 
@@ -292,7 +292,7 @@ test('the demo event command refuses to run in production', function (string $co
     app()->detectEnvironment(fn (): string => 'production');
 
     try {
-        $this->artisan($command)
+        $this->pendingArtisan($command)
             ->expectsOutput('De DDS demo-events mogen alleen lokaal worden beheerd.')
             ->assertFailed();
     } finally {
@@ -315,6 +315,7 @@ test('direct demo seeder mutations refuse to run in production', function (strin
         expect(fn () => match ($method) {
             'run' => $seeder->run(),
             'reset' => $seeder->reset(),
+            default => throw new InvalidArgumentException("Unsupported seeder method [{$method}]."),
         })
             ->toThrow(RuntimeException::class, 'De DDS demo-events mogen alleen lokaal worden beheerd.');
     } finally {
@@ -327,7 +328,7 @@ test('direct demo seeder mutations refuse to run in production', function (strin
  */
 function demoEventsSnapshot(): array
 {
-    return Event::query()
+    $events = Event::query()
         ->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)
         ->with(['coverImage:id', 'coverImage.media', 'location:id,slug', 'season:id,name'])
         ->oldest('slug')
@@ -351,20 +352,22 @@ function demoEventsSnapshot(): array
             'cover' => $event->coverImage?->filename(),
         ])
         ->all();
+
+    return array_values($events);
 }
 
 /** @return array<string, list<int>> */
 function demoRecordIds(): array
 {
     return [
-        'events' => Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->oldest('id')->pluck('id')->all(),
-        'locations' => Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->oldest('id')->pluck('id')->all(),
-        'media' => MediaAsset::query()->whereHas('media', fn ($query) => $query
-            ->whereIn('custom_properties->development_fixture', DevelopmentEventSeeder::MEDIA_FIXTURE_KEYS))->oldest('id')->pluck('id')->all(),
-        'seasons' => Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->oldest('id')->pluck('id')->all(),
-        'seasonTickets' => SeasonTicket::query()->whereHas(
+        'events' => array_values(Event::query()->whereIn('slug', DevelopmentEventSeeder::EVENT_SLUGS)->oldest('id')->pluck('id')->map(static fn (int $id): int => $id)->all()),
+        'locations' => array_values(Location::query()->whereIn('slug', DevelopmentEventSeeder::LOCATION_SLUGS)->oldest('id')->pluck('id')->map(static fn (int $id): int => $id)->all()),
+        'media' => array_values(MediaAsset::query()->whereHas('media', fn ($query) => $query
+            ->whereIn('custom_properties->development_fixture', DevelopmentEventSeeder::MEDIA_FIXTURE_KEYS))->oldest('id')->pluck('id')->map(static fn (int $id): int => $id)->all()),
+        'seasons' => array_values(Season::query()->where('slug', DevelopmentEventSeeder::SEASON_SLUG)->oldest('id')->pluck('id')->map(static fn (int $id): int => $id)->all()),
+        'seasonTickets' => array_values(SeasonTicket::query()->whereHas(
             'season',
             fn ($query) => $query->where('slug', DevelopmentEventSeeder::SEASON_SLUG),
-        )->oldest('id')->pluck('id')->all(),
+        )->oldest('id')->pluck('id')->map(static fn (int $id): int => $id)->all()),
     ];
 }

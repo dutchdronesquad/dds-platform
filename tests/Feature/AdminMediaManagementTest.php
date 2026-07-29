@@ -85,7 +85,7 @@ test('image dimension detection tolerates an unavailable temporary path', functi
             parent::__construct($path, 'missing-image.jpg', 'image/jpeg', null, true);
         }
 
-        public function getMimeType(): ?string
+        public function getMimeType(): string
         {
             return 'image/jpeg';
         }
@@ -353,7 +353,10 @@ test('event forms select reusable active media and retain an already archived co
     ]))->assertSessionHasErrors('cover_image_id');
 });
 
-/** @return array<string, mixed> */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function eventPayload(Location $location, array $overrides = []): array
 {
     return [

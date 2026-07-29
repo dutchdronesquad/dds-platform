@@ -281,7 +281,10 @@ test('admins can delete an unused season and its ticket', function () {
     $this->assertModelMissing($ticket);
 });
 
-/** @param array<string, mixed> $overrides */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validSeasonPayload(array $overrides = []): array
 {
     return [

@@ -4,6 +4,10 @@ use App\Enums\ProjectType;
 use App\Support\ProjectCatalogue;
 use App\Support\ProjectCatalogueEntry;
 
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validProjectCatalogueEntry(array $overrides = []): array
 {
     return array_replace([
@@ -27,8 +31,7 @@ test('the configured public projects form a typed catalogue', function () {
     $catalogue = ProjectCatalogue::fromConfig();
 
     expect($catalogue->all())
-        ->toHaveCount(9)
-        ->each->toBeInstanceOf(ProjectCatalogueEntry::class)
+        ->toHaveCount(9)->toContainOnlyInstancesOf(ProjectCatalogueEntry::class)
         ->and($catalogue->find('trackdraw')?->type)->toBe(ProjectType::Application)
         ->and($catalogue->find('panevo'))->toBeNull()
         ->and($catalogue->find('live-feed-flightcase')?->type)->toBe(ProjectType::HardwareBuild)

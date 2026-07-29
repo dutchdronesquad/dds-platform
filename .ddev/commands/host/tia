@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+## Description: Run Pest using the shared TIA baseline from GitHub Actions
+## Usage: tia [pest options]
+## Example: "ddev tia"
+
+set -euo pipefail
+
+if ! command -v gh >/dev/null 2>&1; then
+    echo 'GitHub CLI (gh) is required on the host: https://cli.github.com'
+    exit 1
+fi
+
+if ! gh auth status >/dev/null 2>&1; then
+    echo 'GitHub CLI is not authenticated. Run: gh auth login'
+    exit 1
+fi
+
+github_token="$(gh auth token)"
+xdebug_was_enabled="$(ddev exec php -r 'echo extension_loaded("xdebug") ? "1" : "0";')"
+
+if [[ "${xdebug_was_enabled}" == "0" ]]; then
+    ddev xdebug on
+    trap 'ddev xdebug off >/dev/null' EXIT
+fi
+
+ddev exec env GH_TOKEN="${github_token}" XDEBUG_MODE=coverage ./vendor/bin/pest --parallel --tia "$@"

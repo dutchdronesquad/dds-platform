@@ -35,10 +35,9 @@ test('articles expose their domain casts and optional relationships', function (
         ->published_at->toBeInstanceOf(CarbonImmutable::class)
         ->status->toBe(ArticleStatus::Published)
         ->category->toBe(ArticleCategory::RaceReport)
-        ->author->id->toBe($author->id)
-        ->coverImage->id->toBe($coverImage->id);
-
-    expect($author->articles()->whereKey($article->id)->exists())->toBeTrue();
+        ->and($article->author?->id)->toBe($author->id)
+        ->and($article->coverImage?->id)->toBe($coverImage->id)
+        ->and($author->articles()->whereKey($article->id)->exists())->toBeTrue();
 });
 
 test('article enum values are enforced by the database', function (string $column) {

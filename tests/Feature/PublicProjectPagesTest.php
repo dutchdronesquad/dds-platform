@@ -18,7 +18,15 @@ test('the project overview presents the curated public catalogue', function () {
             ->has('seo'),
         );
 
-    $projects = collect($response->inertiaProps('projects'));
+    $projectProperties = $response->inertiaProps('projects');
+
+    expect(get_debug_type($projectProperties))->toBe('array');
+
+    if (! is_array($projectProperties)) {
+        return;
+    }
+
+    $projects = collect($projectProperties);
     $projectsBySlug = $projects->keyBy('slug');
     $slugs = $projects->pluck('slug');
     $trackdraw = $projectsBySlug['trackdraw'];

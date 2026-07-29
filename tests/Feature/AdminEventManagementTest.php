@@ -520,7 +520,10 @@ test('admins can publish cancel unpublish and remove events with public visibili
     $this->assertModelMissing($event);
 });
 
-/** @param array<string, mixed> $overrides */
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validEventPayload(Location $location, array $overrides = []): array
 {
     return [

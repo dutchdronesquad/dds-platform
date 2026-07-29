@@ -3,6 +3,10 @@
 use App\Support\PartnerCatalogue;
 use App\Support\PartnerCatalogueEntry;
 
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
 function validPartnerCatalogueEntry(array $overrides = []): array
 {
     return array_replace([
@@ -21,8 +25,7 @@ test('the configured partners form a typed and ordered public catalogue', functi
     $catalogue = PartnerCatalogue::fromConfig();
 
     expect($catalogue->all())
-        ->toHaveCount(2)
-        ->each->toBeInstanceOf(PartnerCatalogueEntry::class)
+        ->toHaveCount(2)->toContainOnlyInstancesOf(PartnerCatalogueEntry::class)
         ->and(collect($catalogue->all())->pluck('key')->all())->toBe([
             'droneshop-nl',
             'sportpaleis-alkmaar',
@@ -76,8 +79,8 @@ test('equal manual positions are ordered deterministically by key', function () 
 test('an empty partner catalogue is valid', function () {
     $catalogue = PartnerCatalogue::fromArray([]);
 
-    expect($catalogue->all())->toBe([])
-        ->and($catalogue->forHomepage())->toBe([])
+    expect($catalogue->all())->toBeEmpty()
+        ->and($catalogue->forHomepage())->toBeEmpty()
         ->and($catalogue->find('missing-partner'))->toBeNull();
 });
 
