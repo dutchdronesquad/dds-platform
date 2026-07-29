@@ -20,8 +20,10 @@ test('the project overview presents the curated public catalogue', function () {
 
     $projectProperties = $response->inertiaProps('projects');
 
+    expect(get_debug_type($projectProperties))->toBe('array');
+
     if (! is_array($projectProperties)) {
-        throw new LogicException('The projects Inertia property must be an array.');
+        return;
     }
 
     $projects = collect($projectProperties);

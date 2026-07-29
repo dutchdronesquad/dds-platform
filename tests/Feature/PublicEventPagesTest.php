@@ -187,7 +187,11 @@ test('a public season page shows one ticket for all published events', function 
             ->where('season.events.1.priceCents', 1750)
             ->where(
                 'season.events',
-                fn (Collection $events): bool => $events->doesntContain('id', $draftEvent->id),
+                fn (mixed $events): bool => match (true) {
+                    $events instanceof Collection => $events->doesntContain('id', $draftEvent->id),
+                    is_array($events) => (new Collection($events))->doesntContain('id', $draftEvent->id),
+                    default => false,
+                },
             )
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/')."/seasons/{$season->slug}"),
         );
