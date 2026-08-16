@@ -7,30 +7,6 @@
  * to first-class models or constrained managed content.
  */
 return [
-    'house_rules' => [
-        'title' => 'House Rules',
-        'eyebrow' => 'Regels',
-        'description' => 'De huisregels geven straks duidelijke verwachtingen voor deelname, veiligheid en gedrag binnen de DDS-community.',
-        'visual' => [
-            'src' => '/images/dds/racing/pilot-preparing-drone.jpg',
-            'alt' => 'FPV-piloot bereidt veilig een racedrone voor',
-            'position' => '44% center',
-        ],
-        'primaryAction' => [
-            'label' => 'Bekijk locaties',
-            'href' => '/locations',
-        ],
-        'sections' => [
-            [
-                'heading' => 'Veilig deelnemen',
-                'body' => 'Deze pagina krijgt ruimte voor basisregels rond vliegen, privacy, materiaal en omgang met elkaar.',
-            ],
-            [
-                'heading' => 'Praktische toepassing',
-                'body' => 'Huisregels kunnen later gekoppeld worden aan events, locaties en onboardingmateriaal.',
-            ],
-        ],
-    ],
     'contact' => [
         'title' => 'Contact',
         'eyebrow' => 'Bereik DDS',

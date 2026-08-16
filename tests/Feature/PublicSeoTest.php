@@ -42,6 +42,7 @@ test('public pages expose their canonical metadata contract', function (string $
     'locations' => ['locations.index', 'Locaties', '/locations'],
     'about' => ['about', 'Dutch Drone Squad', '/about'],
     'house rules' => ['house_rules', 'Huisregels', '/house-rules'],
+    'media' => ['media', 'In de media', '/media'],
     'partners' => ['partners', 'Partners', '/partners'],
     'contact' => ['contact', 'Contact', '/contact'],
 ]);

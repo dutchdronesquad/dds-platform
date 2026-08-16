@@ -95,6 +95,13 @@ return [
             'image_path' => '/images/dds/racing/pilot-preparing-drone.jpg',
             'image_alt' => 'FPV-piloot bereidt veilig een racedrone voor',
         ],
+        'media' => [
+            'title' => 'In de media',
+            'description' => 'Bekijk reportages, artikelen en vermeldingen over Dutch Drone Squad en onze FPV-activiteiten.',
+            'canonical_path' => '/media',
+            'image_path' => '/images/dds/racing/race-control.jpg',
+            'image_alt' => 'Race control tijdens een indoor FPV-event van Dutch Drone Squad',
+        ],
         'partners' => [
             'title' => 'Partners',
             'description' => 'Ontdek de partners die bijdragen aan events, kennisdeling, tooling en locaties van Dutch Drone Squad.',

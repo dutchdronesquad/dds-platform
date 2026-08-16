@@ -38,12 +38,14 @@ test('the homepage news teaser is absent without published articles', function (
         );
 });
 
-test('house rules consistently describes mandatory guidance as rules', function () {
+test('the house rules route renders its dedicated code-owned page', function () {
     $this->get(route('house_rules'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('page.eyebrow', 'Regels')
-            ->where('page.sections.0.body', 'Deze pagina krijgt ruimte voor basisregels rond vliegen, privacy, materiaal en omgang met elkaar.'),
+            ->component('public/house-rules')
+            ->missing('page')
+            ->where('seo.title', 'Huisregels')
+            ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/house-rules'),
         );
 });
 
@@ -57,22 +59,3 @@ test('the about route renders its dedicated code-owned page', function () {
             ->where('seo.canonicalUrl', rtrim((string) config('app.url'), '/').'/about'),
         );
 });
-
-test('public static routes expose their page contract', function (string $routeName, string $expectedTitle) {
-    $this->get(route($routeName))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('public/shell')
-            ->where('page.title', $expectedTitle)
-            ->has('page.description')
-            ->has('page.primaryAction.label')
-            ->has('page.primaryAction.href')
-            ->has('page.visual.src')
-            ->has('page.visual.alt')
-            ->has('page.sections', 2)
-            ->has('page.sections.0.heading')
-            ->has('page.sections.0.body'),
-        );
-})->with([
-    'house rules' => ['house_rules', 'House Rules'],
-]);
