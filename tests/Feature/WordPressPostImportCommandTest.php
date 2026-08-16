@@ -153,6 +153,168 @@ test('it reports missing media mappings and slug conflicts without creating arti
     expect(Article::query()->count())->toBe(1);
 });
 
+test('it rejects invalid post selections', function (Closure $mutate, string $message) {
+    $manifest = wordpressPostManifest(
+        authorId: User::factory()->create()->id,
+        mediaAssetId: MediaAsset::factory()->create()->id,
+    );
+    $mutate($manifest);
+    writeWordPressPostManifest($this->manifestPath, $manifest);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'posts',
+        '--manifest' => $this->manifestPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    Http::assertNothingSent();
+})->with([
+    'missing endpoint' => [
+        fn (array &$manifest) => data_forget($manifest, 'source.posts_endpoint'),
+        'source.posts_endpoint',
+    ],
+    'non-list posts' => [
+        fn (array &$manifest) => $manifest['posts'] = ['selection' => wordpressPostSelection(49916)],
+        'posts-lijst',
+    ],
+    'non-object selection' => [
+        fn (array &$manifest) => $manifest['posts'] = ['invalid'],
+        'Postselectie 0 moet een JSON-object zijn.',
+    ],
+    'invalid WordPress ID' => [
+        fn (array &$manifest) => $manifest['posts'][0]['wordpress_id'] = 0,
+        'geldige wordpress_id',
+    ],
+    'duplicate WordPress ID' => [
+        fn (array &$manifest) => $manifest['posts'][] = wordpressPostSelection(49916),
+        'staat dubbel',
+    ],
+    'invalid slug' => [
+        fn (array &$manifest) => $manifest['posts'][0]['slug'] = 'geen geldige slug',
+        'ongeldige slug',
+    ],
+    'invalid title' => [
+        fn (array &$manifest) => $manifest['posts'][0]['title'] = ' ',
+        'ongeldige title',
+    ],
+    'missing publication date' => [
+        fn (array &$manifest) => $manifest['posts'][0]['published_at'] = null,
+        'mist een geldige published_at',
+    ],
+    'invalid publication date' => [
+        fn (array &$manifest) => $manifest['posts'][0]['published_at'] = 'not-a-date',
+        'ongeldige published_at',
+    ],
+    'invalid category' => [
+        fn (array &$manifest) => $manifest['posts'][0]['category'] = 'invalid',
+        'ongeldige category',
+    ],
+    'invalid decision' => [
+        fn (array &$manifest) => $manifest['posts'][0]['decision'] = 'rewrite',
+        'ongeldige decision',
+    ],
+    'invalid reason' => [
+        fn (array &$manifest) => $manifest['posts'][0]['reason'] = 123,
+        'ongeldige reason',
+    ],
+]);
+
+test('it reports malformed WordPress post source data', function (Closure $mutate, string $message) {
+    $author = User::factory()->create();
+    $coverImage = MediaAsset::factory()->create();
+    writeWordPressPostManifest($this->manifestPath, wordpressPostManifest(
+        authorId: $author->id,
+        mediaAssetId: $coverImage->id,
+    ));
+    $record = wordpressPostRecord(49916);
+    $mutate($record);
+    Http::fake(['legacy.example/wp-json/wp/v2/posts/49916' => Http::response($record)]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'posts',
+        '--manifest' => $this->manifestPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    expect(Article::query()->count())->toBe(0);
+})->with([
+    'unexpected ID' => [
+        fn (array &$record) => $record['id'] = 1,
+        'onverwacht ID',
+    ],
+    'unpublished post' => [
+        fn (array &$record) => $record['status'] = 'draft',
+        'niet gepubliceerd',
+    ],
+    'invalid source URL' => [
+        fn (array &$record) => $record['link'] = 'ftp://legacy.example/post',
+        'geldige bron-URL',
+    ],
+    'missing source slug' => [
+        fn (array &$record) => $record['slug'] = '',
+        'geldige bronslug',
+    ],
+    'missing content' => [
+        fn (array &$record) => $record['content']['rendered'] = '',
+        'geen artikelinhoud',
+    ],
+    'oversized content' => [
+        fn (array &$record) => $record['content']['rendered'] = str_repeat('x', 50_001),
+        'langer dan de ondersteunde',
+    ],
+    'invalid author' => [
+        fn (array &$record) => $record['author'] = 0,
+        'geldige auteur-ID',
+    ],
+    'invalid featured media' => [
+        fn (array &$record) => $record['featured_media'] = -1,
+        'geldige featured-media-ID',
+    ],
+    'invalid taxonomy IDs' => [
+        fn (array &$record) => $record['categories'] = ['4'],
+        'ongeldige categorie- of tag-ID',
+    ],
+]);
+
+test('it reports unavailable mapped authors and cover images', function (
+    Closure $mutateManifest,
+    string $message,
+) {
+    $author = User::factory()->create();
+    $coverImage = MediaAsset::factory()->create();
+    $manifest = wordpressPostManifest($author->id, $coverImage->id);
+    $mutateManifest($manifest);
+    writeWordPressPostManifest($this->manifestPath, $manifest);
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/posts/49916' => Http::response(wordpressPostRecord(49916)),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'posts',
+        '--manifest' => $this->manifestPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+})->with([
+    'missing author mapping' => [
+        fn (array &$manifest) => data_forget($manifest, 'defaults.author_id'),
+        'mist een auteursmapping',
+    ],
+    'unknown author' => [
+        fn (array &$manifest) => $manifest['defaults']['author_id'] = 999999,
+        'bestaat niet',
+    ],
+    'unknown cover image' => [
+        fn (array &$manifest) => data_set($manifest, 'mappings.media.49925.media_asset_id', 999999),
+        'niet naar een beschikbare afbeelding',
+    ],
+]);
+
 /**
  * @param  list<array<string, mixed>>|null  $posts
  * @return array<string, mixed>

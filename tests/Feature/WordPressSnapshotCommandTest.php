@@ -194,6 +194,208 @@ test('it refuses to overwrite an existing source bundle without force', function
     Http::assertNothingSent();
 });
 
+test('it rejects invalid snapshot inputs', function (Closure $prepare, string $message) {
+    writeWordPressSnapshotManifest($this->manifestPath, validSnapshotManifest());
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    $prepare($this);
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    expect(File::isDirectory($this->directory))->toBeFalse();
+    Http::assertNothingSent();
+})->with([
+    'missing manifest' => [
+        fn ($test) => File::delete($test->manifestPath),
+        'Manifest niet gevonden:',
+    ],
+    'invalid manifest JSON' => [
+        fn ($test) => File::put($test->manifestPath, '{'),
+        'Syntax error',
+    ],
+    'non-object manifest' => [
+        fn ($test) => File::put($test->manifestPath, 'null'),
+        'JSON-object',
+    ],
+    'invalid endpoint' => [
+        function ($test) {
+            $manifest = validSnapshotManifest();
+            $manifest['source']['pages_endpoint'] = 'ftp://legacy.example/pages';
+            writeWordPressSnapshotManifest($test->manifestPath, $manifest);
+        },
+        'source.pages_endpoint',
+    ],
+    'empty output' => [
+        fn ($test) => $test->directory = '',
+        'Kies een specifieke map',
+    ],
+    'missing XML' => [
+        fn ($test) => File::delete($test->xmlPath),
+        'Geldige WordPress XML-export niet gevonden',
+    ],
+    'wrong XML extension' => [
+        fn ($test) => $test->xmlPath = $test->reportPath,
+        'Geldige WordPress XML-export niet gevonden',
+    ],
+]);
+
+test('it rejects invalid snapshot selections', function (Closure $mutate, string $message) {
+    $manifest = validSnapshotManifest();
+    $mutate($manifest);
+    writeWordPressSnapshotManifest($this->manifestPath, $manifest);
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/*' => Http::response([], headers: [
+            'X-WP-TotalPages' => '1',
+            'X-WP-Total' => '0',
+        ]),
+    ]);
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    expect(File::isDirectory($this->directory))->toBeFalse();
+})->with([
+    'non-list posts' => [
+        fn (array &$manifest) => $manifest['posts'] = ['selection' => []],
+        'posts-lijst',
+    ],
+    'invalid post ID' => [
+        fn (array &$manifest) => $manifest['posts'] = [['wordpress_id' => 0, 'decision' => 'import']],
+        'geldige wordpress_id',
+    ],
+    'duplicate post ID' => [
+        fn (array &$manifest) => $manifest['posts'] = [
+            ['wordpress_id' => 12, 'decision' => 'import'],
+            ['wordpress_id' => 12, 'decision' => 'skip'],
+        ],
+        'staat dubbel',
+    ],
+]);
+
+test('it rejects malformed WordPress snapshot inventories', function (
+    Closure $postsResponse,
+    array $posts,
+    string $message,
+) {
+    $manifest = validSnapshotManifest();
+    $manifest['posts'] = $posts;
+    writeWordPressSnapshotManifest($this->manifestPath, $manifest);
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    Http::fake(function ($request) use ($postsResponse) {
+        if (str_contains($request->url(), '/posts')) {
+            return $postsResponse();
+        }
+
+        return Http::response([], headers: ['X-WP-TotalPages' => '1', 'X-WP-Total' => '0']);
+    });
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    expect(File::isDirectory($this->directory))->toBeFalse();
+})->with([
+    'HTTP failure' => [
+        fn () => Http::response([], 503),
+        [],
+        'mislukt met HTTP 503',
+    ],
+    'invalid response' => [
+        fn () => Http::response(['record' => []]),
+        [],
+        'geen geldige posts-inventaris',
+    ],
+    'invalid record ID' => [
+        fn () => Http::response([['id' => 0]], headers: ['X-WP-Total' => '1']),
+        [],
+        'ongeldige of dubbele posts-ID',
+    ],
+    'duplicate record ID' => [
+        fn () => Http::response([['id' => 12], ['id' => 12]], headers: ['X-WP-Total' => '2']),
+        [],
+        'ongeldige of dubbele posts-ID',
+    ],
+    'reported total mismatch' => [
+        fn () => Http::response([['id' => 12]], headers: ['X-WP-Total' => '2']),
+        [],
+        'rapporteert 2 posts-records maar leverde er 1',
+    ],
+    'missing selected record' => [
+        fn () => Http::response([['id' => 12]], headers: ['X-WP-Total' => '1']),
+        [['wordpress_id' => 13, 'decision' => 'import']],
+        'Geselecteerd WordPress posts-record 13 ontbreekt',
+    ],
+]);
+
+test('it reports snapshot connection failures and removes its temporary directory', function () {
+    writeWordPressSnapshotManifest($this->manifestPath, validSnapshotManifest());
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    Http::fake(['legacy.example/wp-json/wp/v2/posts*' => Http::failedConnection('offline')]);
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+    ])
+        ->expectsOutputToContain('WordPress REST-verbinding voor posts mislukt: offline')
+        ->assertFailed();
+
+    expect(File::glob($this->directory.'.building-*'))->toBeEmpty();
+});
+
+test('it replaces the exact snapshot directory when forced', function () {
+    File::ensureDirectoryExists($this->directory);
+    File::put($this->directory.'/obsolete.txt', 'remove');
+    writeWordPressSnapshotManifest($this->manifestPath, validSnapshotManifest());
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/*' => Http::response([], headers: [
+            'X-WP-TotalPages' => '1',
+            'X-WP-Total' => '0',
+        ]),
+    ]);
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+        '--force' => true,
+    ])->assertSuccessful();
+
+    expect(File::exists($this->directory.'/obsolete.txt'))->toBeFalse()
+        ->and(File::exists($this->directory.'/snapshot.json'))->toBeTrue();
+});
+
+/** @return array<string, mixed> */
+function validSnapshotManifest(): array
+{
+    return [
+        'source' => [
+            'posts_endpoint' => 'https://legacy.example/wp-json/wp/v2/posts',
+            'pages_endpoint' => 'https://legacy.example/wp-json/wp/v2/pages',
+            'media_endpoint' => 'https://legacy.example/wp-json/wp/v2/media',
+        ],
+        'posts' => [],
+        'pages' => [],
+        'media' => [],
+    ];
+}
+
 /** @return array<string, mixed> */
 function wordpressSnapshotPostRecord(): array
 {

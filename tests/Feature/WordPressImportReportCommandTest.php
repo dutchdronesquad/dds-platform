@@ -199,6 +199,85 @@ test('every completed import phase records its latest outcome in the manifest', 
         ->and(data_get($manifest, 'runs.redirects.completed_at'))->toBeString();
 });
 
+test('it reports every missing staging phase and empty mapping register', function () {
+    writeWordPressReviewManifest($this->manifestPath, []);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'report',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('Importfase media heeft nog geen geregistreerde stagingrun')
+        ->expectsOutputToContain('Importfase redirects heeft nog geen geregistreerde stagingrun')
+        ->assertFailed();
+
+    expect(File::get($this->reportPath))
+        ->toContain('Launch review status: **BLOCKED**', 'no mappings');
+});
+
+test('it reports dangling import mappings and missing cleanup results', function () {
+    $run = [
+        'selected' => 0,
+        'ready' => 0,
+        'imported' => 0,
+        'reused' => 0,
+        'skipped' => 0,
+        'failed' => 0,
+        'items' => ['invalid'],
+        'completed_at' => '2026-08-16T12:00:00+02:00',
+    ];
+    writeWordPressReviewManifest($this->manifestPath, [
+        'runs' => array_fill_keys(['media', 'posts', 'pages', 'cleanup', 'redirects'], $run),
+        'mappings' => [
+            'media' => ['invalid' => 'not-a-mapping', '49925' => ['media_asset_id' => 999999]],
+            'posts' => ['invalid' => 'not-a-mapping', '49916' => ['article_id' => 999999]],
+            'pages' => ['invalid' => 'not-a-mapping'],
+            'redirects' => [
+                'invalid' => 'not-a-mapping',
+                'missing' => [
+                    'redirect_id' => 999999,
+                    'source_path' => '/missing',
+                    'target_url' => '/news',
+                ],
+            ],
+        ],
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'report',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('Ontbrekende MediaAsset #999999')
+        ->expectsOutputToContain('Ontbrekend Article #999999')
+        ->expectsOutputToContain('Ontbrekende Redirect #999999')
+        ->assertFailed();
+
+    expect(File::get($this->reportPath))->toContain(
+        'Post 49916 heeft nog geen cleanupresultaat.',
+        'Ontbrekende MediaAsset #999999',
+        'Ontbrekend Article #999999',
+        'Ontbrekende Redirect #999999',
+    );
+});
+
+test('it rejects a missing or non-object report manifest', function (bool $missing, string $contents, string $message) {
+    if (! $missing) {
+        File::put($this->manifestPath, $contents);
+    }
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'report',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+})->with([
+    'missing manifest' => [true, '', 'Manifest niet gevonden:'],
+    'non-object manifest' => [false, 'null', 'JSON-object'],
+]);
+
 /** @return array<string, mixed> */
 function completeWordPressReviewManifest(
     Article $article,

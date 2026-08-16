@@ -157,6 +157,183 @@ test('it reports unmapped source pages and invalid targets instead of creating g
         ->and(class_exists(Page::class))->toBeFalse();
 });
 
+test('it rejects invalid page selections', function (Closure $mutate, string $message) {
+    $manifest = [
+        'source' => ['pages_endpoint' => 'https://legacy.example/wp-json/wp/v2/pages'],
+        'pages' => [wordpressPageSelection(
+            316,
+            'about-us',
+            'About Us',
+            'redirect',
+            ['type' => 'route', 'route_name' => 'about'],
+        )],
+    ];
+    $mutate($manifest);
+    writeWordPressPageManifest($this->manifestPath, $manifest);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    Http::assertNothingSent();
+})->with([
+    'missing endpoint' => [
+        fn (array &$manifest) => data_forget($manifest, 'source.pages_endpoint'),
+        'source.pages_endpoint',
+    ],
+    'non-list pages' => [
+        fn (array &$manifest) => $manifest['pages'] = ['page' => []],
+        'pages-lijst',
+    ],
+    'non-object selection' => [
+        fn (array &$manifest) => $manifest['pages'] = ['invalid'],
+        'Paginaselectie 0 moet een JSON-object zijn.',
+    ],
+    'invalid WordPress ID' => [
+        fn (array &$manifest) => $manifest['pages'][0]['wordpress_id'] = 0,
+        'geldige wordpress_id',
+    ],
+    'duplicate WordPress ID' => [
+        fn (array &$manifest) => $manifest['pages'][] = $manifest['pages'][0],
+        'staat dubbel',
+    ],
+    'invalid slug' => [
+        fn (array &$manifest) => $manifest['pages'][0]['slug'] = '',
+        'ongeldige slug',
+    ],
+    'invalid title' => [
+        fn (array &$manifest) => $manifest['pages'][0]['title'] = ' ',
+        'ongeldige title',
+    ],
+    'invalid decision' => [
+        fn (array &$manifest) => $manifest['pages'][0]['decision'] = 'import',
+        'ongeldige decision',
+    ],
+    'missing target' => [
+        fn (array &$manifest) => $manifest['pages'][0]['target'] = null,
+        'mist een expliciet target',
+    ],
+    'missing reason' => [
+        function (array &$manifest) {
+            $manifest['pages'][0]['decision'] = 'skip';
+            $manifest['pages'][0]['target'] = null;
+            $manifest['pages'][0]['reason'] = null;
+        },
+        'mist een reason',
+    ],
+]);
+
+test('it reports malformed WordPress page source data', function (Closure $mutate, string $message) {
+    $selection = wordpressPageSelection(
+        316,
+        'about-us',
+        'About Us',
+        'redirect',
+        ['type' => 'route', 'route_name' => 'about'],
+    );
+    writeWordPressPageManifest($this->manifestPath, [
+        'source' => ['pages_endpoint' => 'https://legacy.example/wp-json/wp/v2/pages'],
+        'pages' => [$selection],
+    ]);
+    $record = wordpressPageRecord(316, 'about-us', 'About Us');
+    $mutate($record);
+    Http::fake(['legacy.example/wp-json/wp/v2/pages*' => Http::response([$record])]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+})->with([
+    'unpublished page' => [
+        fn (array &$record) => $record['status'] = 'draft',
+        'niet gepubliceerd',
+    ],
+    'invalid URL' => [
+        fn (array &$record) => $record['link'] = 'ftp://legacy.example/about',
+        'geen geldige paginabron-URL',
+    ],
+    'changed slug' => [
+        fn (array &$record) => $record['slug'] = 'changed',
+        'Bronslug komt niet overeen',
+    ],
+    'invalid featured media' => [
+        fn (array &$record) => $record['featured_media'] = -1,
+        'geen geldige featured-media-ID',
+    ],
+    'invalid content' => [
+        fn (array &$record) => $record['content']['rendered'] = ['invalid'],
+        'geen geldige pagina-inhoud',
+    ],
+]);
+
+test('it rejects unsupported page targets', function (array $target, string $message) {
+    $selection = wordpressPageSelection(316, 'about-us', 'About Us', 'redirect', $target);
+    writeWordPressPageManifest($this->manifestPath, [
+        'source' => ['pages_endpoint' => 'https://legacy.example/wp-json/wp/v2/pages'],
+        'pages' => [$selection],
+    ]);
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/pages*' => Http::response([
+            wordpressPageRecord(316, 'about-us', 'About Us'),
+        ]),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+})->with([
+    'unsupported route' => [
+        ['type' => 'route', 'route_name' => 'admin.dashboard'],
+        'geen ondersteunde publieke route',
+    ],
+    'invalid route query' => [
+        ['type' => 'route', 'route_name' => 'about', 'query' => ['filter' => ['invalid']]],
+        'ongeldige queryparameters',
+    ],
+    'invalid manual target' => [
+        ['type' => 'manual', 'key' => 'unknown', 'path' => 'media'],
+        'Handmatig doel is niet ondersteund',
+    ],
+    'unknown target type' => [
+        ['type' => 'article'],
+        'Paginadoel moet een location, route of goedgekeurd manual target zijn.',
+    ],
+]);
+
+test('it rejects invalid and duplicate source page IDs', function (array $records) {
+    writeWordPressPageManifest($this->manifestPath, [
+        'source' => ['pages_endpoint' => 'https://legacy.example/wp-json/wp/v2/pages'],
+        'pages' => [],
+    ]);
+    Http::fake(['legacy.example/wp-json/wp/v2/pages*' => Http::response($records)]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain('ongeldige of dubbele pagina-ID')
+        ->assertFailed();
+})->with([
+    'invalid ID' => [[['id' => 0]]],
+    'duplicate ID' => [[['id' => 316], ['id' => 316]]],
+]);
+
 /** @return array<string, mixed> */
 function wordpressPageManifest(string $locationSlug): array
 {

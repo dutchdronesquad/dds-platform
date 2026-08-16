@@ -176,6 +176,133 @@ test('it rejects invalid manifests before making requests', function () {
     Http::assertNothingSent();
 });
 
+test('it rejects unreadable media manifests', function (string $contents, string $message) {
+    File::put($this->manifestPath, $contents);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'media',
+        '--manifest' => $this->manifestPath,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    Http::assertNothingSent();
+})->with([
+    'invalid JSON' => ['{', 'Syntax error'],
+    'non-object JSON' => ['null', 'JSON-object'],
+]);
+
+test('it rejects invalid media selections', function (Closure $mutate, string $message) {
+    $manifest = [
+        'source' => ['media_endpoint' => 'https://legacy.example/wp-json/wp/v2/media/'],
+        'media' => [['wordpress_id' => 49925, 'decision' => 'import']],
+    ];
+    $mutate($manifest);
+    writeWordPressManifest($this->manifestPath, $manifest);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'media',
+        '--manifest' => $this->manifestPath,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+
+    Http::assertNothingSent();
+})->with([
+    'non-list media' => [
+        fn (array &$manifest) => $manifest['media'] = ['selection' => []],
+        'media-lijst',
+    ],
+    'non-object selection' => [
+        fn (array &$manifest) => $manifest['media'] = ['invalid'],
+        'Media-selectie 0 moet een JSON-object zijn.',
+    ],
+    'invalid WordPress ID' => [
+        fn (array &$manifest) => $manifest['media'][0]['wordpress_id'] = 0,
+        'geldige wordpress_id',
+    ],
+    'duplicate WordPress ID' => [
+        fn (array &$manifest) => $manifest['media'][] = $manifest['media'][0],
+        'staat dubbel',
+    ],
+    'invalid decision' => [
+        fn (array &$manifest) => $manifest['media'][0]['decision'] = 'rewrite',
+        'ongeldige decision',
+    ],
+    'invalid reason' => [
+        fn (array &$manifest) => $manifest['media'][0]['reason'] = 123,
+        'ongeldige reason',
+    ],
+]);
+
+test('it reports malformed WordPress media metadata', function (Closure $mutate, string $message) {
+    writeWordPressManifest($this->manifestPath, [
+        'source' => ['media_endpoint' => 'https://legacy.example/wp-json/wp/v2/media'],
+        'media' => [['wordpress_id' => 49925, 'decision' => 'import']],
+    ]);
+    $record = wordpressMediaRecord(49925);
+    $mutate($record);
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/media/49925' => Http::response($record),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'media',
+        '--manifest' => $this->manifestPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain($message)
+        ->assertFailed();
+})->with([
+    'unexpected ID' => [
+        fn (array &$record) => $record['id'] = 1,
+        'onverwacht ID',
+    ],
+    'invalid source URL' => [
+        fn (array &$record) => $record['source_url'] = 'file:///tmp/image.png',
+        'geen geldige download-URL',
+    ],
+    'missing MIME type' => [
+        fn (array &$record) => $record['mime_type'] = '',
+        'geen MIME-type',
+    ],
+    'missing filename' => [
+        function (array &$record) {
+            $record['source_url'] = 'https://legacy.example';
+            $record['media_details']['file'] = '';
+        },
+        'geen bruikbare bestandsnaam',
+    ],
+]);
+
+test('it reuses mapped images while retaining the missing alt text warning', function () {
+    $mediaAsset = MediaAsset::factory()->create(['alt_text' => null]);
+    writeWordPressManifest($this->manifestPath, [
+        'source' => ['media_endpoint' => 'https://legacy.example/wp-json/wp/v2/media'],
+        'media' => [['wordpress_id' => 49925, 'decision' => 'import']],
+        'mappings' => [
+            'media' => [
+                '49925' => [
+                    'media_asset_id' => $mediaAsset->id,
+                    'alt_text' => null,
+                    'mime_type' => 'image/png',
+                ],
+            ],
+        ],
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'media',
+        '--manifest' => $this->manifestPath,
+        '--dry-run' => true,
+    ])
+        ->expectsOutputToContain('hergebruikt')
+        ->expectsOutputToContain('Ontbrekende alt-tekst: 1')
+        ->assertSuccessful();
+
+    Http::assertNothingSent();
+});
+
 /**
  * @return array<string, mixed>
  */
