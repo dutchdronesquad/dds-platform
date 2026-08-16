@@ -14,11 +14,22 @@ beforeEach(function () {
     $this->manifestPath = storage_path("app/wordpress-snapshot-manifest-{$identifier}.json");
     $this->xmlPath = storage_path("app/wordpress-snapshot-export-{$identifier}.xml");
     $this->reportPath = storage_path("app/wordpress-snapshot-pages-{$identifier}.md");
+    $this->fixtureFiles = [$this->manifestPath, $this->xmlPath, $this->reportPath];
+    $this->fixtureDirectories = [$this->directory];
 });
 
 afterEach(function () {
-    File::delete([$this->manifestPath, $this->xmlPath, $this->reportPath]);
-    File::deleteDirectory($this->directory);
+    File::delete($this->fixtureFiles);
+
+    foreach ($this->fixtureDirectories as $directory) {
+        File::deleteDirectory($directory);
+    }
+
+    expect(array_filter($this->fixtureFiles, fn (string $path): bool => File::exists($path)))->toBeEmpty()
+        ->and(array_filter(
+            $this->fixtureDirectories,
+            fn (string $directory): bool => File::isDirectory($directory),
+        ))->toBeEmpty();
 });
 
 test('it creates a verified source bundle that all importer sources can use offline', function () {
