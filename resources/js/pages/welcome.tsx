@@ -112,10 +112,6 @@ export default function Welcome({
                                     <span className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange" />
                                     <span className="absolute bottom-0 left-0 h-1.5 w-1/4 bg-dds-cyan" />
                                 </div>
-                                <figcaption className="mt-4 text-xs font-medium text-signal-muted">
-                                    Op de baan jaag je op rondetijden. In de
-                                    paddock deel je kennis en ervaring.
-                                </figcaption>
                             </figure>
                         </div>
 
@@ -181,10 +177,6 @@ export default function Welcome({
                                 <span className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange" />
                                 <span className="absolute bottom-0 left-0 h-1.5 w-1/4 bg-dds-cyan" />
                             </div>
-                            <figcaption className="mt-4 text-xs leading-5 text-white/70">
-                                Het gebruikelijke vliegseizoen loopt van
-                                september tot en met mei.
-                            </figcaption>
                         </figure>
                     </div>
                 </div>
