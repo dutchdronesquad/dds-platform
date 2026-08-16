@@ -17,6 +17,7 @@
     "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
     "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
     "curly": ["error", "all"],
     "no-var": "error",
     "prefer-const": "error",
