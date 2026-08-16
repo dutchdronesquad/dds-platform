@@ -381,6 +381,42 @@ test('it replaces the exact snapshot directory when forced', function () {
         ->and(File::exists($this->directory.'/snapshot.json'))->toBeTrue();
 });
 
+test('it rejects media larger than the configured import limit while building the snapshot', function () {
+    config()->set('media-library.max_file_size', 1);
+    $manifest = validSnapshotManifest();
+    $manifest['media'] = [['wordpress_id' => 49925, 'decision' => 'import']];
+    writeWordPressSnapshotManifest($this->manifestPath, $manifest);
+    File::put($this->xmlPath, '<?xml version="1.0"?><rss />');
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/posts*' => Http::response([], headers: [
+            'X-WP-TotalPages' => '1',
+            'X-WP-Total' => '0',
+        ]),
+        'legacy.example/wp-json/wp/v2/pages*' => Http::response([], headers: [
+            'X-WP-TotalPages' => '1',
+            'X-WP-Total' => '0',
+        ]),
+        'legacy.example/wp-json/wp/v2/media*' => Http::response([
+            wordpressSnapshotMediaRecord(),
+        ], headers: [
+            'X-WP-TotalPages' => '1',
+            'X-WP-Total' => '1',
+        ]),
+        'legacy.example/wp-content/uploads/race-cover.png' => Http::response(wordpressSnapshotPng()),
+    ]);
+
+    $this->pendingArtisan('wordpress:snapshot', [
+        '--manifest' => $this->manifestPath,
+        '--xml' => $this->xmlPath,
+        '--output' => $this->directory,
+    ])
+        ->expectsOutputToContain('Media 49925 is groter dan de toegestane 1 bytes.')
+        ->assertFailed();
+
+    expect(File::isDirectory($this->directory))->toBeFalse()
+        ->and(File::glob($this->directory.'.building-*'))->toBeEmpty();
+});
+
 /** @return array<string, mixed> */
 function validSnapshotManifest(): array
 {

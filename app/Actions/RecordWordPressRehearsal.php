@@ -129,8 +129,11 @@ final class RecordWordPressRehearsal
         }
 
         foreach ($firstCounts as $model => $count) {
-            if (($secondCounts[$model] ?? -1) !== $count) {
-                $messages[] = "Het aantal {$model} wijzigde tussen pass één ({$count}) en pass twee ({$secondCounts[$model]}).";
+            $secondCount = $secondCounts[$model] ?? null;
+
+            if ($secondCount !== $count) {
+                $secondCountLabel = $secondCount ?? 'ontbreekt';
+                $messages[] = "Het aantal {$model} wijzigde tussen pass één ({$count}) en pass twee ({$secondCountLabel}).";
             }
         }
 

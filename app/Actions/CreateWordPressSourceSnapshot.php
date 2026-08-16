@@ -14,8 +14,6 @@ use Throwable;
 
 final class CreateWordPressSourceSnapshot
 {
-    private const int MAXIMUM_ARCHIVE_FILE_SIZE = 100 * 1024 * 1024;
-
     /**
      * @return array{directory: string, posts: int, pages: int, media: int, media_files: int, bytes: int}
      *
@@ -309,6 +307,7 @@ final class CreateWordPressSourceSnapshot
     private function downloadMedia(array $mediaRecords, string $temporaryDirectory): array
     {
         $mediaFiles = [];
+        $maximumFileSize = (int) config('media-library.max_file_size', 20 * 1024 * 1024);
         File::ensureDirectoryExists($temporaryDirectory.DIRECTORY_SEPARATOR.'media');
 
         foreach ($mediaRecords as $record) {
@@ -342,8 +341,14 @@ final class CreateWordPressSourceSnapshot
 
             $contents = $response->body();
 
-            if ($contents === '' || strlen($contents) > self::MAXIMUM_ARCHIVE_FILE_SIZE) {
-                throw new RuntimeException("Media {$wordpressId} is leeg of groter dan de archieflimiet.");
+            if ($contents === '') {
+                throw new RuntimeException("Media {$wordpressId} is leeg.");
+            }
+
+            if (strlen($contents) > $maximumFileSize) {
+                throw new RuntimeException(
+                    "Media {$wordpressId} is groter dan de toegestane {$maximumFileSize} bytes.",
+                );
             }
 
             $detectedMimeType = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contents);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\RecordWordPressRehearsal;
 use App\Models\Article;
 use App\Models\Location;
 use App\Models\MediaAsset;
@@ -102,6 +103,29 @@ test('it fails safely when the staging manifest is unavailable', function () {
         ->assertFailed();
 
     Http::assertNothingSent();
+});
+
+test('it records an incomplete second count without triggering an undefined index warning', function () {
+    File::put($this->manifestPath, '{}');
+
+    $result = app(RecordWordPressRehearsal::class)->handle(
+        manifestPath: $this->manifestPath,
+        reportPath: $this->reportPath,
+        baseUrl: 'https://staging.example',
+        firstPass: [],
+        secondPass: [],
+        firstCounts: ['articles' => 1],
+        secondCounts: [],
+        samples: [],
+        artifacts: [],
+        importReportExitCode: 0,
+        manualReviewApproved: true,
+    );
+
+    expect($result['status'])->toBe('blocked')
+        ->and($result['blockers'])->toHaveCount(1)
+        ->and($result['blockers'][0]['message'])
+        ->toBe('Het aantal articles wijzigde tussen pass één (1) en pass twee (ontbreekt).');
 });
 
 /** @return array{Article, MediaAsset, Location} */
