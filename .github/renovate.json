@@ -6,9 +6,6 @@
   "dependencyDashboard": true,
   "labels": ["dependencies"],
   "commitMessagePrefix": "⬆️",
-  "github-actions": {
-    "enabled": false
-  },
   "packageRules": [
     {
       "matchManagers": ["composer"],
@@ -29,6 +26,17 @@
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "JavaScript dependencies",
       "automerge": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"],
+      "rangeStrategy": "pin"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions",
+      "automerge": true
     },
     {
       "matchManagers": ["docker-compose"],
