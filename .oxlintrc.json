@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "import", "typescript", "unicorn"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "typescript/no-explicit-any": "off",
+    "typescript/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
+    ],
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "react/react-in-jsx-scope": "off",
+    "react/no-unescaped-entities": "off",
+    "react/rules-of-hooks": "error",
+    "curly": ["error", "all"]
+  },
+  "ignorePatterns": [
+    "vendor",
+    "node_modules",
+    "public",
+    "bootstrap/ssr",
+    "tailwind.config.js",
+    "vite.config.ts",
+    "resources/js/actions/**",
+    "resources/js/components/ui/**",
+    "resources/js/routes/**",
+    "resources/js/wayfinder/**"
+  ]
+}
