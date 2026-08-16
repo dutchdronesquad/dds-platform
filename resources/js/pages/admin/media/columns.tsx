@@ -1,5 +1,6 @@
 import { Form } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { Archive, FileText, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -19,7 +20,7 @@ import type { MediaAssetRecord } from '@/types/media';
 
 export function mediaColumns(
     onOpenDetails: (mediaAsset: MediaAssetRecord) => void,
-): ColumnDef<MediaAssetRecord>[] {
+): ColumnDef<typeof adminTableFeatures, MediaAssetRecord>[] {
     return [
         {
             id: 'preview',
