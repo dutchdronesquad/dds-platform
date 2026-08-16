@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -28,7 +29,10 @@ const currencyFormatter = new Intl.NumberFormat('nl-NL', {
     currency: 'EUR',
 });
 
-export const seasonColumns: ColumnDef<SeasonRecord>[] = [
+export const seasonColumns: ColumnDef<
+    typeof adminTableFeatures,
+    SeasonRecord
+>[] = [
     {
         accessorKey: 'name',
         header: 'Seizoen',

@@ -1,10 +1,12 @@
 import { Link } from '@inertiajs/react';
 import {
+    columnVisibilityFeature,
     flexRender,
-    getCoreRowModel,
-    useReactTable,
+    rowPaginationFeature,
+    tableFeatures,
+    useTable,
 } from '@tanstack/react-table';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, RowData } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +20,11 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
+export const adminTableFeatures = tableFeatures({
+    columnVisibilityFeature,
+    rowPaginationFeature,
+});
+
 export type ServerPagination<TData> = {
     current_page: number;
     data: TData[];
@@ -30,10 +37,10 @@ export type ServerPagination<TData> = {
     total: number;
 };
 
-type AdminDataTableProps<TData, TValue> = {
+type AdminDataTableProps<TData extends RowData, TValue> = {
     bulkActions?: ReactNode;
     caption: string;
-    columns: ColumnDef<TData, TValue>[];
+    columns: ColumnDef<typeof adminTableFeatures, TData, TValue>[];
     emptyAction?: ReactNode;
     emptyDescription?: string;
     emptyTitle: string;
@@ -49,7 +56,7 @@ type AdminColumnMeta = {
     className?: string;
 };
 
-export function AdminDataTable<TData, TValue>({
+export function AdminDataTable<TData extends RowData, TValue>({
     bulkActions,
     caption,
     columns,
@@ -65,10 +72,10 @@ export function AdminDataTable<TData, TValue>({
 }: AdminDataTableProps<TData, TValue>) {
     // TanStack Table's callback API is intentionally excluded from React Compiler memoization.
     // eslint-disable-next-line react-hooks/incompatible-library
-    const table = useReactTable({
-        columns,
+    const table = useTable({
+        columns: columns as ColumnDef<typeof adminTableFeatures, TData>[],
         data: pagination.data,
-        getCoreRowModel: getCoreRowModel(),
+        features: adminTableFeatures,
         manualPagination: true,
         pageCount: pagination.last_page,
         state: {

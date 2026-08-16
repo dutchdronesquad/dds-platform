@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -26,7 +27,10 @@ const dateTimeFormatter = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
 });
 
-export const articleColumns: ColumnDef<ArticleRecord>[] = [
+export const articleColumns: ColumnDef<
+    typeof adminTableFeatures,
+    ArticleRecord
+>[] = [
     {
         accessorKey: 'title',
         header: 'Artikel',

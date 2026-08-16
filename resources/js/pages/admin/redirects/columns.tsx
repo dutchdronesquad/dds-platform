@@ -1,4 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { ArrowRight } from 'lucide-react';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,10 @@ const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
 });
 
-export const redirectColumns: ColumnDef<RedirectRecord>[] = [
+export const redirectColumns: ColumnDef<
+    typeof adminTableFeatures,
+    RedirectRecord
+>[] = [
     {
         accessorKey: 'sourcePath',
         header: 'Bron',

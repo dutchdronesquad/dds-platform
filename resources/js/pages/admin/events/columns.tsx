@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { Ban, EyeOff, Pencil, Send, Tags, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -58,122 +59,123 @@ const timeFormatter = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
 });
 
-export const eventColumns: ColumnDef<EventRecord>[] = [
-    {
-        accessorKey: 'title',
-        header: 'Event',
-        cell: ({ row }) => {
-            const startsAt = new Date(row.original.startsAt);
+export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
+    [
+        {
+            accessorKey: 'title',
+            header: 'Event',
+            cell: ({ row }) => {
+                const startsAt = new Date(row.original.startsAt);
 
-            return (
-                <div className="min-w-0 sm:min-w-60">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        {row.original.capabilities.update ? (
-                            <Link
-                                href={edit(row.original.id)}
-                                className="font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-white dark:hover:text-signal-300"
-                            >
-                                {row.original.title}
-                            </Link>
-                        ) : (
-                            <p className="font-semibold text-neutral-950 dark:text-white">
-                                {row.original.title}
+                return (
+                    <div className="min-w-0 sm:min-w-60">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {row.original.capabilities.update ? (
+                                <Link
+                                    href={edit(row.original.id)}
+                                    className="font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-white dark:hover:text-signal-300"
+                                >
+                                    {row.original.title}
+                                </Link>
+                            ) : (
+                                <p className="font-semibold text-neutral-950 dark:text-white">
+                                    {row.original.title}
+                                </p>
+                            )}
+                            <EventTypeBadge type={row.original.type} />
+                        </div>
+                        {row.original.season && (
+                            <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                <Tags className="size-3.5 shrink-0" />
+                                <span className="truncate">
+                                    {row.original.season.name}
+                                </span>
                             </p>
                         )}
-                        <EventTypeBadge type={row.original.type} />
+                        <div className="mt-2 grid gap-1.5 sm:hidden">
+                            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                                {dateFormatter.format(startsAt)} ·{' '}
+                                {timeFormatter.format(startsAt)} uur
+                            </p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                {row.original.location.name} ·{' '}
+                                {row.original.location.city}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                <AdminStatusBadge
+                                    status={row.original.status}
+                                    className="h-5 px-1.5 text-[10px]"
+                                />
+                                <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                                    {
+                                        registrationLabels[
+                                            row.original.registrationStatus
+                                        ]
+                                    }
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    {row.original.season && (
-                        <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                            <Tags className="size-3.5 shrink-0" />
-                            <span className="truncate">
-                                {row.original.season.name}
-                            </span>
-                        </p>
-                    )}
-                    <div className="mt-2 grid gap-1.5 sm:hidden">
-                        <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                );
+            },
+        },
+        {
+            id: 'planning',
+            header: 'Planning',
+            meta: {
+                className: 'hidden sm:table-cell',
+            },
+            cell: ({ row }) => {
+                const startsAt = new Date(row.original.startsAt);
+
+                return (
+                    <div className="min-w-56">
+                        <p className="font-medium text-neutral-800 dark:text-neutral-200">
                             {dateFormatter.format(startsAt)} ·{' '}
                             {timeFormatter.format(startsAt)} uur
                         </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                             {row.original.location.name} ·{' '}
                             {row.original.location.city}
                         </p>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                            <AdminStatusBadge
-                                status={row.original.status}
-                                className="h-5 px-1.5 text-[10px]"
-                            />
-                            <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
-                                {
-                                    registrationLabels[
-                                        row.original.registrationStatus
-                                    ]
-                                }
-                            </span>
-                        </div>
                     </div>
+                );
+            },
+        },
+        {
+            id: 'status',
+            header: 'Status',
+            meta: {
+                className: 'hidden sm:table-cell',
+            },
+            cell: ({ row }) => (
+                <div className="grid min-w-40 gap-2">
+                    <AdminStatusBadge status={row.original.status} />
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {registrationLabels[row.original.registrationStatus]}
+                    </span>
                 </div>
-            );
+            ),
         },
-    },
-    {
-        id: 'planning',
-        header: 'Planning',
-        meta: {
-            className: 'hidden sm:table-cell',
+        {
+            id: 'activity',
+            header: 'Bijgewerkt',
+            meta: {
+                className: 'hidden xl:table-cell',
+            },
+            cell: ({ row }) => (
+                <AdminActivityByline activity={row.original.activity} />
+            ),
         },
-        cell: ({ row }) => {
-            const startsAt = new Date(row.original.startsAt);
-
-            return (
-                <div className="min-w-56">
-                    <p className="font-medium text-neutral-800 dark:text-neutral-200">
-                        {dateFormatter.format(startsAt)} ·{' '}
-                        {timeFormatter.format(startsAt)} uur
-                    </p>
-                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                        {row.original.location.name} ·{' '}
-                        {row.original.location.city}
-                    </p>
-                </div>
-            );
+        {
+            id: 'actions',
+            header: '',
+            meta: {
+                className: 'w-12 text-right',
+            },
+            cell: ({ row }) => <EventActions event={row.original} />,
         },
-    },
-    {
-        id: 'status',
-        header: 'Status',
-        meta: {
-            className: 'hidden sm:table-cell',
-        },
-        cell: ({ row }) => (
-            <div className="grid min-w-40 gap-2">
-                <AdminStatusBadge status={row.original.status} />
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {registrationLabels[row.original.registrationStatus]}
-                </span>
-            </div>
-        ),
-    },
-    {
-        id: 'activity',
-        header: 'Bijgewerkt',
-        meta: {
-            className: 'hidden xl:table-cell',
-        },
-        cell: ({ row }) => (
-            <AdminActivityByline activity={row.original.activity} />
-        ),
-    },
-    {
-        id: 'actions',
-        header: '',
-        meta: {
-            className: 'w-12 text-right',
-        },
-        cell: ({ row }) => <EventActions event={row.original} />,
-    },
-];
+    ];
 
 function EventTypeBadge({
     className,

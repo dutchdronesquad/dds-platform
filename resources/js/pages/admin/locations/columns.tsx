@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -24,7 +25,10 @@ const environmentStyles: Record<LocationRecord['environment'], string> = {
         'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
 };
 
-export const locationColumns: ColumnDef<LocationRecord>[] = [
+export const locationColumns: ColumnDef<
+    typeof adminTableFeatures,
+    LocationRecord
+>[] = [
     {
         accessorKey: 'name',
         header: 'Locatie',

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { ChevronRight } from 'lucide-react';
 import { edit } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
@@ -18,7 +19,7 @@ const roleLabels: Record<string, string> = {
     editor: 'Redacteur',
 };
 
-export const userColumns: ColumnDef<UserRecord>[] = [
+export const userColumns: ColumnDef<typeof adminTableFeatures, UserRecord>[] = [
     {
         accessorKey: 'name',
         header: 'Gebruiker',

@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { adminTableFeatures } from '@/components/admin/admin-data-table';
 import { AlertTriangle, Inbox, MailCheck, Search } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -43,7 +44,7 @@ const deliveryStyles: Record<ContactDeliveryStatus, string> = {
     failed: 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300',
 };
 
-const columns: ColumnDef<ContactSubmissionRow>[] = [
+const columns: ColumnDef<typeof adminTableFeatures, ContactSubmissionRow>[] = [
     {
         accessorKey: 'name',
         header: 'Contact',
