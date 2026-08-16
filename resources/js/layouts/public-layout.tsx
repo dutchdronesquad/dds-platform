@@ -320,7 +320,7 @@ export default function PublicLayout({ children }: Props) {
                                 <NavigationMenuTrigger
                                     aria-label="Open Informatie menu"
                                     className={cn(
-                                        'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-white/10 focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:bg-white/10 data-[state=open]:text-white dark:focus-visible:ring-signal-400',
+                                        'h-auto rounded-sm border-b border-transparent bg-transparent px-0 py-2 text-[0.82rem] font-semibold tracking-[0.01em] text-white/72 transition-colors hover:border-flight-500 hover:bg-transparent hover:text-white focus:bg-transparent focus:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none data-[state=open]:border-flight-500 data-[state=open]:bg-transparent data-[state=open]:text-white motion-reduce:transition-none dark:focus-visible:ring-signal-400',
                                         informationNavItems.some((item) =>
                                             isSectionActive(item.activePath),
                                         ) && 'border-flight-400 text-white',
