@@ -18,6 +18,7 @@ import {
     contact,
     home,
     house_rules as houseRules,
+    media,
     partners,
 } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
@@ -57,6 +58,11 @@ const informationNavItems: PublicNavItem[] = [
         activePath: '/projects',
     },
     {
+        title: 'In de media',
+        href: media(),
+        activePath: '/media',
+    },
+    {
         title: 'Partners',
         href: partners(),
         activePath: '/partners',
@@ -73,6 +79,7 @@ const footerDdsItems: FooterNavItem[] = [
     { title: 'Over DDS', href: about(), activePath: '/about' },
     { title: 'Projecten', href: projectsIndex(), activePath: '/projects' },
     { title: 'Partners', href: partners(), activePath: '/partners' },
+    { title: 'In de media', href: media(), activePath: '/media' },
 ];
 
 const footerPracticalItems: FooterNavItem[] = [

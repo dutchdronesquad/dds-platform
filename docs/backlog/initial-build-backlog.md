@@ -1343,9 +1343,9 @@ Acceptance criteria:
 
 ### DDS-015: WordPress Export Discovery
 
-Status: complete. The public REST API is the sole active import source, while an administrator-provided XML export is retained only as an archive and completeness check. All 21 published posts default to import but remain individually selectable through a file-based manifest. Only referenced media plus approved brand and partner assets are in scope. Static pages are mapped to explicit rewrite, redirect, or removal outcomes in [WordPress Migration](../technical/wordpress-migration.md).
+Status: complete. The public REST API is the primary structured capture source, while rehearsal and cutover use a checksummed, curated offline JSON/media bundle so they do not depend on a live WordPress site. The administrator XML export remains one archive and completeness-check file. All 21 published posts start selectable through a file-based manifest; the approved working bundle currently retains 20 posts, all 12 required page records, and 29 selected media files in one flat directory. Unselected template, gallery, and SponsorKliks media are not retained. Static pages are mapped to explicit rewrite, redirect, or removal outcomes in [WordPress Migration](../technical/wordpress-migration.md).
 
-Implementation constraint: keep the one-time importer small, direct, and removable. Do not build a generic import framework, XML adapter, synchronization layer, database-backed import administration, or permanent WordPress schema unless a rehearsal proves a specific approved-content gap.
+Implementation constraint: keep the one-time importer small, direct, and removable. XML remains a cross-check rather than a second importer. Do not build a generic import framework, synchronization layer, database-backed import administration, or permanent WordPress schema unless a rehearsal proves a specific approved-content gap.
 
 Goal: define the approved migration scope and verify the best import source for the current site after the target content workflows are ready for review.
 
@@ -1394,6 +1394,8 @@ Acceptance criteria:
 
 ### DDS-016: Posts To Articles Import Prototype
 
+Status: in progress. Implemented in the current stacked WordPress-import branch with dry-run support, idempotent manifest mappings, author fallback, category normalization, source tag hints, and featured-media resolution. It remains open until the branch is merged.
+
 Goal: prove repeatable post import.
 
 Tasks:
@@ -1411,16 +1413,40 @@ Acceptance criteria:
 - dry-run output is useful;
 - no manual copy-paste is required for posts.
 
+#### DDS-016A: Markdown Article Authoring And Safe Rendering
+
+Status: proposed follow-up; it is not a blocker for the WordPress importer or DDS-022 rehearsal because imported plain text is valid Markdown-compatible source.
+
+Goal: let editors author structured Article content with Markdown while keeping public rendering safe and consistent.
+
+Tasks:
+
+- retain Markdown source in the existing `articles.content` column without introducing a second content representation;
+- render Markdown server-side through one reusable application boundary;
+- strip raw HTML and reject unsafe links when converting Markdown to public HTML;
+- derive SEO descriptions from rendered plain text rather than visible Markdown syntax;
+- explain supported Markdown in the admin Article form and provide a useful preview workflow;
+- style headings, paragraphs, lists, links, quotes, and code consistently on the public Article page;
+- keep existing imported plain-text Articles readable without a data migration.
+
+Acceptance criteria:
+
+- editors can use common Markdown structure in Article content;
+- public Article pages render that structure as accessible HTML;
+- raw scripts, raw HTML, and unsafe link protocols cannot reach the public response;
+- imported plain-text Articles render unchanged in meaning;
+- feature tests cover rendering, escaping, unsafe links, and SEO excerpts.
+
 ### DDS-017: WordPress Media Import Prototype
 
-Status: current. Implement the smallest removable media-import phase that can resolve assets selected by the DDS-015 manifest, report failures and missing alt text, and run idempotently during rehearsal.
+Status: in progress. Implemented in the current stacked WordPress-import branch with dry-run support, idempotent manifest mappings, missing-alt diagnostics, guarded downloads, and reusable `MediaAsset` records. It remains open until the branch is merged.
 
 Goal: prove repeatable media import before importing article and page bodies that reference media.
 
 Tasks:
 
 - create dry-run capable media import command;
-- fetch media through REST API or XML attachment data;
+- capture selected media through REST into the verified local source bundle;
 - download files to the configured storage disk;
 - create or reuse normalized `MediaAsset` records using the temporary import manifest;
 - preserve alt text, captions where useful, mime type, file size, and original URL;
@@ -1436,6 +1462,8 @@ Acceptance criteria:
 - article importer can resolve imported media through the temporary import manifest.
 
 ### DDS-018: WordPress Pages Mapping Prototype
+
+Status: in progress. Implemented in the current stacked WordPress-import branch with complete REST-inventory enforcement, constrained Location/route/manual targets, explicit `410` decisions, preserved review state, and a repeatable Markdown review report. It remains open until the branch is merged.
 
 Goal: map valuable WordPress pages into first-class DDS targets instead of generic pages.
 
@@ -1459,6 +1487,8 @@ Acceptance criteria:
 
 ### DDS-019: Imported Content Cleanup Pipeline
 
+Status: in progress. Implemented in the current stacked WordPress-import branch as an idempotent plain-text cleanup phase with checksum protection, route and media rewriting, safe YouTube preservation, dry-run diagnostics, and a replaceable Markdown review report. It remains open until the branch is merged.
+
 Goal: normalize imported WordPress HTML into clean public content.
 
 Tasks:
@@ -1481,6 +1511,8 @@ Acceptance criteria:
 
 ### DDS-020: WordPress Redirect Import And Review
 
+Status: in progress. Implemented in the current stacked WordPress-import branch with derived post/page redirects, optional XML/sitemap aliases, inactive pending-review records, conflict protection, idempotent reuse, and a replaceable Markdown review report. It remains open until the branch is merged.
+
 Goal: generate a launch-ready redirect map from legacy WordPress URLs.
 
 Tasks:
@@ -1501,6 +1533,8 @@ Acceptance criteria:
 - redirect import can run repeatedly without creating duplicates.
 
 ### DDS-021: Temporary Import Review Report
+
+Status: in progress. Implemented in the current stacked WordPress-import branch with per-phase run history in the temporary manifest, a consolidated staging Markdown report, source-to-target traceability, explicit launch blockers and skips, matching command/report totals, and an artifact-removal policy. It remains open until the branch is merged.
 
 Goal: make staging import results understandable without turning one-time migration state into a permanent dashboard feature.
 
@@ -1523,6 +1557,8 @@ Acceptance criteria:
 
 ### DDS-022: Staging Import Rehearsal
 
+Status: in progress and operationally blocked on real staging only. The current branch implements and tests a two-pass `wordpress:rehearse` runner with persistent-count idempotency checks, public Article/media/redirect/Location/static-page HTTP samples, review-artifact checks, manual approval gating, manifest evidence, and a Markdown rehearsal report. The local workspace has the approved `storage/app/imports/wordpress/selection.json`, the 2026-08-08 XML export, and a verified offline bundle. After the DDEV snapshot `before-wordpress-import-2026-08-16`, a controlled local run created 29 media mappings, 20 post mappings, all 12 page decisions, and 27 redirect mappings. The 29 selected images now have reviewed alt text; malformed WordPress attributes and five dead legacy links were resolved; 21 lossy markup removals have explicit reviewed dispositions; and all eight structured-page rewrites are approved. `/house-rules` contains the reviewed Dutch rules and `/media` contains all nine historical mentions. On 2026-08-16 the consolidated local import review and approved two-pass rehearsal both reached `READY`: both passes imported zero new records, persistent counts remained stable, all 15 HTTP samples passed, and the eight structured destinations were checked locally in a real browser, with the new pages also checked at a 390-pixel viewport. The actual staging rehearsal has not run because no staging base URL or staging access is available. DDS-022 remains open until DDS-022A and DDS-022B repeat this evidence in real staging.
+
 Goal: run the full import sequence in staging and identify launch blockers.
 
 Tasks:
@@ -1543,6 +1579,48 @@ Acceptance criteria:
 - sample imported articles, media, redirects, locations, and static pages render correctly;
 - launch blockers are documented as concrete backlog tickets;
 - manual cleanup workload is understood before production cutover.
+
+#### DDS-022A: Provision And Execute The Real Staging Rehearsal
+
+Goal: transfer the approved local inputs to a recoverable staging environment and execute the implemented runner.
+
+Procedure: follow [WordPress Importer Operator Runbook](../technical/wordpress-importer-runbook.md), especially “DDS-022A: Provision And Execute Staging”.
+
+Tasks:
+
+- securely transfer the approved selection manifest, offline source bundle, XML archive, author mappings, and selected media to staging; REST access to the old site is no longer required;
+- provide the public staging base URL and authorized application/database/storage access;
+- run `php artisan wordpress:rehearse --manifest=storage/app/imports/wordpress/selection.json --base-url=<staging-url>`;
+- retain `page-review.md`, `cleanup-review.md`, `redirect-review.md`, `import-review.md`, and `rehearsal-review.md` as ticket evidence;
+- confirm pass two imports zero new records and persistent model counts remain stable.
+
+Acceptance criteria:
+
+- the rehearsal evidence comes from the real staging environment and approved WordPress inventory;
+- all five phases complete twice;
+- idempotency checks pass or produce concrete blockers;
+- generated artifacts are attached to the staging review.
+
+#### DDS-022B: Resolve Rehearsal Blockers And Approve Samples
+
+Goal: turn staging findings into owned launch work and finish the required human review.
+
+Procedure: follow [WordPress Importer Operator Runbook](../technical/wordpress-importer-runbook.md), especially “DDS-022B: Review, Resolve, And Approve”.
+
+Tasks:
+
+- inspect representative imported Articles, media, redirects, Locations, and static destinations in a real browser;
+- review all phase and consolidated reports through the authorized admin/editor workflow;
+- convert every generated `DDS-022-B###` blocker into a concrete backlog ticket with owner and disposition;
+- document skipped content and remaining manual cleanup workload;
+- fix or explicitly accept every blocker, rerun the rehearsal, then pass `--approve-manual-review`.
+
+Acceptance criteria:
+
+- no generated blocker lacks an owned backlog disposition;
+- visual and admin review is explicitly approved;
+- the final rehearsal status is `READY`;
+- production cutover has an understood, reviewed manual workload.
 
 ## Epic 7: Launch Readiness
 

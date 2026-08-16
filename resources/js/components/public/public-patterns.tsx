@@ -23,7 +23,8 @@ type PublicHeroProps = {
     description?: string;
     kicker?: string;
     media: Media;
-    separatorTone?: 'air' | 'deep-signal' | 'muted' | 'paper' | 'warmup';
+    separatorTone?:
+        'air' | 'deep-signal' | 'muted' | 'paddock' | 'paper' | 'warmup';
     showSeparator?: boolean;
     size?: 'default' | 'compact';
     title: ReactNode;
@@ -131,7 +132,7 @@ export function PublicHero({
 }
 
 type HeroSeparatorProps = {
-    tone: 'air' | 'deep-signal' | 'muted' | 'paper' | 'warmup';
+    tone: 'air' | 'deep-signal' | 'muted' | 'paddock' | 'paper' | 'warmup';
 };
 
 export function HeroSeparator({ tone }: HeroSeparatorProps) {
@@ -144,6 +145,7 @@ export function HeroSeparator({ tone }: HeroSeparatorProps) {
                 tone === 'air' && 'text-air',
                 tone === 'deep-signal' && 'text-deep-signal',
                 tone === 'muted' && 'text-night-50 dark:text-night-900',
+                tone === 'paddock' && 'text-paddock dark:text-night-900',
                 tone === 'paper' && 'text-paper dark:text-night-950',
                 tone === 'warmup' && 'text-warmup dark:text-night-900',
             )}

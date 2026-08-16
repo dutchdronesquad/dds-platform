@@ -33,9 +33,6 @@ use App\Support\SeoMetadata;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Middleware\RoleMiddleware;
 
-/** @var array<string, array<string, mixed>> $publicPages */
-$publicPages = config('public_pages');
-
 $seoMetadata = new SeoMetadata;
 
 Route::get('/', HomeController::class)->name('home');
@@ -59,10 +56,13 @@ Route::inertia('/about', 'public/about', [
     'seo' => $seoMetadata->forPage('about'),
 ])->name('about');
 
-Route::inertia('/house-rules', 'public/shell', [
-    'page' => $publicPages['house_rules'],
+Route::inertia('/house-rules', 'public/house-rules', [
     'seo' => $seoMetadata->forPage('house_rules'),
 ])->name('house_rules');
+
+Route::inertia('/media', 'public/media', [
+    'seo' => $seoMetadata->forPage('media'),
+])->name('media');
 
 Route::get('/partners', [PartnerController::class, 'index'])->name('partners');
 
