@@ -1,0 +1,64 @@
+<?php
+
+use App\Actions\Admin\StoreMediaAsset;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    Storage::fake('public');
+    Storage::fake('s3');
+});
+
+test('it copies media to the target disk and updates the disk record', function () {
+    $mediaAsset = (new StoreMediaAsset)->handle(UploadedFile::fake()->image('photo.jpg', 100, 80), null);
+    $path = $mediaAsset->storagePath();
+
+    Storage::disk('public')->assertExists($path);
+
+    $this->pendingArtisan('dds:migrate-media-disk')->assertSuccessful();
+
+    Storage::disk('s3')->assertExists($path);
+    Storage::disk('public')->assertExists($path);
+
+    $media = $mediaAsset->file()?->fresh();
+
+    expect($media?->disk)->toBe('s3')
+        ->and($media?->conversions_disk)->toBe('s3');
+});
+
+test('it removes the source files when --delete-source is passed', function () {
+    $mediaAsset = (new StoreMediaAsset)->handle(UploadedFile::fake()->image('photo.jpg', 100, 80), null);
+    $path = $mediaAsset->storagePath();
+
+    $this->pendingArtisan('dds:migrate-media-disk --delete-source')->assertSuccessful();
+
+    Storage::disk('s3')->assertExists($path);
+    Storage::disk('public')->assertMissing($path);
+});
+
+test('it does nothing when there is no media on the source disk', function () {
+    $this->pendingArtisan('dds:migrate-media-disk')
+        ->expectsOutput('Geen media gevonden op disk [public].')
+        ->assertSuccessful();
+});
+
+test('it rejects identical from and to disks', function () {
+    $this->pendingArtisan('dds:migrate-media-disk --to=public')
+        ->expectsOutput('--from en --to moeten verschillende disks zijn.')
+        ->assertFailed();
+});
+
+test('the migration refuses to run in production without --force', function () {
+    (new StoreMediaAsset)->handle(UploadedFile::fake()->image('photo.jpg', 100, 80), null);
+
+    $originalEnvironment = app()->environment();
+    app()->detectEnvironment(fn (): string => 'production');
+
+    try {
+        $this->pendingArtisan('dds:migrate-media-disk')
+            ->expectsOutput('Deze migratie draait niet in production zonder --force.')
+            ->assertFailed();
+    } finally {
+        app()->detectEnvironment(fn (): string => $originalEnvironment);
+    }
+});
