@@ -38,13 +38,13 @@ test('it removes the source files when --delete-source is passed', function () {
 
 test('it does nothing when there is no media on the source disk', function () {
     $this->pendingArtisan('dds:migrate-media-disk')
-        ->expectsOutput('Geen media gevonden op disk [public].')
+        ->expectsOutput('No media found on disk [public].')
         ->assertSuccessful();
 });
 
 test('it rejects identical from and to disks', function () {
     $this->pendingArtisan('dds:migrate-media-disk --to=public')
-        ->expectsOutput('--from en --to moeten verschillende disks zijn.')
+        ->expectsOutput('--from and --to must be different disks.')
         ->assertFailed();
 });
 
@@ -56,7 +56,7 @@ test('the migration refuses to run in production without --force', function () {
 
     try {
         $this->pendingArtisan('dds:migrate-media-disk')
-            ->expectsOutput('Deze migratie draait niet in production zonder --force.')
+            ->expectsOutput('This migration does not run in production without --force.')
             ->assertFailed();
     } finally {
         app()->detectEnvironment(fn (): string => $originalEnvironment);

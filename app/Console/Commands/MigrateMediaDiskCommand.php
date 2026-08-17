@@ -19,7 +19,7 @@ final class MigrateMediaDiskCommand extends Command
     public function handle(): int
     {
         if (app()->environment('production') && ! (bool) $this->option('force')) {
-            $this->error('Deze migratie draait niet in production zonder --force.');
+            $this->error('This migration does not run in production without --force.');
 
             return self::FAILURE;
         }
@@ -28,7 +28,7 @@ final class MigrateMediaDiskCommand extends Command
         $to = (string) $this->option('to');
 
         if ($from === $to) {
-            $this->error('--from en --to moeten verschillende disks zijn.');
+            $this->error('--from and --to must be different disks.');
 
             return self::FAILURE;
         }
@@ -36,7 +36,7 @@ final class MigrateMediaDiskCommand extends Command
         $mediaItems = Media::query()->where('disk', $from)->get();
 
         if ($mediaItems->isEmpty()) {
-            $this->info("Geen media gevonden op disk [{$from}].");
+            $this->info("No media found on disk [{$from}].");
 
             return self::SUCCESS;
         }
@@ -44,7 +44,7 @@ final class MigrateMediaDiskCommand extends Command
         $sourceDisk = Storage::disk($from);
         $targetDisk = Storage::disk($to);
 
-        $this->info("{$mediaItems->count()} media-item(en) migreren van [{$from}] naar [{$to}]...");
+        $this->info("Migrating {$mediaItems->count()} media item(s) from [{$from}] to [{$to}]...");
 
         $progressBar = $this->output->createProgressBar($mediaItems->count());
         $progressBar->start();
@@ -80,7 +80,7 @@ final class MigrateMediaDiskCommand extends Command
 
         $progressBar->finish();
         $this->newLine(2);
-        $this->components->success("Migratie voltooid: {$mediaItems->count()} media-item(en) staan nu op [{$to}].");
+        $this->components->success("Migration complete: {$mediaItems->count()} media item(s) now on [{$to}].");
 
         return self::SUCCESS;
     }
