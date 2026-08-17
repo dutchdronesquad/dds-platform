@@ -257,6 +257,11 @@ web_extra_exposed_ports:
       http_port: 5172
       https_port: 5173
 
+hooks:
+    post-start:
+        - exec-host: ddev mc mb --ignore-existing minio/dds-platform-media
+        - exec-host: ddev mc anonymous set download minio/dds-platform-media
+
 #web_extra_exposed_ports:
 #- name: nodejs
 #  container_port: 3000
