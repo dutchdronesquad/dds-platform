@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
     GitPullRequest,
-    Github,
     ListVideo,
     Mic2,
     MonitorUp,
@@ -11,6 +10,7 @@ import {
     Video,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { GithubIcon } from '@/components/icons/github-icon';
 import PublicExternalLink from '@/components/public/public-external-link';
 import { Eyebrow, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
@@ -460,7 +460,7 @@ function CommunityBand() {
                     href={githubUrl}
                     className="min-h-11 self-start bg-deep-signal px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-deep-signal/90 focus-visible:ring-dds-cyan focus-visible:ring-offset-dds-orange lg:self-center dark:focus-visible:ring-offset-dds-orange"
                 >
-                    <Github aria-hidden="true" className="size-4" />
+                    <GithubIcon aria-hidden="true" className="size-4" />
                     Ontdek de projecten
                 </PublicExternalLink>
             </div>
