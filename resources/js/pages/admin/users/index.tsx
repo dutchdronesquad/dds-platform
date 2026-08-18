@@ -165,7 +165,7 @@ export default function UsersIndex({ users, filters, facets, summary }: Props) {
                 title="Gebruikers"
                 description="Beheer profielgegevens, rollen, taalvoorkeur en accounttoegang zonder directe databasewijzigingen."
                 actions={
-                    management?.canViewRoles ? (
+                    management?.roles.canView ? (
                         <Button asChild variant="outline">
                             <Link
                                 href={RolePermissionController()}

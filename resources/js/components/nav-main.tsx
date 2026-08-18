@@ -57,11 +57,18 @@ export function NavMain({
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
-                                {Boolean(item.count) && (
-                                    <SidebarMenuBadge className="bg-destructive/10 text-destructive dark:bg-destructive/15">
-                                        {item.count}
-                                    </SidebarMenuBadge>
-                                )}
+                                {item.count !== undefined &&
+                                    (item.countVariant === 'total' ? (
+                                        <SidebarMenuBadge className="bg-neutral-100 text-neutral-600 dark:bg-white/8 dark:text-neutral-400">
+                                            {item.count}
+                                        </SidebarMenuBadge>
+                                    ) : (
+                                        Boolean(item.count) && (
+                                            <SidebarMenuBadge className="bg-destructive/10 text-destructive dark:bg-destructive/15">
+                                                {item.count}
+                                            </SidebarMenuBadge>
+                                        )
+                                    ))}
                             </SidebarMenuItem>
                         );
                     })}

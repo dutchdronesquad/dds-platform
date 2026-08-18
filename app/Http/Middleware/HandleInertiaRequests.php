@@ -4,9 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Enums\ContactDeliveryStatus;
 use App\Enums\Permission;
+use App\Models\Article;
 use App\Models\ContactSubmission;
+use App\Models\Event;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -79,18 +82,42 @@ class HandleInertiaRequests extends Middleware
         }
 
         $canViewContact = $user->can(Permission::ViewContact->value);
+        $canViewEvents = $user->can(Permission::ViewEvents->value);
+        $canViewArticles = $user->can(Permission::ViewArticles->value);
+        $canViewUsers = $user->can(Permission::ViewUsers->value);
 
         return [
-            'canViewEvents' => $user->can(Permission::ViewEvents->value),
-            'canViewLocations' => $user->can(Permission::ViewLocations->value),
-            'canViewArticles' => $user->can(Permission::ViewArticles->value),
-            'canViewMedia' => $user->can('viewAny', MediaAsset::class),
-            'canManageSeasons' => $user->can('viewAny', Season::class),
-            'canViewRedirects' => $user->can(Permission::ViewRedirects->value),
-            'canViewContact' => $canViewContact,
-            'contactFollowUpCount' => $canViewContact ? $this->contactFollowUpCount() : 0,
-            'canViewUsers' => $user->can(Permission::ViewUsers->value),
-            'canViewRoles' => $user->can(Permission::ViewRoles->value),
+            'events' => [
+                'canView' => $canViewEvents,
+                'count' => $canViewEvents ? Event::query()->count() : 0,
+            ],
+            'locations' => [
+                'canView' => $user->can(Permission::ViewLocations->value),
+            ],
+            'articles' => [
+                'canView' => $canViewArticles,
+                'count' => $canViewArticles ? Article::query()->count() : 0,
+            ],
+            'media' => [
+                'canView' => $user->can('viewAny', MediaAsset::class),
+            ],
+            'seasons' => [
+                'canManage' => $user->can('viewAny', Season::class),
+            ],
+            'redirects' => [
+                'canView' => $user->can(Permission::ViewRedirects->value),
+            ],
+            'contact' => [
+                'canView' => $canViewContact,
+                'followUpCount' => $canViewContact ? $this->contactFollowUpCount() : 0,
+            ],
+            'users' => [
+                'canView' => $canViewUsers,
+                'count' => $canViewUsers ? User::query()->count() : 0,
+            ],
+            'roles' => [
+                'canView' => $user->can(Permission::ViewRoles->value),
+            ],
         ];
     }
 
