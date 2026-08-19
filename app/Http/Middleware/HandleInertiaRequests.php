@@ -152,7 +152,10 @@ class HandleInertiaRequests extends Middleware
         return $this->cachedSidebarCount('users', fn (): int => User::query()->count());
     }
 
-    private function cachedSidebarCount(string $key, callable $query): int
+    /**
+     * @param  \Closure(): int  $query
+     */
+    private function cachedSidebarCount(string $key, \Closure $query): int
     {
         return Cache::remember(
             "sidebar-counts.{$key}",
