@@ -63,12 +63,17 @@ test('admins can visit the dashboard', function () {
             ->where('nextEvent', null)
             ->where('recentChanges', [])
             ->where('isEmpty', true)
-            ->where('management.canViewEvents', true)
-            ->where('management.canViewArticles', true)
-            ->where('management.canManageSeasons', true)
-            ->where('management.canViewContact', true)
-            ->where('management.canViewRedirects', true)
-            ->where('management.canViewRoles', true),
+            ->where('management.events.canView', true)
+            ->where('management.events.count', 0)
+            ->where('management.articles.canView', true)
+            ->where('management.articles.count', 0)
+            ->where('management.seasons.canManage', true)
+            ->where('management.contact.canView', true)
+            ->where('management.contact.followUpCount', 0)
+            ->where('management.redirects.canView', true)
+            ->where('management.roles.canView', true)
+            ->where('management.users.canView', true)
+            ->where('management.users.count', 1),
         );
 });
 
@@ -93,12 +98,17 @@ test('editors can visit the dashboard', function () {
             ->where('capabilities.createLocations', true)
             ->where('capabilities.createSeasons', false)
             ->where('capabilities.viewUsers', false)
-            ->where('management.canViewEvents', true)
-            ->where('management.canViewArticles', true)
-            ->where('management.canManageSeasons', false)
-            ->where('management.canViewContact', false)
-            ->where('management.canViewRedirects', true)
-            ->where('management.canViewRoles', false),
+            ->where('management.events.canView', true)
+            ->where('management.events.count', 0)
+            ->where('management.articles.canView', true)
+            ->where('management.articles.count', 0)
+            ->where('management.seasons.canManage', false)
+            ->where('management.contact.canView', false)
+            ->where('management.contact.followUpCount', 0)
+            ->where('management.redirects.canView', true)
+            ->where('management.roles.canView', false)
+            ->where('management.users.canView', false)
+            ->where('management.users.count', 0),
         );
 });
 

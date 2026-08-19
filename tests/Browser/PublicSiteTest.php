@@ -813,14 +813,12 @@ test('about page tells the DDS story and stays usable', function () {
         ->assertSee(
             'Ter gelegenheid van het jubileum is er ook een prijsvraag: hoeveel propellers zitten er in een vaas?',
         )
-        ->assertSee('Zef en Dennis Molenaar sluiten aan.')
-        ->assertSee('Zef neemt het trackdesign op zich')
-        ->assertSee('verantwoordelijk voor de trackspullen.')
         ->assertSee('Zeven vliegavonden en een seizoensticket.')
-        ->assertSee('Marijn Koesen sluit aan.')
-        ->assertSee('Hij neemt het trackdesign over van Zef')
-        ->assertSee('maakt deel uit van team track')
-        ->assertSee('bij afwezigheid van Klaas de tijdregistratie verzorgen')
+        ->assertSee(
+            'piloten kunnen voor het eerst één seizoensticket voor het hele seizoen kopen',
+        )
+        ->assertDontSee('Zef en Dennis Molenaar sluiten aan.')
+        ->assertDontSee('Marijn Koesen sluit aan.')
         ->assertDontSee('vormt hij het huidige team')
         ->assertDontSee('Van startlicht tot stream')
         ->assertDontSee(
@@ -855,7 +853,7 @@ test('about page tells the DDS story and stays usable', function () {
             '!document.querySelector("main").textContent.toLowerCase().includes("activiteit")',
         )
         ->assertScript(
-            'document.querySelectorAll("[data-testid=about-timeline] time").length === 8',
+            'document.querySelectorAll("[data-testid=about-timeline] time").length === 6',
         )
         ->assertScript(
             'document.querySelectorAll("[data-testid=team-portrait-placeholder]").length === 5',

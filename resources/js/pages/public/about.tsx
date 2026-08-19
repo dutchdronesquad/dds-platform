@@ -1,8 +1,37 @@
+import { useEffect, useRef, useState } from 'react';
 import { Eyebrow, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as eventsIndex } from '@/routes/events';
 import { index as gettingStartedIndex } from '@/routes/getting_started';
 import type { SeoMetadata } from '@/types';
+
+function useInView<T extends HTMLElement>(threshold = 0.35) {
+    const ref = useRef<T>(null);
+    const [inView, setInView] = useState(false);
+
+    useEffect(() => {
+        const node = ref.current;
+        if (!node) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setInView(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold },
+        );
+
+        observer.observe(node);
+
+        return () => observer.disconnect();
+    }, [threshold]);
+
+    return { ref, inView };
+}
 
 type Props = {
     seo: SeoMetadata;
@@ -53,25 +82,11 @@ const timeline: TimelineEntry[] = [
         body: 'In juli viert DDS het vijfjarig bestaan met een vliegavond, drinken, snacks en taart. Ter gelegenheid van het jubileum is er ook een prijsvraag: hoeveel propellers zitten er in een vaas?',
     },
     {
-        year: '2023',
-        dateTime: '2023',
-        label: 'Uitbreiding team',
-        title: 'Zef en Dennis Molenaar sluiten aan.',
-        body: 'Zef en Dennis Molenaar sluiten aan bij het team. Zef neemt het trackdesign op zich; samen worden zij verantwoordelijk voor de trackspullen.',
-    },
-    {
         year: '2024',
         dateTime: '2024',
         label: 'Nieuw seizoensritme',
         title: 'Zeven vliegavonden en een seizoensticket.',
         body: 'Vanaf september gaat DDS over op maximaal zeven vliegavonden per winterseizoen. De avonden vinden ongeveer maandelijks plaats en piloten kunnen voor het eerst één seizoensticket voor het hele seizoen kopen.',
-    },
-    {
-        year: '2025/26',
-        dateTime: '2025',
-        label: 'Uitbreiding team',
-        title: 'Marijn Koesen sluit aan.',
-        body: 'In het winterseizoen 2025/2026 sluit Marijn Koesen aan. Hij neemt het trackdesign over van Zef, maakt deel uit van team track en kan bij afwezigheid van Klaas de tijdregistratie verzorgen.',
     },
 ];
 
@@ -184,6 +199,10 @@ function IdentitySection() {
 }
 
 function TimelineSection() {
+    const { ref: lineRef, inView: lineInView } = useInView<HTMLSpanElement>(
+        0.05,
+    );
+
     return (
         <section
             aria-labelledby="timeline-heading"
@@ -215,7 +234,15 @@ function TimelineSection() {
                 >
                     <span
                         aria-hidden="true"
-                        className="absolute top-3 bottom-3 left-[0.4375rem] w-px bg-white/18 md:left-1/2 md:-translate-x-px"
+                        className="absolute top-3 bottom-3 left-1.75 w-px bg-white/18 md:left-1/2 md:-translate-x-px"
+                    />
+                    <span
+                        ref={lineRef}
+                        aria-hidden="true"
+                        style={{ transitionDuration: '1400ms' }}
+                        className={`absolute top-3 bottom-3 left-1.75 w-px origin-top scale-y-0 bg-dds-cyan/70 transition-transform ease-out md:left-1/2 md:-translate-x-px motion-reduce:transition-none ${
+                            lineInView ? 'scale-y-100' : 'scale-y-0'
+                        }`}
                     />
                     {timeline.map((entry, index) => (
                         <TimelineItem
@@ -238,17 +265,34 @@ function TimelineItem({
     index: number;
 }) {
     const isEven = index % 2 === 0;
+    const { ref, inView } = useInView<HTMLLIElement>();
 
     return (
         <li
+            ref={ref}
             data-testid={`about-timeline-${entry.dateTime}`}
             className="relative grid grid-cols-[2rem_1fr] pb-10 last:pb-0 md:min-h-0 md:grid-cols-[1fr_5rem_1fr] md:items-start md:pb-14"
         >
             <span
                 aria-hidden="true"
-                className="relative z-10 mt-1 flex size-4 items-center justify-center border border-dds-cyan bg-night-950 md:col-start-2 md:mx-auto"
+                className="relative z-10 mt-1 flex size-5 items-center justify-center md:col-start-2 md:mx-auto"
             >
-                <span className="size-1.5 bg-dds-orange" />
+                {inView && (
+                    <span className="absolute inset-0 animate-ping rounded-full bg-dds-cyan/50 [animation-duration:2.2s] [animation-iteration-count:3] motion-reduce:hidden" />
+                )}
+                <span
+                    style={{
+                        transitionDelay: inView ? '150ms' : '0ms',
+                        transitionTimingFunction: inView
+                            ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+                            : 'ease-in',
+                    }}
+                    className={`relative flex size-5 items-center justify-center rounded-full bg-night-950 ring-2 ring-dds-cyan/40 transition-transform duration-500 motion-reduce:transition-none ${
+                        inView ? 'scale-100' : 'scale-0'
+                    }`}
+                >
+                    <span className="size-2.5 rounded-full bg-dds-cyan shadow-[0_0_10px_--theme(--color-dds-cyan/70%)]" />
+                </span>
             </span>
 
             <article
@@ -259,11 +303,12 @@ function TimelineItem({
                 }
             >
                 <div
-                    className={
-                        isEven
-                            ? 'flex flex-wrap items-baseline gap-x-4 gap-y-2 md:justify-end'
-                            : 'flex flex-wrap items-baseline gap-x-4 gap-y-2'
-                    }
+                    style={{ transitionDelay: inView ? '120ms' : '0ms' }}
+                    className={`flex flex-wrap items-baseline gap-x-4 gap-y-2 transition-all duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+                        inView
+                            ? 'translate-y-0 opacity-100'
+                            : 'translate-y-4 opacity-0'
+                    } ${isEven ? 'md:justify-end' : ''}`}
                 >
                     <time
                         dateTime={entry.dateTime}
@@ -275,15 +320,23 @@ function TimelineItem({
                         {entry.label}
                     </span>
                 </div>
-                <h3 className="mt-5 font-public-display text-2xl leading-[1.1] font-semibold tracking-[-0.035em] text-balance sm:text-3xl">
+                <h3
+                    style={{ transitionDelay: inView ? '230ms' : '0ms' }}
+                    className={`mt-5 font-public-display text-2xl leading-[1.1] font-semibold tracking-[-0.035em] text-balance transition-all duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none sm:text-3xl ${
+                        inView
+                            ? 'translate-y-0 opacity-100'
+                            : 'translate-y-4 opacity-0'
+                    }`}
+                >
                     {entry.title}
                 </h3>
                 <p
-                    className={
-                        isEven
-                            ? 'mt-4 max-w-xl text-sm leading-7 text-white/62 sm:text-base md:ml-auto'
-                            : 'mt-4 max-w-xl text-sm leading-7 text-white/62 sm:text-base'
-                    }
+                    style={{ transitionDelay: inView ? '340ms' : '0ms' }}
+                    className={`mt-4 max-w-xl text-sm leading-7 text-white/62 transition-all duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none sm:text-base ${
+                        inView
+                            ? 'translate-y-0 opacity-100'
+                            : 'translate-y-4 opacity-0'
+                    } ${isEven ? 'md:ml-auto' : ''}`}
                 >
                     {entry.body}
                 </p>
@@ -357,17 +410,17 @@ const teamMembers = [
     {
         initials: 'ZM',
         name: 'Zef Molenaar',
-        note: 'Team track',
+        note: 'Team track · sinds 2023',
     },
     {
         initials: 'DM',
         name: 'Dennis Molenaar',
-        note: 'Team track',
+        note: 'Team track · sinds 2023',
     },
     {
         initials: 'MK',
         name: 'Marijn Koesen',
-        note: 'Trackdesigner · team track · tijdregistratie',
+        note: 'Trackdesigner · team track · tijdregistratie · sinds 2025',
     },
 ];
 

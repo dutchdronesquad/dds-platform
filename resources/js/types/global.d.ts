@@ -15,16 +15,15 @@ declare module '@inertiajs/core' {
             locale: LocaleProps;
             auth: Auth;
             management: {
-                canManageSeasons: boolean;
-                canViewArticles: boolean;
-                canViewContact: boolean;
-                canViewEvents: boolean;
-                canViewLocations: boolean;
-                canViewMedia: boolean;
-                canViewRedirects: boolean;
-                canViewRoles: boolean;
-                canViewUsers: boolean;
-                contactFollowUpCount: number;
+                articles: { canView: boolean; count: number };
+                contact: { canView: boolean; followUpCount: number };
+                events: { canView: boolean; count: number };
+                locations: { canView: boolean };
+                media: { canView: boolean };
+                redirects: { canView: boolean };
+                roles: { canView: boolean };
+                seasons: { canManage: boolean };
+                users: { canView: boolean; count: number };
             } | null;
             ui: {
                 authPhotoRotationInterval: number;

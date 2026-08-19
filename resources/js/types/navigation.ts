@@ -12,4 +12,10 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
     count?: number;
+    /**
+     * 'alert' (default) only renders the badge when count > 0, styled as
+     * something needing attention. 'total' always renders the badge,
+     * including zero, styled as a neutral count.
+     */
+    countVariant?: 'alert' | 'total';
 };

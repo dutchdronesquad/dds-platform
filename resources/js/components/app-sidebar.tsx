@@ -57,16 +57,18 @@ export function AppSidebar() {
         },
     ];
     const contentItems: NavItem[] = [
-        ...(management?.canViewEvents
+        ...(management?.events.canView
             ? [
                   {
                       title: 'Events',
                       href: eventsIndex(),
                       icon: CalendarDays,
+                      count: management.events.count,
+                      countVariant: 'total' as const,
                   },
               ]
             : []),
-        ...(management?.canViewLocations
+        ...(management?.locations.canView
             ? [
                   {
                       title: 'Locaties',
@@ -75,16 +77,18 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(management?.canViewArticles
+        ...(management?.articles.canView
             ? [
                   {
                       title: 'Artikelen',
                       href: articlesIndex(),
                       icon: Newspaper,
+                      count: management.articles.count,
+                      countVariant: 'total' as const,
                   },
               ]
             : []),
-        ...(management?.canManageSeasons
+        ...(management?.seasons.canManage
             ? [
                   {
                       title: 'Seizoenen',
@@ -93,7 +97,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(management?.canViewMedia
+        ...(management?.media.canView
             ? [
                   {
                       title: 'Media',
@@ -102,28 +106,30 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(management?.canViewContact
+        ...(management?.contact.canView
             ? [
                   {
                       title: 'Contactaanvragen',
                       href: contactIndex(),
                       icon: MessageSquareText,
-                      count: management.contactFollowUpCount,
+                      count: management.contact.followUpCount,
                   },
               ]
             : []),
     ];
     const systemItems: NavItem[] = [
-        ...(management?.canViewUsers
+        ...(management?.users.canView
             ? [
                   {
                       title: 'Gebruikers',
                       href: usersIndex(),
                       icon: Users,
+                      count: management.users.count,
+                      countVariant: 'total' as const,
                   },
               ]
             : []),
-        ...(management?.canViewRoles
+        ...(management?.roles.canView
             ? [
                   {
                       title: 'Rollen en rechten',
@@ -132,7 +138,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(management?.canViewRedirects
+        ...(management?.redirects.canView
             ? [
                   {
                       title: 'Redirects',
