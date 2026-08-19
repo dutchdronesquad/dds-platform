@@ -64,11 +64,16 @@ test('admins can visit the dashboard', function () {
             ->where('recentChanges', [])
             ->where('isEmpty', true)
             ->where('management.events.canView', true)
+            ->where('management.events.count', 0)
             ->where('management.articles.canView', true)
+            ->where('management.articles.count', 0)
             ->where('management.seasons.canManage', true)
             ->where('management.contact.canView', true)
+            ->where('management.contact.followUpCount', 0)
             ->where('management.redirects.canView', true)
-            ->where('management.roles.canView', true),
+            ->where('management.roles.canView', true)
+            ->where('management.users.canView', true)
+            ->where('management.users.count', 1),
         );
 });
 
@@ -94,11 +99,16 @@ test('editors can visit the dashboard', function () {
             ->where('capabilities.createSeasons', false)
             ->where('capabilities.viewUsers', false)
             ->where('management.events.canView', true)
+            ->where('management.events.count', 0)
             ->where('management.articles.canView', true)
+            ->where('management.articles.count', 0)
             ->where('management.seasons.canManage', false)
             ->where('management.contact.canView', false)
+            ->where('management.contact.followUpCount', 0)
             ->where('management.redirects.canView', true)
-            ->where('management.roles.canView', false),
+            ->where('management.roles.canView', false)
+            ->where('management.users.canView', false)
+            ->where('management.users.count', 0),
         );
 });
 

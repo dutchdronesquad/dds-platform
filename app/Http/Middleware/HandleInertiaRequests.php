@@ -11,6 +11,7 @@ use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -18,6 +19,8 @@ class HandleInertiaRequests extends Middleware
     private const int AUTH_PHOTO_ROTATION_INTERVAL = 7000;
 
     private const int TEST_AUTH_PHOTO_ROTATION_INTERVAL = 250;
+
+    private const int SIDEBAR_COUNT_CACHE_SECONDS = 30;
 
     /**
      * The root template that's loaded on the first page visit.
@@ -89,14 +92,14 @@ class HandleInertiaRequests extends Middleware
         return [
             'events' => [
                 'canView' => $canViewEvents,
-                'count' => $canViewEvents ? Event::query()->count() : 0,
+                'count' => $canViewEvents ? $this->eventCount() : 0,
             ],
             'locations' => [
                 'canView' => $user->can(Permission::ViewLocations->value),
             ],
             'articles' => [
                 'canView' => $canViewArticles,
-                'count' => $canViewArticles ? Article::query()->count() : 0,
+                'count' => $canViewArticles ? $this->articleCount() : 0,
             ],
             'media' => [
                 'canView' => $user->can('viewAny', MediaAsset::class),
@@ -113,7 +116,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'users' => [
                 'canView' => $canViewUsers,
-                'count' => $canViewUsers ? User::query()->count() : 0,
+                'count' => $canViewUsers ? $this->userCount() : 0,
             ],
             'roles' => [
                 'canView' => $user->can(Permission::ViewRoles->value),
@@ -123,11 +126,38 @@ class HandleInertiaRequests extends Middleware
 
     private function contactFollowUpCount(): int
     {
-        return ContactSubmission::query()
-            ->whereIn('delivery_status', [
-                ContactDeliveryStatus::NotConfigured,
-                ContactDeliveryStatus::Failed,
-            ])
-            ->count();
+        return $this->cachedSidebarCount(
+            'contact_follow_up',
+            fn (): int => ContactSubmission::query()
+                ->whereIn('delivery_status', [
+                    ContactDeliveryStatus::NotConfigured,
+                    ContactDeliveryStatus::Failed,
+                ])
+                ->count(),
+        );
+    }
+
+    private function eventCount(): int
+    {
+        return $this->cachedSidebarCount('events', fn (): int => Event::query()->count());
+    }
+
+    private function articleCount(): int
+    {
+        return $this->cachedSidebarCount('articles', fn (): int => Article::query()->count());
+    }
+
+    private function userCount(): int
+    {
+        return $this->cachedSidebarCount('users', fn (): int => User::query()->count());
+    }
+
+    private function cachedSidebarCount(string $key, callable $query): int
+    {
+        return Cache::remember(
+            "sidebar-counts.{$key}",
+            self::SIDEBAR_COUNT_CACHE_SECONDS,
+            $query,
+        );
     }
 }
