@@ -147,7 +147,8 @@ A representative manifest shape is:
     "media": [
         {
             "wordpress_id": 49925,
-            "decision": "import"
+            "decision": "import",
+            "alt_text": "Dronepiloot bestuurt een FPV-racedrone tijdens een indoorwedstrijd"
         },
         {
             "wordpress_id": 49926,
@@ -235,6 +236,7 @@ Allowed post categories are `news`, `announcement`, `community`, and `race_repor
 Manifest rules:
 
 - every media and post entry needs a unique positive `wordpress_id` and `import` or `skip` decision;
+- reviewed reusable media alt text belongs in the optional non-empty `media[].alt_text` field so it remains portable without generated local `mappings.media.*.media_asset_id` values;
 - skipped content needs a meaningful `reason`;
 - every post needs a slug, title, ISO-8601 publication date, and supported category;
 - the published page inventory must be complete: every REST page needs `rewrite`, `redirect`, `gone`, or `skip`;
@@ -284,7 +286,7 @@ The controlled phase-by-phase run is for validating the inputs. Before producing
 
 1. Archive its reports for diagnosis if useful.
 2. Restore the database and media storage to the recorded staging baseline.
-3. Restore a clean approved `selection.json` without generated `mappings`, `runs`, or `rehearsal` sections.
+3. Restore a clean approved `selection.json` without generated `mappings`, `runs`, or `rehearsal` sections, while retaining reviewed `media[].alt_text` values.
 4. Confirm the baseline model counts again.
 5. Keep the same deployed commit and source inventory.
 
@@ -424,6 +426,7 @@ Keep this data through staging, final import verification, and the agreed rollba
 | source bundle checksum fails                        | restore or recapture the frozen bundle; never continue with changed source files                           |
 | missing or invalid endpoint                         | correct `source.*_endpoint`; only HTTP(S) WordPress REST URLs are accepted                                 |
 | media mapping missing during posts                  | successfully run the media phase first and confirm the featured attachment is selected                     |
+| reviewed alt text disappears on a clean database    | store it in `media[].alt_text`; never carry generated local `media_asset_id` mappings into another database |
 | author mapping missing                              | map the WordPress author to an existing user or set a valid `defaults.author_id`                           |
 | slug conflict                                       | review the existing Article; do not overwrite an unrelated record                                          |
 | published page lacks a manifest decision            | update the complete page inventory; never silently create or skip a page                                   |

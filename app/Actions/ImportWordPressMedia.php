@@ -93,6 +93,10 @@ final class ImportWordPressMedia
                 continue;
             }
 
+            if ($selection['alt_text'] !== null) {
+                $metadata['alt_text'] = $selection['alt_text'];
+            }
+
             if (str_starts_with($metadata['mime_type'], 'image/') && $metadata['alt_text'] === null) {
                 $report['missing_alt_text']++;
             }
@@ -211,7 +215,7 @@ final class ImportWordPressMedia
 
     /**
      * @param  array<string, mixed>  $manifest
-     * @return list<array{wordpress_id: int, decision: 'import'|'skip', reason: string|null}>
+     * @return list<array{wordpress_id: int, decision: 'import'|'skip', reason: string|null, alt_text: string|null}>
      */
     private function selections(array $manifest): array
     {
@@ -232,6 +236,7 @@ final class ImportWordPressMedia
             $wordpressId = Arr::get($selection, 'wordpress_id');
             $decision = Arr::get($selection, 'decision', 'import');
             $reason = Arr::get($selection, 'reason');
+            $reviewedAltText = Arr::get($selection, 'alt_text');
 
             if (! is_int($wordpressId) || $wordpressId < 1) {
                 throw new InvalidArgumentException(
@@ -255,11 +260,28 @@ final class ImportWordPressMedia
                 );
             }
 
+            if ($reviewedAltText !== null && ! is_string($reviewedAltText)) {
+                throw new InvalidArgumentException(
+                    "Media-selectie {$wordpressId} heeft een ongeldige alt_text.",
+                );
+            }
+
+            if (is_string($reviewedAltText)) {
+                $reviewedAltText = $this->plainText($reviewedAltText);
+
+                if ($reviewedAltText === '') {
+                    throw new InvalidArgumentException(
+                        "Media-selectie {$wordpressId} heeft een lege alt_text.",
+                    );
+                }
+            }
+
             $wordpressIds[$wordpressId] = true;
             $selections[] = [
                 'wordpress_id' => $wordpressId,
                 'decision' => $decision,
                 'reason' => $reason,
+                'alt_text' => $reviewedAltText,
             ];
         }
 

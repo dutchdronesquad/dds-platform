@@ -267,7 +267,8 @@ The media phase expects the temporary manifest to contain the REST endpoint and 
     "media": [
         {
             "wordpress_id": 49925,
-            "decision": "import"
+            "decision": "import",
+            "alt_text": "Dronepiloot bestuurt een FPV-racedrone tijdens een indoorwedstrijd"
         },
         {
             "wordpress_id": 49926,
@@ -278,7 +279,9 @@ The media phase expects the temporary manifest to contain the REST endpoint and 
 }
 ```
 
-An import writes `mappings.media.{wordpress_id}` back to this file with the `MediaAsset` ID, original URL and filename, MIME type, size, dimensions, alt text, caption, checksum, and import timestamp. Later post and page phases use this mapping to resolve WordPress attachment IDs without adding WordPress fields to permanent domain tables. Existing mappings whose media asset and file still exist are reused; missing targets are imported again. When `source.snapshot_directory` is configured, media metadata and bytes come from the checksummed local bundle. A media dry-run validates metadata without changing the database, storage, or manifest.
+An optional non-empty `media[].alt_text` stores the reviewed reusable Dutch default independently of generated database mappings. It overrides the WordPress source value after plain-text normalization, which keeps reviewed alt text portable between local rehearsal and a clean staging or production database. Without an override, the importer retains the source behavior and reports missing image alt text.
+
+An import writes `mappings.media.{wordpress_id}` back to this file with the `MediaAsset` ID, original URL and filename, MIME type, size, dimensions, alt text, caption, checksum, and import timestamp. Later post and page phases use this mapping to resolve WordPress attachment IDs without adding WordPress fields to permanent domain tables. Existing mappings whose media asset and file still exist are reused without overwriting later editorial changes; missing targets are imported again. When `source.snapshot_directory` is configured, media metadata and bytes come from the checksummed local bundle. A media dry-run validates metadata without changing the database, storage, or manifest.
 
 The post phase uses the same manifest and adds a reviewed post selection plus a fallback content author:
 
