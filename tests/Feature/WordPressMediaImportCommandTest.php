@@ -118,6 +118,46 @@ test('it imports media once and reuses the manifest mapping on repeated runs', f
     Http::assertSentCount(2);
 });
 
+test('it imports reviewed manifest alt text when the WordPress source has none', function () {
+    writeWordPressManifest($this->manifestPath, [
+        'source' => [
+            'media_endpoint' => 'https://legacy.example/wp-json/wp/v2/media',
+        ],
+        'media' => [
+            [
+                'wordpress_id' => 49925,
+                'decision' => 'import',
+                'alt_text' => '  <strong>FPV-racedrone</strong> vliegt door een verlichte gate &amp; finisht  ',
+            ],
+        ],
+    ]);
+
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/media/49925' => Http::response(
+            wordpressMediaRecord(49925, altText: ''),
+        ),
+        'legacy.example/wp-content/uploads/2025/09/race-cover.png' => Http::response(
+            onePixelPng(),
+            headers: ['Content-Type' => 'image/png'],
+        ),
+    ]);
+
+    $exitCode = Artisan::call('wordpress:import', [
+        'phase' => 'media',
+        '--manifest' => $this->manifestPath,
+    ]);
+
+    $mediaAsset = MediaAsset::query()->sole();
+    $manifest = json_decode(File::get($this->manifestPath), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($exitCode)->toBe(0)
+        ->and(Artisan::output())->not->toContain('Ontbrekende alt-tekst')
+        ->and($mediaAsset->alt_text)->toBe([
+            'nl' => 'FPV-racedrone vliegt door een verlichte gate & finisht',
+        ])->and(data_get($manifest, 'mappings.media.49925.alt_text'))
+        ->toBe('FPV-racedrone vliegt door een verlichte gate & finisht');
+});
+
 test('it reports failed downloads and unsupported file types', function () {
     writeWordPressManifest($this->manifestPath, [
         'source' => [
@@ -232,6 +272,14 @@ test('it rejects invalid media selections', function (Closure $mutate, string $m
     'invalid reason' => [
         fn (array &$manifest) => $manifest['media'][0]['reason'] = 123,
         'ongeldige reason',
+    ],
+    'invalid reviewed alt text' => [
+        fn (array &$manifest) => $manifest['media'][0]['alt_text'] = ['nl' => 'Race drone'],
+        'ongeldige alt_text',
+    ],
+    'empty reviewed alt text' => [
+        fn (array &$manifest) => $manifest['media'][0]['alt_text'] = ' <strong> </strong> ',
+        'lege alt_text',
     ],
 ]);
 
