@@ -35,6 +35,8 @@ type PublicNavItem = {
 
 type FooterNavItem = PublicNavItem;
 
+const mobileMenuTransitionDuration = 300;
+
 const headerNavItems: PublicNavItem[] = [
     {
         title: 'Starten met FPV',
@@ -147,6 +149,7 @@ export default function PublicLayout({ children }: Props) {
     const { url } = usePage();
     const currentPath = url.split('?')[0];
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMenuMounted, setIsMenuMounted] = useState(false);
     const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -190,11 +193,24 @@ export default function PublicLayout({ children }: Props) {
     }, []);
 
     useEffect(() => {
-        if (!isMenuOpen) {
+        if (!isMenuMounted) {
             return;
         }
 
         const previousBodyOverflow = document.body.style.overflow;
+
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = previousBodyOverflow;
+        };
+    }, [isMenuMounted]);
+
+    useEffect(() => {
+        if (!isMenuOpen) {
+            return;
+        }
+
         const desktopMediaQuery = window.matchMedia('(min-width: 64rem)');
 
         const focusableElements = (): HTMLElement[] => {
@@ -251,13 +267,11 @@ export default function PublicLayout({ children }: Props) {
             }
         };
 
-        document.body.style.overflow = 'hidden';
         document.addEventListener('keydown', handleKeyDown);
         desktopMediaQuery.addEventListener('change', handleViewportChange);
         mobileMenuRef.current?.querySelector<HTMLElement>('a[href]')?.focus();
 
         return () => {
-            document.body.style.overflow = previousBodyOverflow;
             document.removeEventListener('keydown', handleKeyDown);
             desktopMediaQuery.removeEventListener(
                 'change',
@@ -265,6 +279,35 @@ export default function PublicLayout({ children }: Props) {
             );
         };
     }, [isMenuOpen]);
+
+    useEffect(() => {
+        if (isMenuOpen || !isMenuMounted) {
+            return;
+        }
+
+        const unmountDelay = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches
+            ? 0
+            : mobileMenuTransitionDuration;
+        const unmountTimer = window.setTimeout(
+            () => setIsMenuMounted(false),
+            unmountDelay,
+        );
+
+        return () => window.clearTimeout(unmountTimer);
+    }, [isMenuOpen, isMenuMounted]);
+
+    const toggleMobileMenu = (): void => {
+        if (isMenuOpen) {
+            setIsMenuOpen(false);
+
+            return;
+        }
+
+        setIsMenuMounted(true);
+        setIsMenuOpen(true);
+    };
 
     const isSectionActive = (activePath: string): boolean =>
         currentPath === activePath || currentPath.startsWith(`${activePath}/`);
@@ -393,26 +436,49 @@ export default function PublicLayout({ children }: Props) {
                         aria-label={
                             isMenuOpen ? 'Sluit navigatie' : 'Open navigatie'
                         }
-                        onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
-                        className="ml-auto flex size-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/16 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none lg:hidden dark:focus-visible:ring-signal-400"
+                        onClick={toggleMobileMenu}
+                        className="relative ml-auto flex size-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/16 focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none motion-reduce:transition-none lg:hidden dark:focus-visible:ring-signal-400"
                     >
-                        {isMenuOpen ? (
-                            <X className="size-5" />
-                        ) : (
-                            <Menu className="size-5" />
-                        )}
+                        <Menu
+                            className={cn(
+                                'absolute size-5 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none',
+                                isMenuOpen
+                                    ? 'scale-75 rotate-90 opacity-0'
+                                    : 'scale-100 rotate-0 opacity-100',
+                            )}
+                        />
+                        <X
+                            className={cn(
+                                'absolute size-5 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none',
+                                isMenuOpen
+                                    ? 'scale-100 rotate-0 opacity-100'
+                                    : 'scale-75 -rotate-90 opacity-0',
+                            )}
+                        />
                     </button>
                 </div>
 
-                {isMenuOpen && (
+                {isMenuMounted && (
                     <div
                         ref={mobileMenuRef}
                         id="mobile-public-navigation"
-                        className="absolute inset-x-0 top-full min-h-[calc(100dvh-4.5rem)] border-t border-white/10 bg-ink text-white shadow-2xl shadow-black/30 lg:hidden"
+                        aria-hidden={!isMenuOpen}
+                        inert={!isMenuOpen}
+                        className={cn(
+                            'absolute inset-x-0 top-full min-h-[calc(100dvh-4.5rem)] border-t border-white/10 bg-ink text-white shadow-2xl shadow-black/30 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none lg:hidden starting:-translate-y-3 starting:opacity-0',
+                            isMenuOpen
+                                ? 'translate-y-0 opacity-100'
+                                : 'pointer-events-none -translate-y-3 opacity-0',
+                        )}
                     >
                         <nav
                             aria-label="Mobiele hoofdnavigatie"
-                            className="mx-auto flex min-h-[calc(100dvh-4.5rem)] w-full max-w-7xl flex-col px-public-gutter pt-6 pb-8"
+                            className={cn(
+                                'mx-auto flex min-h-[calc(100dvh-4.5rem)] w-full max-w-7xl flex-col px-public-gutter pt-6 pb-8 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none starting:translate-y-2 starting:opacity-0',
+                                isMenuOpen
+                                    ? 'translate-y-0 opacity-100 delay-75'
+                                    : 'translate-y-2 opacity-0',
+                            )}
                         >
                             {headerNavItems.slice(0, 3).map((item) => {
                                 const isActive = isSectionActive(
@@ -460,13 +526,13 @@ export default function PublicLayout({ children }: Props) {
                                                     setIsMenuOpen(false)
                                                 }
                                                 className={cn(
-                                                    'flex min-h-10 items-center justify-between rounded-sm px-2 text-sm font-semibold text-white/58 transition-colors hover:bg-white/6 hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
+                                                    'group flex min-h-10 items-center justify-between rounded-sm px-2 text-sm font-semibold text-white/58 transition-colors hover:bg-white/6 hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
                                                     isActive &&
                                                         'text-flight-400',
                                                 )}
                                             >
                                                 {item.title}
-                                                <ArrowUpRight className="size-3.5 opacity-45" />
+                                                <ArrowUpRight className="size-3.5 opacity-45 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
                                             </Link>
                                         );
                                     })}
@@ -648,12 +714,12 @@ function MobileNavigationLink({
             aria-current={isActive ? 'page' : undefined}
             onClick={onNavigate}
             className={cn(
-                'flex min-h-14 items-center justify-between border-b border-white/10 py-4 font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
+                'group flex min-h-14 items-center justify-between border-b border-white/10 py-4 font-public-display text-xl font-semibold tracking-[-0.025em] text-white/72 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:outline-none dark:focus-visible:ring-signal-400',
                 isActive && 'text-flight-400',
             )}
         >
             {item.title}
-            <ArrowUpRight className="size-4 opacity-45" />
+            <ArrowUpRight className="size-4 opacity-45 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
         </Link>
     );
 }

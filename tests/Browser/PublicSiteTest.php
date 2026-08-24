@@ -120,6 +120,9 @@ test('mobile navigation opens, reflows, and follows public links', function () {
             'expanded',
             'true',
         )
+        ->assertScript(
+            "(() => { const style = getComputedStyle(document.querySelector('#mobile-public-navigation')); const hasDuration = style.transitionDuration.split(',').some((duration) => Number.parseFloat(duration) > 0); return hasDuration && style.transitionProperty.includes('transform') && style.transitionProperty.includes('opacity'); })()",
+        )
         ->assertSeeIn('#mobile-public-navigation', 'Starten met FPV')
         ->assertSeeIn(
             '#mobile-public-navigation > nav > div > p',
