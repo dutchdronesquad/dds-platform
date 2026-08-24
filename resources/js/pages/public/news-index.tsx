@@ -48,9 +48,9 @@ export default function NewsIndex({
                     { label: 'Bekijk de agenda', href: eventsIndex.url() },
                 ]}
                 media={{
-                    src: '/images/dds/racing/pilot-at-training.jpg',
-                    alt: 'Piloot tijdens een indoor training van Dutch Drone Squad',
-                    position: '62% center',
+                    src: '/images/dds/racing/fpv-pilot-view.jpg',
+                    alt: 'FPV-piloot kijkt met videobril uit over het indoor parcours',
+                    position: 'center center',
                 }}
             />
 

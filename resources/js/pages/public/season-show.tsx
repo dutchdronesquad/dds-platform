@@ -61,9 +61,9 @@ export default function SeasonShow({ season, seo }: Props) {
                     },
                 ]}
                 media={{
-                    src: '/images/dds/racing/indoor-track.jpg',
-                    alt: 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
-                    position: '56% center',
+                    src: '/images/dds/racing/early-indoor-track.jpg',
+                    alt: 'Indoor FPV-parcours tijdens een vroeg seizoen van Dutch Drone Squad',
+                    position: 'center center',
                 }}
                 separatorTone="paper"
                 size="compact"

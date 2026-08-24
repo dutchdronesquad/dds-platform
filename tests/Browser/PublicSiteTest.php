@@ -723,6 +723,11 @@ test('season context without a ticket offer stays informative without sales cont
         ->assertDontSee('Voor dit seizoen wordt geen seizoensticket aangeboden.')
         ->click('[data-testid="event-season-context"]')
         ->assertPathIs("/seasons/{$season->slug}")
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/early-indoor-track.jpg',
+        )
         ->assertSee('Per event aanmelden.')
         ->assertSee('€ 17,50')
         ->assertSee('Nog niet geopend')
@@ -807,6 +812,38 @@ test('public page photography matches the subject of each section', function () 
             'src',
             '/images/dds/racing/pilots-in-paddock.jpg',
         );
+
+    visit('/news')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/fpv-pilot-view.jpg',
+        );
+
+    visit('/getting-started')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/pilot-helping-with-drone.jpg',
+        );
+
+    visit('/house-rules')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/pilot-checking-drone.jpg',
+        );
+
+    visit('/partners')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/sponsored-finish-gate.jpg',
+        );
 });
 
 test('about page tells the DDS story and stays usable', function () {
@@ -859,6 +896,14 @@ test('about page tells the DDS story and stays usable', function () {
         ->assertSee('Zeven vliegavonden en een seizoensticket.')
         ->assertSee(
             'piloten kunnen voor het eerst één seizoensticket voor het hele seizoen kopen',
+        )
+        ->assertSee('Uit het archief')
+        ->assertSee('Momenten die DDS vormden.')
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=about-archive-gallery] figure").length === 4',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=about-archive-gallery] img")].every((image) => image.getAttribute("src")?.startsWith("/images/dds/racing/") && image.alt.trim().length > 0)',
         )
         ->assertDontSee('Zef en Dennis Molenaar sluiten aan.')
         ->assertDontSee('Marijn Koesen sluit aan.')

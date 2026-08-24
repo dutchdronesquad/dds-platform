@@ -23,6 +23,9 @@ test('the hub index lists every guide in order with seo metadata and no source b
             ->where('guides.0.slug', $guides[0]->slug)
             ->where('guides.0.editorialOwner', $guides[0]->editorialOwner)
             ->where('guides.0.reviewedAt', $guides[0]->reviewedAt)
+            ->where('guides.0.heroImage.src', '/images/dds/racing/drone-in-flight.jpg')
+            ->where('guides.1.heroImage.src', '/images/dds/racing/controller-close-up.jpg')
+            ->where('guides.2.heroImage.src', '/images/dds/racing/pilots-with-goggles.jpg')
             ->where(
                 'guides.2.summary',
                 'Van aanmelden en opbouwen tot de trackwalk, heats, veilig laden en samen opruimen: zo verloopt een trainingsavond.',
