@@ -143,12 +143,12 @@ export default function Welcome({
                                 Alles voor je volgende persoonlijke record.
                             </h3>
 
-                            <dl className="mt-8 border-t border-white/15">
+                            <ul className="mt-8 border-t border-white/15">
                                 {pilotBenefits.map((benefit, index) => {
                                     const Icon = benefit.icon;
 
                                     return (
-                                        <div
+                                        <li
                                             key={benefit.title}
                                             className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-white/15 py-5"
                                         >
@@ -166,17 +166,17 @@ export default function Welcome({
                                                 />
                                             </span>
                                             <div>
-                                                <dt className="font-public-display text-xl font-semibold tracking-[-0.03em]">
+                                                <h4 className="font-public-display text-xl font-semibold tracking-[-0.03em]">
                                                     {benefit.title}
-                                                </dt>
-                                                <dd className="mt-1.5 text-sm leading-6 text-white/58">
+                                                </h4>
+                                                <p className="mt-1.5 text-sm leading-6 text-white/58">
                                                     {benefit.description}
-                                                </dd>
+                                                </p>
                                             </div>
-                                        </div>
+                                        </li>
                                     );
                                 })}
-                            </dl>
+                            </ul>
 
                             <Link
                                 href={eventsIndex()}

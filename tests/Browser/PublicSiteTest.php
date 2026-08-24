@@ -32,7 +32,7 @@ test('desktop visitors can use the public shell and safe external links', functi
             'document.querySelector(\'[data-testid="pilot-development-heading"]\')?.querySelector(\'span\') === null',
         )
         ->assertScript(
-            "(() => { const panel = document.querySelector('[data-testid=\"pilot-development-panel\"]'); const image = panel?.querySelector('img'); const benefits = panel?.querySelectorAll('dl > div'); return panel !== null && image !== null && benefits?.length === 3 && getComputedStyle(panel).backgroundColor !== 'rgba(0, 0, 0, 0)'; })()",
+            "(() => { const panel = document.querySelector('[data-testid=\"pilot-development-panel\"]'); const image = panel?.querySelector('img'); const benefits = panel?.querySelectorAll('ul > li'); return panel !== null && image !== null && benefits?.length === 3 && getComputedStyle(panel).backgroundColor !== 'rgba(0, 0, 0, 0)'; })()",
         )
         ->assertSee('De baan is even leeg.')
         ->assertSee('Partners & sponsors')
