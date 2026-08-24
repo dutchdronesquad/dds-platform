@@ -74,9 +74,8 @@ Database:
 
 Cache and queues:
 
-- Valkey for production, accessed through Laravel's Redis-compatible driver;
 - database-backed cache, sessions, and queues are acceptable for early local development;
-- Valkey should be introduced before production or once background jobs/reminders become important.
+- Valkey must be in place before production and is accessed through Laravel's Redis-compatible driver.
 
 Mail:
 
