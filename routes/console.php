@@ -8,7 +8,17 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('backup:run --only-db')
+Artisan::command('backup:run-encrypted', function (): int {
+    if (blank(config('backup.backup.password'))) {
+        $this->error('BACKUP_ARCHIVE_PASSWORD must be configured before database backups can run.');
+
+        return 1;
+    }
+
+    return $this->call('backup:run', ['--only-db' => true]);
+})->purpose('Create an encrypted database backup');
+
+Schedule::command('backup:run-encrypted')
     ->dailyAt('01:30')
     ->timezone('UTC')
     ->environments(['production'])

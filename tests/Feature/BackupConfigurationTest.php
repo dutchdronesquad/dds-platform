@@ -6,14 +6,23 @@ use Illuminate\Support\Str;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
-test('it stores verified encrypted database backups under the existing s3 disk', function () {
+test('it stores verified database backups under the existing s3 disk', function () {
     expect(config('backup.backup.name'))->toBe('backups/dds-platform')
         ->and(config('backup.backup.source.files.include'))->toBe([])
         ->and(config('backup.backup.source.databases'))->toBe([config('database.default')])
         ->and(config('backup.backup.destination.disks'))->toBe(['s3'])
+        ->and(config('backup.backup.password'))->toBeNull()
         ->and(config('backup.backup.encryption'))->toBe('aes256')
         ->and(config('backup.backup.verify_backup'))->toBeTrue()
         ->and(config('filesystems.disks.backups'))->toBeNull();
+});
+
+test('it refuses to create a scheduled database backup without an archive password', function () {
+    config()->set('backup.backup.password');
+
+    $this->pendingArtisan('backup:run-encrypted')
+        ->expectsOutput('BACKUP_ARCHIVE_PASSWORD must be configured before database backups can run.')
+        ->assertFailed();
 });
 
 test('it monitors backup freshness and storage use on the backup disk', function () {
@@ -35,7 +44,7 @@ test('it schedules production backup maintenance without overlap on one server',
     $events = collect(app(Schedule::class)->events());
 
     assertBackupSchedule($events->first(
-        fn (Event $event): bool => Str::contains($event->command ?? '', 'backup:run --only-db'),
+        fn (Event $event): bool => Str::contains($event->command ?? '', 'backup:run-encrypted'),
     ), '30 1 * * *');
     assertBackupSchedule($events->first(
         fn (Event $event): bool => Str::contains($event->command ?? '', 'backup:monitor'),
