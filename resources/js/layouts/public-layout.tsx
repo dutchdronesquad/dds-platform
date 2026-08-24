@@ -285,9 +285,14 @@ export default function PublicLayout({ children }: Props) {
             return;
         }
 
+        const unmountDelay = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches
+            ? 0
+            : mobileMenuTransitionDuration;
         const unmountTimer = window.setTimeout(
             () => setIsMenuMounted(false),
-            mobileMenuTransitionDuration,
+            unmountDelay,
         );
 
         return () => window.clearTimeout(unmountTimer);
