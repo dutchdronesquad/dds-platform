@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Role;
+use App\Models\ContactSubmission;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\User;
@@ -15,6 +16,7 @@ beforeEach(function () {
 test('the main admin navigation uses the orange brand accent', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
+    ContactSubmission::factory()->followUpNeeded()->create();
 
     $this->actingAs($admin);
 
@@ -24,6 +26,9 @@ test('the main admin navigation uses the orange brand accent', function () {
         ->assertNoJavaScriptErrors()
         ->assertScript(
             "(() => { const buttons = Array.from(document.querySelectorAll('[data-sidebar=\"sidebar\"] nav [data-sidebar=\"menu-button\"]')); const active = buttons.find((button) => button.getAttribute('aria-current') === 'page'); const inactive = buttons.filter((button) => button !== active); if (active?.textContent?.trim() !== 'Events' || active.dataset.active !== 'true' || inactive.length === 0) return false; const transparent = new Set(['transparent', 'rgba(0, 0, 0, 0)']); const activeStyle = getComputedStyle(active); const activeIcon = active.querySelector('svg'); return activeIcon !== null && !transparent.has(activeStyle.backgroundColor) && !transparent.has(activeStyle.borderLeftColor) && getComputedStyle(activeIcon).color === activeStyle.color && inactive.every((button) => { const style = getComputedStyle(button); const icon = button.querySelector('svg'); return button.dataset.active === 'false' && icon !== null && transparent.has(style.backgroundColor) && getComputedStyle(icon).color !== style.color; }); })()",
+        )
+        ->assertScript(
+            "(() => { const total = document.querySelector('[data-count-variant=\"total\"]'); const alert = document.querySelector('[data-count-variant=\"alert\"]'); if (total === null || alert?.textContent?.trim() !== '1') return false; const totalStyle = getComputedStyle(total); const alertStyle = getComputedStyle(alert); const totalBounds = total.getBoundingClientRect(); const alertBounds = alert.getBoundingClientRect(); return parseFloat(totalStyle.borderRadius) >= totalBounds.height / 2 && parseFloat(alertStyle.borderRadius) >= alertBounds.height / 2 && totalStyle.borderTopWidth !== '0px' && totalBounds.width >= totalBounds.height && alertStyle.backgroundColor !== totalStyle.backgroundColor; })()",
         );
 
     $page->script("document.documentElement.classList.add('dark')");

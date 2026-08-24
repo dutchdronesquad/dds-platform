@@ -51,9 +51,9 @@ export default function ProjectsIndex({ projects, seo }: Props) {
                     },
                 ]}
                 media={{
-                    src: '/images/dds/racing/pilot-preparing-drone.jpg',
-                    alt: 'DDS-piloot bereidt een FPV-drone voor naast de racebaan',
-                    position: '58% center',
+                    src: '/images/dds/racing/race-control-training.jpg',
+                    alt: 'Racecontrol en tijdregistratieapparatuur naast het indoor FPV-parcours',
+                    position: 'center 58%',
                 }}
                 separatorTone="air"
             />

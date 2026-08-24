@@ -25,6 +25,15 @@ test('desktop visitors can use the public shell and safe external links', functi
 
     $page->assertNoJavaScriptErrors()
         ->assertSee('Where racing brings pilots together.')
+        ->assertSee('Alles voor je volgende persoonlijke record.')
+        ->assertDontSee('Goed om te weten')
+        ->assertPresent('[data-testid="pilot-development-panel"]')
+        ->assertScript(
+            'document.querySelector(\'[data-testid="pilot-development-heading"]\')?.querySelector(\'span\') === null',
+        )
+        ->assertScript(
+            "(() => { const panel = document.querySelector('[data-testid=\"pilot-development-panel\"]'); const image = panel?.querySelector('img'); const benefits = panel?.querySelectorAll('ul > li'); return panel !== null && image !== null && benefits?.length === 3 && getComputedStyle(panel).backgroundColor !== 'rgba(0, 0, 0, 0)'; })()",
+        )
         ->assertSee('De baan is even leeg.')
         ->assertSee('Partners & sponsors')
         ->assertDontSee('Inloggen')
@@ -764,6 +773,40 @@ test('representative public pages render without browser errors', function () {
         '/contact',
     ])->assertNoAccessibilityIssues()
         ->assertNoSmoke();
+});
+
+test('public page photography matches the subject of each section', function () {
+    visit('/events')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/trackwalk-sportpaleis.jpg',
+        );
+
+    visit('/locations')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/sportpaleis-light-trails.jpg',
+        );
+
+    visit('/projects')
+        ->on()->desktop()
+        ->assertAttribute(
+            'main > section:first-of-type > img',
+            'src',
+            '/images/dds/racing/race-control-training.jpg',
+        );
+
+    visit('/about')
+        ->on()->desktop()
+        ->assertAttribute(
+            'section[aria-labelledby="pilots-heading"] img',
+            'src',
+            '/images/dds/racing/pilots-in-paddock.jpg',
+        );
 });
 
 test('about page tells the DDS story and stays usable', function () {

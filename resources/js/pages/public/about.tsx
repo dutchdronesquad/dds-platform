@@ -354,11 +354,11 @@ function PilotsSection() {
             <div className="mx-auto grid w-full max-w-[100rem] lg:grid-cols-[1.16fr_0.84fr]">
                 <div className="relative min-h-[28rem] overflow-hidden bg-night-900 sm:min-h-[36rem] lg:min-h-[46rem]">
                     <img
-                        src="/images/dds/racing/pilot-at-training.jpg"
-                        alt="FPV-piloot bereidt zich naast het indoor raceparcours voor op een vlucht"
+                        src="/images/dds/racing/pilots-in-paddock.jpg"
+                        alt="FPV-piloten zitten met videobril en zender klaar naast het indoor parcours"
                         loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover"
-                        style={{ objectPosition: '54% center' }}
+                        style={{ objectPosition: 'center center' }}
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-deep-signal/45 via-transparent to-transparent lg:bg-linear-to-r lg:from-transparent lg:to-deep-signal/18" />
                 </div>
