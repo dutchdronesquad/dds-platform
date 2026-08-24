@@ -261,6 +261,7 @@ hooks:
     post-start:
         - exec-host: ddev mc mb --ignore-existing minio/dds-platform-media
         - exec-host: ddev mc anonymous set download minio/dds-platform-media
+        - exec-host: ddev mc mb --ignore-existing minio/dds-platform-backups
 
 #web_extra_exposed_ports:
 #- name: nodejs

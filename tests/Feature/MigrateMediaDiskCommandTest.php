@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('public');
-    Storage::fake('s3');
+    Storage::fake('media');
 });
 
 test('it copies media to the target disk and updates the disk record', function () {
@@ -17,13 +17,13 @@ test('it copies media to the target disk and updates the disk record', function 
 
     $this->pendingArtisan('dds:migrate-media-disk')->assertSuccessful();
 
-    Storage::disk('s3')->assertExists($path);
+    Storage::disk('media')->assertExists($path);
     Storage::disk('public')->assertExists($path);
 
     $media = $mediaAsset->file()?->fresh();
 
-    expect($media?->disk)->toBe('s3')
-        ->and($media?->conversions_disk)->toBe('s3');
+    expect($media?->disk)->toBe('media')
+        ->and($media?->conversions_disk)->toBe('media');
 });
 
 test('it removes the source files when --delete-source is passed', function () {
@@ -32,7 +32,7 @@ test('it removes the source files when --delete-source is passed', function () {
 
     $this->pendingArtisan('dds:migrate-media-disk --delete-source')->assertSuccessful();
 
-    Storage::disk('s3')->assertExists($path);
+    Storage::disk('media')->assertExists($path);
     Storage::disk('public')->assertMissing($path);
 });
 

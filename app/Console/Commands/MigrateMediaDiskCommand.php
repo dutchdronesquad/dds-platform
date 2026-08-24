@@ -10,7 +10,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[Signature('dds:migrate-media-disk
     {--from=public : The disk media currently lives on}
-    {--to=s3 : The disk to copy media to}
+    {--to=media : The disk to copy media to}
     {--delete-source : Remove the files from the source disk after a successful copy}
     {--force : Allow execution in the production environment}')]
 #[Description('Copy existing media library files from one disk to another and update their disk records.')]
