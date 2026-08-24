@@ -27,6 +27,10 @@ test('it monitors backup freshness and storage use on the backup disk', function
         ]);
 });
 
+test('it accepts an omitted backup notification recipient', function () {
+    expect(config('backup.notifications.mail.to'))->toBeEmail();
+});
+
 test('it schedules production backup maintenance without overlap on one server', function () {
     $events = collect(app(Schedule::class)->events());
 
