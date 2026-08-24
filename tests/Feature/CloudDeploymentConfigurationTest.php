@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\File;
 
 test('it directly requires the managed queue runtime dependency', function () {
@@ -15,7 +14,6 @@ test('it directly requires the managed queue runtime dependency', function () {
 });
 
 test('it configures media and backups with independent bucket credentials', function () {
-    $repository = Env::getRepository();
     $variables = [
         'MEDIA_AWS_ACCESS_KEY_ID' => 'media-key',
         'MEDIA_AWS_SECRET_ACCESS_KEY' => 'media-secret',
@@ -27,11 +25,14 @@ test('it configures media and backups with independent bucket credentials', func
         'BACKUP_AWS_BUCKET' => 'dds-production-backups',
         'BACKUP_AWS_ENDPOINT' => 'https://account-id.r2.cloudflarestorage.com',
     ];
-    $previousValues = [];
+    $previousServerValues = [];
 
     foreach ($variables as $name => $value) {
-        $previousValues[$name] = $repository->get($name);
-        $repository->set($name, $value);
+        $previousServerValues[$name] = [
+            'exists' => array_key_exists($name, $_SERVER),
+            'value' => $_SERVER[$name] ?? null,
+        ];
+        $_SERVER[$name] = $value;
     }
 
     try {
@@ -52,14 +53,14 @@ test('it configures media and backups with independent bucket credentials', func
             ])
             ->not->toHaveKey('url');
     } finally {
-        foreach ($previousValues as $name => $value) {
-            if ($value === null) {
-                $repository->clear($name);
+        foreach ($previousServerValues as $name => $previousValue) {
+            if (! $previousValue['exists']) {
+                unset($_SERVER[$name]);
 
                 continue;
             }
 
-            $repository->set($name, $value);
+            $_SERVER[$name] = $previousValue['value'];
         }
     }
 });
