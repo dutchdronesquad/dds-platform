@@ -49,7 +49,7 @@ jobs:
         run: npm run build
 
       - name: Record TIA Baseline
-        run: ./vendor/bin/pest --parallel --tia --coverage --fresh
+        run: ./vendor/bin/pest --parallel --tia --fresh
 
       - name: Resolve TIA Baseline Path
         id: baseline

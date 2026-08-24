@@ -74,9 +74,8 @@ Database:
 
 Cache and queues:
 
-- Redis for production;
 - database-backed cache, sessions, and queues are acceptable for early local development;
-- Redis should be introduced before production or once background jobs/reminders become important.
+- Valkey must be in place before production and is accessed through Laravel's Redis-compatible driver.
 
 Mail:
 
@@ -168,7 +167,7 @@ Target shape:
 app container / PHP runtime
 webserver
 PostgreSQL
-Redis
+Valkey
 queue worker
 scheduler
 storage volume
@@ -186,10 +185,10 @@ For DDS, predictable operations matter more than maximum flexibility. Choose hos
 
 ## Later Infrastructure Follow-Ups
 
-- Add Redis and decide which stores use it: cache, sessions, queues, or all three.
+- Add Valkey and decide which stores use it: cache, sessions, queues, or all three.
 - Add a queue worker process to the deployment target.
 - Add Laravel scheduler execution to the deployment target.
-- Decide whether Horizon is worth adding once Redis queues are used.
+- Decide whether Horizon is worth adding once Valkey-backed queues are used.
 - Configure production mail provider and DNS records for the application mail subdomain.
 - Define storage backup and retention strategy for uploads and imported WordPress media.
 

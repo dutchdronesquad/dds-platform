@@ -28,11 +28,12 @@ PHP 8.4 or the current Laravel-recommended version
 Node LTS
 PostgreSQL
 Mailpit
+Valkey
 ```
 
 The local database should match production, so DDEV should be configured with PostgreSQL.
 
-For the first local phase, Laravel can use database-backed cache, sessions, and queues. Redis should be added later when queue volume, cache behavior, or deployment shape makes it useful.
+Laravel uses Valkey locally through DDEV for cache, sessions, and queues. Laravel's configuration continues to use the `redis` driver and `REDIS_*` environment variables because Valkey implements the Redis protocol.
 
 ## First Setup Once Code Starts
 
@@ -43,8 +44,9 @@ Do not run this during the documentation phase. This is the recommended directio
 3. Configure DDEV for Laravel.
 4. Configure PostgreSQL.
 5. Add Mailpit for local mail testing.
-6. Run Pest as the baseline test setup.
-7. Add CI for tests, linting, and type checks.
+6. Add Valkey for local cache, sessions, and queues.
+7. Run Pest as the baseline test setup.
+8. Add CI for tests, linting, and type checks.
 
 ## Development Conventions
 

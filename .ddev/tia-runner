@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+set -eu
+
+token_file="${1}"
+shift
+
+GH_TOKEN="$(cat "${token_file}")"
+export GH_TOKEN
+export XDEBUG_MODE=coverage
+
+exec ./vendor/bin/pest --parallel --tia "$@"
