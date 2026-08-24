@@ -57,7 +57,7 @@ export type PublicEventSummary = {
 };
 
 export type PublicEventDetail = Omit<PublicEventSummary, 'location'> & {
-    content: string | null;
+    contentHtml: string | null;
     location: PublicEventSummary['location'] & {
         houseNumber: string;
         mapEmbedUrl: string;

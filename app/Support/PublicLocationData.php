@@ -8,6 +8,8 @@ use Illuminate\Support\Arr;
 
 final class PublicLocationData
 {
+    public function __construct(private MarkdownRenderer $markdown) {}
+
     /**
      * @return array{
      *     id: int,
@@ -21,11 +23,15 @@ final class PublicLocationData
      */
     public function summary(Location $location): array
     {
+        $description = $location->localizedDescription();
+
         return [
             'id' => $location->id,
             'slug' => $location->slug,
             'name' => $location->name,
-            'excerpt' => $location->localizedDescription(),
+            'excerpt' => $description === null
+                ? null
+                : $this->markdown->toPlainText($description),
             'city' => $location->city,
             'environment' => $location->environment->value,
             'image' => $this->image($location),

@@ -642,6 +642,7 @@ export function EventForm({
                                     id="content"
                                     label="Omschrijving (optioneel)"
                                     error={errors.content}
+                                    hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                                 >
                                     <textarea
                                         id="content"
@@ -654,6 +655,7 @@ export function EventForm({
                                         aria-describedby={fieldDescription(
                                             'content',
                                             errors.content,
+                                            true,
                                         )}
                                         className="min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                     />

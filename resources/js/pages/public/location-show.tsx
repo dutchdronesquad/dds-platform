@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import PublicEventCard from '@/components/public/public-event-card';
+import MarkdownContent from '@/components/public/markdown-content';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as eventsIndex } from '@/routes/events';
@@ -108,10 +109,11 @@ export default function LocationShow({ location, seo, upcomingEvents }: Props) {
                         >
                             Praktische informatie.
                         </h2>
-                        <div className="dark:text-night-300 mt-7 max-w-3xl text-base leading-8 whitespace-pre-line text-signal-muted sm:text-lg">
-                            {location.description ??
-                                'De uitgebreide omschrijving van deze locatie volgt binnenkort. De adresgegevens en faciliteiten vind je hiernaast.'}
-                        </div>
+                        <MarkdownContent
+                            className="mt-7 max-w-3xl"
+                            html={location.descriptionHtml}
+                            fallback="De uitgebreide omschrijving van deze locatie volgt binnenkort. De adresgegevens en faciliteiten vind je hiernaast."
+                        />
 
                         <Link
                             href={gettingStartedIndex({

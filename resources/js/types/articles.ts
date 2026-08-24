@@ -16,7 +16,7 @@ export type PublicArticleSummary = {
 };
 
 export type PublicArticleDetail = PublicArticleSummary & {
-    content: string;
+    contentHtml: string | null;
 };
 
 export type PublicArticlePaginator = {

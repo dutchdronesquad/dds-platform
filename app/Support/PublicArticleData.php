@@ -5,10 +5,11 @@ namespace App\Support;
 use App\Models\Article;
 use App\Models\MediaAsset;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 final class PublicArticleData
 {
+    public function __construct(private MarkdownRenderer $markdown) {}
+
     /**
      * @return array{
      *     id: int,
@@ -27,7 +28,9 @@ final class PublicArticleData
             'id' => $article->id,
             'slug' => $article->slug,
             'title' => $article->title,
-            'excerpt' => Str::limit(Str::squish($article->content), 150),
+            'excerpt' => str($this->markdown->toPlainText($article->content))
+                ->limit(150)
+                ->toString(),
             'category' => $article->category->value,
             'publishedAt' => $article->published_at?->toIso8601String(),
             'author' => $article->author === null ? null : [

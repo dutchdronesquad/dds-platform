@@ -17,7 +17,7 @@ export type PublicLocationDetail = {
     ceilingHeightMetres: string | null;
     city: string;
     countryCode: string;
-    description: string | null;
+    descriptionHtml: string | null;
     environment: LocationEnvironment;
     facilities: string[];
     floorSizeSquareMetres: number | null;

@@ -23,6 +23,7 @@ test('the event index lists only published upcoming events in chronological orde
     ]);
     $nextEvent = Event::factory()->published()->training()->create([
         'title' => 'Next training',
+        'content' => 'Neem je **racequad** mee.',
         'starts_at' => now()->addWeek(),
         'season_id' => Season::factory()->create(['name' => 'Seizoen 2026/27']),
         'price_cents' => 1500,
@@ -65,6 +66,7 @@ test('the event index lists only published upcoming events in chronological orde
             ->where('events.data.0.id', $nextEvent->id)
             ->where('events.data.0.priceCents', 1500)
             ->where('events.data.0.capacity', 16)
+            ->where('events.data.0.excerpt', 'Neem je racequad mee.')
             ->where('events.data.0.registrationOpensAt', $nextEvent->registration_opens_at?->toIso8601String())
             ->where('events.data.0.registrationDeadlineAt', $nextEvent->registration_deadline_at?->toIso8601String())
             ->where('events.data.0.registrationStatus', EventRegistrationStatus::Open->value)
@@ -318,7 +320,7 @@ test('a published training detail exposes practical and registration information
         ->create([
             'title' => 'Indoor training round 01',
             'slug' => 'indoor-training-round-01',
-            'content' => 'Neem je racequad, goggles en voldoende accu’s mee.',
+            'content' => "## Benodigdheden\n\nNeem je **racequad**, goggles en voldoende accu’s mee.",
             'starts_at' => '2026-10-15 17:00:00',
             'ends_at' => '2026-10-15 20:30:00',
             'price_cents' => 1500,
@@ -338,7 +340,10 @@ test('a published training detail exposes practical and registration information
             ->where('event.title', 'Indoor training round 01')
             ->where('event.slug', 'indoor-training-round-01')
             ->where('event.type', EventType::Training->value)
-            ->where('event.content', 'Neem je racequad, goggles en voldoende accu’s mee.')
+            ->where(
+                'event.contentHtml',
+                "<h2>Benodigdheden</h2>\n<p>Neem je <strong>racequad</strong>, goggles en voldoende accu’s mee.</p>\n",
+            )
             ->where('event.startsAt', $event->starts_at->toIso8601String())
             ->where('event.endsAt', $event->ends_at?->toIso8601String())
             ->where('event.location.name', 'Sportpaleis Alkmaar')

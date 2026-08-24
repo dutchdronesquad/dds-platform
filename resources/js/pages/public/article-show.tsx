@@ -1,8 +1,13 @@
 import { CalendarDays, UserRound } from 'lucide-react';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
+import MarkdownContent from '@/components/public/markdown-content';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as newsIndex } from '@/routes/news';
-import type { ArticleCategory, PublicArticleDetail, SeoMetadata } from '@/types';
+import type {
+    ArticleCategory,
+    PublicArticleDetail,
+    SeoMetadata,
+} from '@/types';
 
 type Props = {
     article: PublicArticleDetail;
@@ -62,7 +67,9 @@ export default function ArticleShow({ article, seo }: Props) {
                             <ArticleQuickFact
                                 icon={UserRound}
                                 label="Auteur"
-                                value={article.author?.name ?? 'Dutch Drone Squad'}
+                                value={
+                                    article.author?.name ?? 'Dutch Drone Squad'
+                                }
                             />
                         </dl>
                     </div>
@@ -75,9 +82,7 @@ export default function ArticleShow({ article, seo }: Props) {
                     <h2 id="article-heading" className="sr-only">
                         Artikel
                     </h2>
-                    <div className="dark:text-night-300 max-w-none text-base leading-8 whitespace-pre-line text-signal-muted sm:text-lg">
-                        {article.content}
-                    </div>
+                    <MarkdownContent html={article.contentHtml} />
                 </section>
             </div>
 
