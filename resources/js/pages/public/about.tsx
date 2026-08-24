@@ -90,6 +90,37 @@ const timeline: TimelineEntry[] = [
     },
 ];
 
+const archivePhotos = [
+    {
+        src: '/images/dds/racing/race-podium.jpg',
+        alt: 'Winnaars op het podium na een DDS-race in het Sportpaleis',
+        year: '2019',
+        caption: 'De eerste DDS-races',
+        position: 'center 42%',
+    },
+    {
+        src: '/images/dds/racing/first-race-awards.jpg',
+        alt: 'Piloten ontvangen prijzen na de eerste DDS-race in 2019',
+        year: '2019',
+        caption: 'Samen racen, samen vieren',
+        position: 'center center',
+    },
+    {
+        src: '/images/dds/racing/pilot-preparing-close-up.jpg',
+        alt: 'Piloot stelt een FPV-racedrone af naast het parcours',
+        year: '2019',
+        caption: 'Bouwen en afstellen',
+        position: 'center 38%',
+    },
+    {
+        src: '/images/dds/racing/paddock-pilots.jpg',
+        alt: 'Twee FPV-piloten met videobril en zender in de paddock',
+        year: '2021',
+        caption: 'Klaar voor de volgende heat',
+        position: 'center center',
+    },
+];
+
 export default function About({ seo }: Props) {
     return (
         <>
@@ -127,9 +158,67 @@ export default function About({ seo }: Props) {
 
             <IdentitySection />
             <TimelineSection />
+            <ArchiveGallerySection />
             <PilotsSection />
             <BehindTheRaceSection />
         </>
+    );
+}
+
+function ArchiveGallerySection() {
+    return (
+        <section
+            aria-labelledby="archive-heading"
+            className="bg-paper py-public-section text-deep-signal dark:bg-night-950 dark:text-white"
+        >
+            <div className="mx-auto w-full max-w-7xl px-public-gutter">
+                <div className="grid gap-7 lg:grid-cols-[0.82fr_1.18fr] lg:items-end lg:gap-20">
+                    <div>
+                        <Eyebrow line={false}>Uit het archief</Eyebrow>
+                        <h2
+                            id="archive-heading"
+                            className="mt-5 max-w-xl font-public-display text-4xl leading-[1] font-semibold tracking-[-0.05em] text-balance sm:text-5xl lg:text-6xl"
+                        >
+                            Momenten die DDS vormden.
+                        </h2>
+                    </div>
+                    <p className="dark:text-night-300 max-w-2xl text-base leading-7 text-signal-muted sm:text-lg sm:leading-8">
+                        Van de eerste wedstrijden tot samen sleutelen in de
+                        paddock: de baan veranderde door de jaren heen, maar de
+                        combinatie van competitie en elkaar helpen bleef.
+                    </p>
+                </div>
+
+                <div
+                    data-testid="about-archive-gallery"
+                    className="mt-12 grid grid-cols-2 gap-2 sm:gap-4 lg:mt-16"
+                >
+                    {archivePhotos.map((photo) => (
+                        <figure
+                            key={photo.src}
+                            className="group relative aspect-[4/3] overflow-hidden bg-deep-signal"
+                        >
+                            <img
+                                src={photo.src}
+                                alt={photo.alt}
+                                loading="lazy"
+                                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
+                                style={{ objectPosition: photo.position }}
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-deep-signal/90 via-deep-signal/5 to-transparent" />
+                            <figcaption className="absolute right-4 bottom-4 left-4 text-white sm:right-6 sm:bottom-6 sm:left-6">
+                                <span className="text-[10px] font-semibold tracking-[0.16em] text-dds-cyan uppercase sm:text-xs">
+                                    {photo.year}
+                                </span>
+                                <p className="mt-1 font-public-display text-lg leading-tight font-semibold tracking-[-0.025em] sm:mt-2 sm:text-2xl">
+                                    {photo.caption}
+                                </p>
+                            </figcaption>
+                        </figure>
+                    ))}
+                </div>
+            </div>
+        </section>
     );
 }
 

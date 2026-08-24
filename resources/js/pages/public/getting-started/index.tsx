@@ -99,9 +99,9 @@ export default function GettingStartedIndex({
                     },
                 ]}
                 media={{
-                    src: '/images/dds/racing/pilot-at-training.jpg',
-                    alt: 'Piloot tijdens een indoor training van Dutch Drone Squad',
-                    position: '62% center',
+                    src: '/images/dds/racing/pilot-helping-with-drone.jpg',
+                    alt: 'Ervaren piloot helpt een jonge FPV-piloot met zijn racedrone',
+                    position: '38% center',
                 }}
                 separatorTone="warmup"
             />

@@ -23,9 +23,9 @@ export default function PartnersIndex({ partners, seo }: Props) {
                     { label: 'Werk met ons samen', href: contact().url },
                 ]}
                 media={{
-                    src: '/images/dds/racing/race-control.jpg',
-                    alt: 'Race control tijdens een indoor FPV-event van Dutch Drone Squad',
-                    position: '58% center',
+                    src: '/images/dds/racing/sponsored-finish-gate.jpg',
+                    alt: 'Gesponsorde finishpoort en baanmateriaal tijdens een DDS-race',
+                    position: 'center center',
                 }}
                 separatorTone="air"
             />

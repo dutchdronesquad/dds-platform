@@ -84,9 +84,9 @@ export default function HouseRules({ seo }: Props) {
                     },
                 ]}
                 media={{
-                    src: '/images/dds/racing/pilot-preparing-drone.jpg',
-                    alt: 'FPV-piloot bereidt veilig een racedrone voor',
-                    position: '44% center',
+                    src: '/images/dds/racing/pilot-checking-drone.jpg',
+                    alt: 'FPV-piloot controleert zijn racedrone naast het parcours',
+                    position: '72% center',
                 }}
                 separatorTone="paper"
             />
