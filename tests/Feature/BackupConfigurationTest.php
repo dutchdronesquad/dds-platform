@@ -6,15 +6,18 @@ use Illuminate\Support\Str;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
-test('it stores verified database backups under the existing s3 disk', function () {
+test('it stores verified database backups on the dedicated private disk', function () {
     expect(config('backup.backup.name'))->toBe('backups/dds-platform')
         ->and(config('backup.backup.source.files.include'))->toBe([])
         ->and(config('backup.backup.source.databases'))->toBe([config('database.default')])
-        ->and(config('backup.backup.destination.disks'))->toBe(['s3'])
+        ->and(config('backup.backup.destination.disks'))->toBe(['backups'])
         ->and(config('backup.backup.password'))->toBeNull()
         ->and(config('backup.backup.encryption'))->toBe('aes256')
         ->and(config('backup.backup.verify_backup'))->toBeTrue()
-        ->and(config('filesystems.disks.backups'))->toBeNull();
+        ->and(config('filesystems.disks.backups.driver'))->toBe('s3')
+        ->and(config('filesystems.disks.backups.url'))->toBeNull()
+        ->and(config('filesystems.disks.backups.throw'))->toBeTrue()
+        ->and(config('filesystems.disks.backups.report'))->toBeTrue();
 });
 
 test('it refuses to create a scheduled database backup without an archive password', function () {
@@ -29,7 +32,7 @@ test('it monitors backup freshness and storage use on the backup disk', function
     $monitoredBackup = config('backup.monitor_backups.0');
 
     expect($monitoredBackup['name'])->toBe('backups/dds-platform')
-        ->and($monitoredBackup['disks'])->toBe(['s3'])
+        ->and($monitoredBackup['disks'])->toBe(['backups'])
         ->and($monitoredBackup['health_checks'])->toHaveKeys([
             MaximumAgeInDays::class,
             MaximumStorageInMegabytes::class,

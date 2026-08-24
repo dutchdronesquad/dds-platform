@@ -162,7 +162,7 @@ return [
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                's3',
+                'backups',
             ],
 
             /*
@@ -295,7 +295,7 @@ return [
     'monitor_backups' => [
         [
             'name' => 'backups/dds-platform',
-            'disks' => ['s3'],
+            'disks' => ['backups'],
             'health_checks' => [
                 MaximumAgeInDays::class => env('BACKUP_MAX_AGE_IN_DAYS', 1),
                 MaximumStorageInMegabytes::class => env('BACKUP_MAX_STORAGE_MEGABYTES', 10240),
