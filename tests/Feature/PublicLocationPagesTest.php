@@ -74,7 +74,11 @@ test('a location detail exposes structured address, facilities and localized des
         'cover_image_id' => $coverImage->id,
     ]);
 
-    $this->get(route('locations.show', ['location' => $location->slug]))
+    $response = $this->get(route('locations.show', ['location' => $location->slug]));
+
+    $coverImage->refresh();
+
+    $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('public/location-show')
