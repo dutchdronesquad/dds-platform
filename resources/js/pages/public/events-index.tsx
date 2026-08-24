@@ -48,9 +48,9 @@ export default function EventsIndex({
                     },
                 ]}
                 media={{
-                    src: '/images/dds/racing/indoor-track.jpg',
-                    alt: 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
-                    position: '56% center',
+                    src: '/images/dds/racing/trackwalk-sportpaleis.jpg',
+                    alt: 'Piloten tijdens de gezamenlijke trackwalk voor een DDS-vliegavond',
+                    position: 'center 72%',
                 }}
             />
 

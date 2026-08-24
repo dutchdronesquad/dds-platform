@@ -29,9 +29,9 @@ export default function LocationsIndex({ locations, seo }: Props) {
                     { label: 'Bekijk de agenda', href: eventsIndex.url() },
                 ]}
                 media={{
-                    src: '/images/dds/racing/indoor-track.jpg',
-                    alt: 'Indoor FPV-raceparcours van Dutch Drone Squad in Alkmaar',
-                    position: '56% center',
+                    src: '/images/dds/racing/sportpaleis-light-trails.jpg',
+                    alt: 'FPV-drone met lichtsporen boven het parcours in Sportpaleis Alkmaar',
+                    position: 'center center',
                 }}
             />
 

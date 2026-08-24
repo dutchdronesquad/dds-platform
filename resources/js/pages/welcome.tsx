@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Maximize2, Timer, UsersRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import PublicEventCard from '@/components/public/public-event-card';
 import PublicPartnerLogo from '@/components/public/public-partner-logo';
@@ -32,14 +32,17 @@ type WelcomeProps = {
 
 const pilotBenefits = [
     {
+        icon: Timer,
         title: 'Echte rondetiming',
         description: 'Zie na iedere heat waar je tijd wint.',
     },
     {
+        icon: Maximize2,
         title: 'Een volledige track',
         description: '2.000 m² sportvloer met 11 meter vrije hoogte.',
     },
     {
+        icon: UsersRound,
         title: 'Hulp in de paddock',
         description: 'Vergelijk racelijnen, afstelling en techniek.',
     },
@@ -80,13 +83,16 @@ export default function Welcome({
                 id="ervaren-piloten"
                 className="scroll-mt-20 overflow-hidden bg-air text-deep-signal"
             >
-                <div className="mx-auto w-full max-w-7xl px-public-gutter pt-12 pb-20 sm:pt-16 sm:pb-28 lg:pt-20 lg:pb-36">
-                    <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr] lg:items-end lg:gap-20">
+                <div className="mx-auto w-full max-w-7xl px-public-gutter pt-12 pb-20 sm:pt-16 sm:pb-28 lg:pt-20 lg:pb-32">
+                    <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-20">
                         <div>
                             <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase">
                                 Voor piloten die verder willen
                             </p>
-                            <h2 className="mt-5 max-w-4xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.06em] text-balance sm:text-6xl lg:text-7xl">
+                            <h2
+                                data-testid="pilot-development-heading"
+                                className="mt-5 max-w-4xl font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.06em] text-balance sm:text-6xl lg:text-7xl"
+                            >
                                 Sneller worden doe je samen.
                             </h2>
                         </div>
@@ -99,38 +105,87 @@ export default function Welcome({
                         </p>
                     </div>
 
-                    <div className="mt-14 grid gap-10 lg:mt-20 lg:grid-cols-[1.36fr_0.64fr] lg:items-end lg:gap-16">
-                        <div>
-                            <figure>
-                                <div className="relative aspect-[4/3] overflow-hidden bg-deep-signal/10">
-                                    <img
-                                        src="/images/dds/racing/training-community.jpg"
-                                        alt="Piloten en bezoekers tijdens een event van Dutch Drone Squad"
-                                        loading="lazy"
-                                        className="h-full w-full object-cover"
-                                    />
-                                    <span className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange" />
-                                    <span className="absolute bottom-0 left-0 h-1.5 w-1/4 bg-dds-cyan" />
+                    <div
+                        data-testid="pilot-development-panel"
+                        className="mt-14 grid overflow-hidden border border-deep-signal/15 bg-deep-signal shadow-[0_30px_80px_-45px_rgb(18_60_67/0.65)] lg:mt-16 lg:grid-cols-[1.34fr_0.66fr]"
+                    >
+                        <figure className="relative min-h-[25rem] overflow-hidden bg-deep-signal/10 sm:min-h-[32rem] lg:min-h-[36rem]">
+                            <img
+                                src="/images/dds/racing/training-community.jpg"
+                                alt="Piloten en bezoekers tijdens een event van Dutch Drone Squad"
+                                loading="lazy"
+                                className="absolute inset-0 h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-deep-signal/85 via-deep-signal/5 to-transparent" />
+                            <span className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange" />
+                            <figcaption className="absolute right-6 bottom-6 left-6 flex items-end justify-between gap-4 text-white sm:right-8 sm:bottom-8 sm:left-8">
+                                <div>
+                                    <p className="text-[11px] font-semibold tracking-[0.16em] text-dds-cyan uppercase">
+                                        Train · vergelijk · verbeter
+                                    </p>
+                                    <p className="mt-2 max-w-md font-public-display text-2xl leading-tight font-semibold tracking-[-0.035em] sm:text-3xl">
+                                        Iedere ronde geeft je iets om mee verder
+                                        te gaan.
+                                    </p>
                                 </div>
-                            </figure>
-                        </div>
+                                <span
+                                    aria-hidden="true"
+                                    className="hidden h-px flex-1 bg-white/35 sm:block"
+                                />
+                            </figcaption>
+                        </figure>
 
-                        <div>
-                            <dl className="border-t border-deep-signal/18">
-                                {pilotBenefits.map((benefit) => (
-                                    <div
-                                        key={benefit.title}
-                                        className="border-b border-deep-signal/18 py-6"
-                                    >
-                                        <dt className="font-public-display text-2xl font-semibold tracking-[-0.035em]">
-                                            {benefit.title}
-                                        </dt>
-                                        <dd className="mt-2 text-sm leading-6 text-signal-muted">
-                                            {benefit.description}
-                                        </dd>
-                                    </div>
-                                ))}
+                        <div className="flex flex-col px-6 py-8 text-white sm:px-8 sm:py-10 lg:px-9 lg:py-12">
+                            <p className="text-[11px] font-semibold tracking-[0.16em] text-dds-orange uppercase">
+                                Op de baan
+                            </p>
+                            <h3 className="mt-4 max-w-sm font-public-display text-3xl leading-[1.04] font-semibold tracking-[-0.045em] text-balance sm:text-4xl">
+                                Alles voor je volgende persoonlijke record.
+                            </h3>
+
+                            <dl className="mt-8 border-t border-white/15">
+                                {pilotBenefits.map((benefit, index) => {
+                                    const Icon = benefit.icon;
+
+                                    return (
+                                        <div
+                                            key={benefit.title}
+                                            className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-white/15 py-5"
+                                        >
+                                            <span
+                                                className={
+                                                    index === 0
+                                                        ? 'flex size-10 items-center justify-center bg-dds-orange text-deep-signal'
+                                                        : 'flex size-10 items-center justify-center bg-white/8 text-dds-cyan'
+                                                }
+                                            >
+                                                <Icon
+                                                    aria-hidden="true"
+                                                    className="size-[1.125rem]"
+                                                    strokeWidth={2}
+                                                />
+                                            </span>
+                                            <div>
+                                                <dt className="font-public-display text-xl font-semibold tracking-[-0.03em]">
+                                                    {benefit.title}
+                                                </dt>
+                                                <dd className="mt-1.5 text-sm leading-6 text-white/58">
+                                                    {benefit.description}
+                                                </dd>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </dl>
+
+                            <Link
+                                href={eventsIndex()}
+                                prefetch
+                                className="group mt-8 inline-flex items-center gap-2 self-start text-sm font-semibold text-dds-cyan transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-deep-signal focus-visible:outline-none"
+                            >
+                                Bekijk komende trainingen
+                                <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+                            </Link>
                         </div>
                     </div>
                 </div>

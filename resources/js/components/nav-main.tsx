@@ -59,12 +59,18 @@ export function NavMain({
                                 </SidebarMenuButton>
                                 {item.count !== undefined &&
                                     (item.countVariant === 'total' ? (
-                                        <SidebarMenuBadge className="bg-neutral-100 text-neutral-600 dark:bg-white/8 dark:text-neutral-400">
+                                        <SidebarMenuBadge
+                                            data-count-variant="total"
+                                            className="peer-data-[active=true]/menu-button:border-flight-200 right-2 h-5 min-w-5 rounded-full border border-sidebar-border/80 bg-white/80 px-1.5 text-[10px] font-semibold tracking-tight text-neutral-500 shadow-xs peer-data-[active=true]/menu-button:bg-flight-100 peer-data-[active=true]/menu-button:text-flight-700 dark:border-white/10 dark:bg-white/7 dark:text-neutral-400 dark:peer-data-[active=true]/menu-button:border-flight-400/25 dark:peer-data-[active=true]/menu-button:bg-flight-500/15 dark:peer-data-[active=true]/menu-button:text-flight-300"
+                                        >
                                             {item.count}
                                         </SidebarMenuBadge>
                                     ) : (
                                         Boolean(item.count) && (
-                                            <SidebarMenuBadge className="bg-destructive/10 text-destructive dark:bg-destructive/15">
+                                            <SidebarMenuBadge
+                                                data-count-variant="alert"
+                                                className="right-2 h-5 min-w-5 rounded-full bg-flight-500 px-1.5 text-[10px] font-bold tracking-tight text-night-950 shadow-[0_0_0_2px_var(--color-sidebar)] peer-data-[active=true]/menu-button:bg-flight-600 peer-data-[active=true]/menu-button:text-white dark:bg-flight-400 dark:shadow-[0_0_0_2px_var(--color-sidebar)] dark:peer-data-[active=true]/menu-button:bg-flight-300 dark:peer-data-[active=true]/menu-button:text-night-950"
+                                            >
                                                 {item.count}
                                             </SidebarMenuBadge>
                                         )
