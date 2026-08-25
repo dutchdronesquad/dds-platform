@@ -423,7 +423,7 @@ final class MapWordPressPages
                     'type' => 'location',
                     'location_id' => $location->getKey(),
                     'location_slug' => $location->slug,
-                    'path' => route('locations.show', ['location' => $location], false),
+                    'path' => route('locations.show', ['location' => $location->slug], false),
                 ];
             }
 
