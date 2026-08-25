@@ -114,7 +114,7 @@ final class MapWordPressPages
                 continue;
             }
 
-            $target = $this->resolveTarget($selection);
+            $target = $this->resolveTarget($selection, $dryRun);
 
             if (is_string($target)) {
                 $this->addFailure($report, $wordpressId, $target);
@@ -384,7 +384,7 @@ final class MapWordPressPages
      * } $selection
      * @return array<string, mixed>|string
      */
-    private function resolveTarget(array $selection): array|string
+    private function resolveTarget(array $selection, bool $dryRun): array|string
     {
         if ($selection['decision'] === 'gone') {
             return ['type' => 'gone', 'status_code' => 410];
@@ -403,15 +403,35 @@ final class MapWordPressPages
                 ? Location::query()->where('slug', $locationSlug)->first()
                 : null;
 
-            if (! $location instanceof Location) {
+            $locationAttributes = is_string($locationSlug)
+                ? config("wordpress-import.locations.{$locationSlug}")
+                : null;
+
+            if (! $location instanceof Location && ! is_array($locationAttributes)) {
                 return "Doellocatie {$locationSlug} bestaat niet.";
+            }
+
+            if (! $location instanceof Location && ! $dryRun) {
+                $location = Location::query()->firstOrCreate(
+                    ['slug' => $locationSlug],
+                    $locationAttributes,
+                );
+            }
+
+            if ($location instanceof Location) {
+                return [
+                    'type' => 'location',
+                    'location_id' => $location->getKey(),
+                    'location_slug' => $location->slug,
+                    'path' => route('locations.show', ['location' => $location->slug], false),
+                ];
             }
 
             return [
                 'type' => 'location',
-                'location_id' => $location->getKey(),
-                'location_slug' => $location->slug,
-                'path' => route('locations.show', ['location' => $location], false),
+                'location_id' => null,
+                'location_slug' => $locationSlug,
+                'path' => route('locations.show', ['location' => $locationSlug], false),
             ];
         }
 

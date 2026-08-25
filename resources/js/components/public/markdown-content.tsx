@@ -17,6 +17,7 @@ export default function MarkdownContent({ className, fallback, html }: Props) {
         '[&_h2]:mt-10 [&_h2]:font-public-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-[-0.03em] [&_h2:first-child]:mt-0',
         '[&_h3]:mt-8 [&_h3]:font-public-display [&_h3]:text-xl [&_h3]:font-semibold [&_h3:first-child]:mt-0',
         '[&_hr]:my-8 [&_hr]:border-paddock-rule dark:[&_hr]:border-white/12',
+        '[&_img]:my-8 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:border [&_img]:border-paddock-rule [&_img]:object-cover [&_img]:shadow-sm dark:[&_img]:border-white/12',
         '[&_li]:my-1 [&_ol]:my-5 [&_ol]:list-decimal [&_ol]:pl-7 [&_p]:my-5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-deep-signal dark:[&_strong]:text-white [&_ul]:my-5 [&_ul]:list-disc [&_ul]:pl-7',
         '[&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-night-900 [&_pre]:p-5 [&_pre]:text-night-100 [&_pre_code]:bg-transparent [&_pre_code]:p-0',
         '[&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-paddock-rule [&_td]:p-3 dark:[&_td]:border-white/12 [&_th]:border [&_th]:border-paddock-rule [&_th]:bg-paddock [&_th]:p-3 [&_th]:text-left dark:[&_th]:border-white/12 dark:[&_th]:bg-night-800',

@@ -120,6 +120,41 @@ test('it writes idempotent mappings and preserves manual review decisions', func
     Http::assertSentCount(2);
 });
 
+test('it creates approved WordPress locations once and preserves later editorial changes', function () {
+    writeWordPressPageManifest(
+        $this->manifestPath,
+        wordpressPageManifest('sportpaleis-alkmaar'),
+    );
+    Http::fake([
+        'legacy.example/wp-json/wp/v2/pages*' => Http::response(wordpressPageRecords()),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])->assertSuccessful();
+
+    $location = Location::query()->where('slug', 'sportpaleis-alkmaar')->firstOrFail();
+
+    expect($location)
+        ->name->toBe('Sportpaleis Alkmaar')
+        ->street->toBe('Terborchlaan')
+        ->city->toBe('Alkmaar');
+
+    $location->update(['name' => 'Handmatig bijgewerkte naam']);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'pages',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])->assertSuccessful();
+
+    expect(Location::query()->where('slug', 'sportpaleis-alkmaar')->sole())
+        ->name->toBe('Handmatig bijgewerkte naam')
+        ->and(Location::query()->count())->toBe(1);
+});
+
 test('it reports unmapped source pages and invalid targets instead of creating generic pages', function () {
     writeWordPressPageManifest($this->manifestPath, [
         'source' => [

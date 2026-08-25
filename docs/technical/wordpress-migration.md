@@ -324,11 +324,11 @@ The published page inventory was reconfirmed through REST on 2026-07-29:
 | WordPress page          | Decision   | Explicit target                                                                                       |
 | ----------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
 | `49764` · `media`       | `rewrite`  | Manual code-owned `media-overview` at `/media`; preserve the nine mentions for review.                |
-| `49747` · `oosterhout`  | `rewrite`  | Existing `Location` with slug `sporthal-oosterhout`; manually compare useful facts.                   |
+| `49747` · `oosterhout`  | `rewrite`  | Approved `Location` with slug `sporthal-oosterhout`; create it when missing and manually compare useful facts.                   |
 | `49706` · `huisregels`  | `rewrite`  | Named route `house_rules`; keep the content code-owned.                                               |
 | `49704` · `trainingen`  | `rewrite`  | Named route `events.index` with `type=training`; manually compare current schedule and guidance.      |
-| `49498` · `sportpaleis` | `rewrite`  | Existing `Location` with slug `sportpaleis-alkmaar`; manually compare facts and selected photography. |
-| `49486` · `koggenhal`   | `rewrite`  | Existing `Location` with slug `sporthal-koggenhal`; manually compare useful facts.                    |
+| `49498` · `sportpaleis` | `rewrite`  | Approved `Location` with slug `sportpaleis-alkmaar`; create it when missing and manually compare facts and selected photography. |
+| `49486` · `koggenhal`   | `rewrite`  | Approved `Location` with slug `sporthal-koggenhal`; create it when missing and manually compare useful facts.                    |
 | `2039` · `nieuws`       | `redirect` | Named route `news.index`.                                                                             |
 | `319` · `contact`       | `rewrite`  | Named route `contact`; retain the implemented form and workflow.                                      |
 | `318` · `stories`       | `gone`     | Explicit `410 Gone`; unused template page.                                                            |

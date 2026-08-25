@@ -12,7 +12,8 @@ use DOMText;
  *     unresolved_links: list<string>,
  *     missing_media: list<string>,
  *     suspicious_markup: list<string>,
- *     transformations: list<string>
+ *     transformations: list<string>,
+ *     embedded_media_urls: list<string>
  * }
  */
 final class WordPressContentNormalizer
@@ -26,7 +27,8 @@ final class WordPressContentNormalizer
      *     unresolved_links: list<string>,
      *     missing_media: list<string>,
      *     suspicious_markup: list<string>,
-     *     transformations: list<string>
+     *     transformations: list<string>,
+     *     embedded_media_urls: list<string>
      * }
      */
     public function normalize(
@@ -66,6 +68,7 @@ final class WordPressContentNormalizer
                 'missing_media' => $diagnostics['missing_media'],
                 'suspicious_markup' => $diagnostics['suspicious_markup'],
                 'transformations' => $diagnostics['transformations'],
+                'embedded_media_urls' => $diagnostics['embedded_media_urls'],
             ];
         }
 
@@ -80,6 +83,7 @@ final class WordPressContentNormalizer
             'missing_media' => $diagnostics['missing_media'],
             'suspicious_markup' => $diagnostics['suspicious_markup'],
             'transformations' => $diagnostics['transformations'],
+            'embedded_media_urls' => $diagnostics['embedded_media_urls'],
         ];
     }
 
@@ -277,8 +281,9 @@ final class WordPressContentNormalizer
 
         if (is_string($mappedUrl)) {
             $this->record($diagnostics['transformations'], "Media herschreven: {$url} → {$mappedUrl}.");
+            $this->record($diagnostics['embedded_media_urls'], $mappedUrl);
 
-            return "\n\nAfbeelding: {$label} ({$mappedUrl})\n\n";
+            return "\n\n![{$this->markdownAlt($label)}](<{$mappedUrl}>)\n\n";
         }
 
         if ($this->isInternalUrl($url, $internalHosts)) {
@@ -318,6 +323,15 @@ final class WordPressContentNormalizer
     private function labelledUrl(string $label, string $url): string
     {
         return $label === '' || $label === $url ? $url : "{$label} ({$url})";
+    }
+
+    private function markdownAlt(string $alt): string
+    {
+        return str_replace(
+            ['\\', '[', ']'],
+            ['\\\\', '\\[', '\\]'],
+            $alt,
+        );
     }
 
     private function attributeValue(DOMElement $node, string $attribute): string
@@ -400,6 +414,7 @@ final class WordPressContentNormalizer
             'missing_media' => [],
             'suspicious_markup' => [],
             'transformations' => [],
+            'embedded_media_urls' => [],
         ];
     }
 

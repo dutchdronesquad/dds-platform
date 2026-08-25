@@ -138,7 +138,10 @@ final class RecordWordPressRehearsal
         }
 
         foreach ($samples as $sample) {
-            if (Arr::get($sample, 'passed') !== true) {
+            $manuallyAccepted = $manualReviewApproved
+                && Arr::get($sample, 'manual_review_eligible') === true;
+
+            if (Arr::get($sample, 'passed') !== true && ! $manuallyAccepted) {
                 $messages[] = 'Publieke sample '.Arr::get($sample, 'type').' '.Arr::get($sample, 'reference').' faalde: '.Arr::get($sample, 'actual').'.';
             }
         }
@@ -216,7 +219,12 @@ final class RecordWordPressRehearsal
         $lines[] = '| --- | --- | --- | --- | --- | --- |';
 
         foreach ($rehearsal['samples'] as $sample) {
-            $lines[] = '| '.$sample['type'].' | '.$sample['reference'].' | '.$sample['url'].' | '.$sample['expected'].' | '.$sample['actual'].' | '.($sample['passed'] ? 'pass' : 'fail').' |';
+            $result = match (true) {
+                $sample['passed'] => 'pass',
+                $rehearsal['manual_review_approved'] && Arr::get($sample, 'manual_review_eligible') === true => 'manual',
+                default => 'fail',
+            };
+            $lines[] = '| '.$sample['type'].' | '.$sample['reference'].' | '.$sample['url'].' | '.$sample['expected'].' | '.$sample['actual'].' | '.$result.' |';
         }
 
         $lines[] = '';

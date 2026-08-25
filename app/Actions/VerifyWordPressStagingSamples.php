@@ -30,6 +30,7 @@ final class VerifyWordPressStagingSamples
      *     expected: string,
      *     actual: string,
      *     passed: bool,
+     *     manual_review_eligible: bool,
      *     message: string
      * }>
      *
@@ -50,6 +51,7 @@ final class VerifyWordPressStagingSamples
                     'expected' => 'sample available',
                     'actual' => 'no mapped sample',
                     'passed' => false,
+                    'manual_review_eligible' => false,
                     'message' => "Geen {$type}-sample beschikbaar voor stagingcontrole.",
                 ];
             }
@@ -151,7 +153,7 @@ final class VerifyWordPressStagingSamples
 
     /**
      * @param  array{type: string, reference: string, url: string, expected: string, redirect_target: string|null}  $sample
-     * @return array{type: string, reference: string, url: string, expected: string, actual: string, passed: bool, message: string}
+     * @return array{type: string, reference: string, url: string, expected: string, actual: string, passed: bool, manual_review_eligible: bool, message: string}
      */
     private function verify(array $sample): array
     {
@@ -174,6 +176,7 @@ final class VerifyWordPressStagingSamples
                 'expected' => $sample['expected'],
                 'actual' => 'connection failed',
                 'passed' => false,
+                'manual_review_eligible' => false,
                 'message' => $exception->getMessage(),
             ];
         }
@@ -190,6 +193,7 @@ final class VerifyWordPressStagingSamples
                 'expected' => $sample['expected'],
                 'actual' => "HTTP {$response->status()} → {$location}",
                 'passed' => $passed,
+                'manual_review_eligible' => $sample['type'] !== 'media' && $response->status() === 403,
                 'message' => $passed ? 'Redirectdoel gecontroleerd.' : 'Redirectstatus of Location-header wijkt af.',
             ];
         }
@@ -201,12 +205,19 @@ final class VerifyWordPressStagingSamples
             'expected' => $sample['expected'],
             'actual' => 'HTTP '.$response->status(),
             'passed' => $response->status() === 200,
+            'manual_review_eligible' => $sample['type'] !== 'media' && $response->status() === 403,
             'message' => $response->status() === 200 ? 'Publieke sample bereikbaar.' : 'Publieke sample gaf geen HTTP 200.',
         ];
     }
 
     private function stagingUrl(string $baseUrl, string $path): string
     {
+        $scheme = parse_url($path, PHP_URL_SCHEME);
+
+        if (is_string($scheme) && in_array($scheme, ['http', 'https'], true)) {
+            return $path;
+        }
+
         $parts = parse_url($path);
         $relativePath = is_array($parts) ? ($parts['path'] ?? '/') : $path;
         $query = is_array($parts) && isset($parts['query']) ? '?'.$parts['query'] : '';
