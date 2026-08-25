@@ -23,7 +23,7 @@ test('the location index lists all locations with a localized excerpt', function
     $goorn = Location::factory()->create([
         'name' => 'Sportcentrum Koggenhal',
         'city' => 'De Goorn',
-        'description' => ['nl' => 'Alleen Nederlandse omschrijving.'],
+        'description' => ['nl' => 'Alleen **Nederlandse** omschrijving.'],
     ]);
 
     $this->get(route('locations.index'))
@@ -85,7 +85,10 @@ test('a location detail exposes structured address, facilities and localized des
             ->where('location.id', $location->id)
             ->where('location.name', 'Sportpaleis Alkmaar')
             ->where('location.slug', 'sportpaleis-alkmaar')
-            ->where('location.description', 'An indoor venue for FPV drone racing.')
+            ->where(
+                'location.descriptionHtml',
+                "<p>An indoor venue for FPV drone racing.</p>\n",
+            )
             ->where('location.street', 'Terborchlaan')
             ->where('location.houseNumber', '200')
             ->where('location.postalCode', '1816 LE')
@@ -113,7 +116,10 @@ test('a location falls back to another non-empty translation when the current lo
     $this->get(route('locations.show', ['location' => $location->slug]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('location.description', 'Only English is available.'),
+            ->where(
+                'location.descriptionHtml',
+                "<p>Only English is available.</p>\n",
+            ),
         );
 
     app()->setLocale('en');

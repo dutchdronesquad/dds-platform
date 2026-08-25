@@ -319,6 +319,7 @@ export function LocationForm({
                                         id="description_en"
                                         label="Omschrijving (Engels)"
                                         error={errors['description.en']}
+                                        hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                                     >
                                         <textarea
                                             id="description_en"
@@ -336,6 +337,7 @@ export function LocationForm({
                                             aria-describedby={fieldDescription(
                                                 'description_en',
                                                 errors['description.en'],
+                                                true,
                                             )}
                                             className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                         />
@@ -344,6 +346,7 @@ export function LocationForm({
                                         id="description_nl"
                                         label="Omschrijving (Nederlands, optioneel)"
                                         error={errors['description.nl']}
+                                        hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                                     >
                                         <textarea
                                             id="description_nl"
@@ -360,6 +363,7 @@ export function LocationForm({
                                             aria-describedby={fieldDescription(
                                                 'description_nl',
                                                 errors['description.nl'],
+                                                true,
                                             )}
                                             className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                         />
@@ -872,8 +876,16 @@ export function LocationForm({
     );
 }
 
-function fieldDescription(id: string, error?: string): string | undefined {
-    return error ? `${id}-error` : undefined;
+function fieldDescription(
+    id: string,
+    error?: string,
+    hasHint = false,
+): string | undefined {
+    if (error) {
+        return `${id}-error`;
+    }
+
+    return hasHint ? `${id}-hint` : undefined;
 }
 
 function LocationFormAside({ location }: { location?: EditableLocation }) {

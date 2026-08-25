@@ -5,10 +5,11 @@ namespace App\Support;
 use App\Models\Event;
 use App\Models\MediaAsset;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 final class PublicEventData
 {
+    public function __construct(private MarkdownRenderer $markdown) {}
+
     /**
      * @return array{
      *     id: int,
@@ -37,7 +38,9 @@ final class PublicEventData
             'title' => $event->title,
             'excerpt' => $event->content === null
                 ? null
-                : Str::limit(Str::squish($event->content), 150),
+                : str($this->markdown->toPlainText($event->content))
+                    ->limit(150)
+                    ->toString(),
             'startsAt' => $event->starts_at->toIso8601String(),
             'endsAt' => $event->ends_at?->toIso8601String(),
             'status' => $event->status->value,

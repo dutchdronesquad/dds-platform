@@ -11,6 +11,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { PublicEventRegistrationStatus } from '@/components/public/public-event-card';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
+import MarkdownContent from '@/components/public/markdown-content';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import {
     eventTypeLabels,
@@ -126,10 +127,11 @@ export default function EventShow({ event, seo }: Props) {
                         >
                             Dit staat je te wachten.
                         </h2>
-                        <div className="dark:text-night-300 mt-7 max-w-3xl text-base leading-8 whitespace-pre-line text-signal-muted sm:text-lg">
-                            {event.content ??
-                                'De inhoudelijke briefing voor dit event volgt binnenkort. De praktische gegevens en aanmeldstatus vind je hiernaast.'}
-                        </div>
+                        <MarkdownContent
+                            className="mt-7 max-w-3xl"
+                            html={event.contentHtml}
+                            fallback="De inhoudelijke briefing voor dit event volgt binnenkort. De praktische gegevens en aanmeldstatus vind je hiernaast."
+                        />
                     </div>
 
                     <div className="min-w-0 lg:sticky lg:top-28">

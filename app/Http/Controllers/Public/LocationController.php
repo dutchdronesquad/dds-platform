@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Location;
+use App\Support\MarkdownRenderer;
 use App\Support\PublicEventData;
 use App\Support\PublicLocationData;
 use App\Support\SeoMetadata;
@@ -17,6 +18,7 @@ final class LocationController extends Controller
     public function __construct(
         private PublicLocationData $locationData,
         private PublicEventData $eventData,
+        private MarkdownRenderer $markdown,
     ) {}
 
     public function index(Request $request, SeoMetadata $seoMetadata): Response
@@ -47,8 +49,9 @@ final class LocationController extends Controller
         $location->load(['coverImage:id,alt_text', 'coverImage.media']);
 
         $image = $this->locationData->image($location);
-        $description = $location->localizedDescription()
-            ?? "Bekijk de praktische informatie voor {$location->name}, een vlieglocatie van Dutch Drone Squad.";
+        $localizedDescription = $location->localizedDescription();
+        $description = $this->markdown->toPlainText($localizedDescription)
+            ?: "Bekijk de praktische informatie voor {$location->name}, een vlieglocatie van Dutch Drone Squad.";
 
         $upcomingEvents = $location->events()
             ->select([
@@ -88,7 +91,7 @@ final class LocationController extends Controller
                 'id' => $location->id,
                 'slug' => $location->slug,
                 'name' => $location->name,
-                'description' => $location->localizedDescription(),
+                'descriptionHtml' => $this->markdown->toHtml($localizedDescription),
                 'city' => $location->city,
                 'street' => $location->street,
                 'houseNumber' => $location->house_number,

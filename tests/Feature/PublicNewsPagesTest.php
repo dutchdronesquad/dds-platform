@@ -14,7 +14,7 @@ beforeEach(function () {
 test('the news index lists only published articles with an excerpt', function () {
     $published = Article::factory()->published()->create([
         'title' => 'Nieuw seizoen van start',
-        'content' => 'Dit seizoen gaan we weer racen op de baan in Alkmaar.',
+        'content' => 'Dit seizoen gaan we weer **racen** op de baan in Alkmaar.',
         'published_at' => now()->subDay(),
     ]);
     Article::factory()->create(['title' => 'Conceptartikel']);
@@ -33,6 +33,10 @@ test('the news index lists only published articles with an excerpt', function ()
             ->has('articles.data', 1)
             ->where('articles.data.0.id', $published->id)
             ->where('articles.data.0.title', 'Nieuw seizoen van start')
+            ->where(
+                'articles.data.0.excerpt',
+                'Dit seizoen gaan we weer racen op de baan in Alkmaar.',
+            )
             ->has('categoryFilters', 4)
             ->has('seo.title'),
         );
@@ -89,7 +93,7 @@ test('an article detail exposes content, category and author', function () {
         'author_id' => $author->id,
         'title' => 'Nieuw seizoen van start',
         'slug' => 'nieuw-seizoen-van-start',
-        'content' => 'Dit seizoen gaan we weer racen op de baan in Alkmaar.',
+        'content' => 'Dit seizoen gaan we weer **racen** op de baan in Alkmaar.',
         'category' => ArticleCategory::Announcement,
         'cover_image_id' => $coverImage->id,
     ]);
@@ -101,7 +105,10 @@ test('an article detail exposes content, category and author', function () {
             ->where('article.id', $article->id)
             ->where('article.title', 'Nieuw seizoen van start')
             ->where('article.slug', 'nieuw-seizoen-van-start')
-            ->where('article.content', 'Dit seizoen gaan we weer racen op de baan in Alkmaar.')
+            ->where(
+                'article.contentHtml',
+                "<p>Dit seizoen gaan we weer <strong>racen</strong> op de baan in Alkmaar.</p>\n",
+            )
             ->where('article.category', ArticleCategory::Announcement->value)
             ->where('article.author.name', 'Jane Pilot')
             ->where('article.image.src', $coverImage->url())

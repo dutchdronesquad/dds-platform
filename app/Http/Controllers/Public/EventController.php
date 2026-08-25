@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Public;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Support\MarkdownRenderer;
 use App\Support\PublicEventData;
 use App\Support\PublicLocationData;
 use App\Support\PublicSeasonData;
 use App\Support\SeoMetadata;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +20,7 @@ final class EventController extends Controller
         private PublicEventData $eventData,
         private PublicSeasonData $seasonData,
         private PublicLocationData $locationData,
+        private MarkdownRenderer $markdown,
     ) {}
 
     public function index(Request $request, SeoMetadata $seoMetadata): Response
@@ -104,16 +105,15 @@ final class EventController extends Controller
         $seasonContext = $event->season === null
             ? null
             : $this->seasonData->summary($event->season);
-        $description = Str::limit(
-            Str::squish($event->content ?? ''),
+        $description = str($this->markdown->toPlainText($event->content))->limit(
             155,
             '',
-        ) ?: "Bekijk de praktische informatie voor {$event->title}, een event van Dutch Drone Squad.";
+        )->toString() ?: "Bekijk de praktische informatie voor {$event->title}, een event van Dutch Drone Squad.";
 
         return Inertia::render('public/event-show', [
             'event' => [
                 ...$this->eventData->summary($event),
-                'content' => $event->content,
+                'contentHtml' => $this->markdown->toHtml($event->content),
                 'location' => [
                     'name' => $event->location->name,
                     'city' => $event->location->city,

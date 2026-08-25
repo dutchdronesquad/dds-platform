@@ -38,7 +38,11 @@ import {
 } from '@/components/ui/select';
 import { createSlug } from '@/lib/create-slug';
 import { show as publicArticleShow } from '@/routes/news';
-import type { ArticleFormOptions, EditableArticle, SelectOption } from './types';
+import type {
+    ArticleFormOptions,
+    EditableArticle,
+    SelectOption,
+} from './types';
 
 type MutationForm = {
     action: string;
@@ -278,6 +282,7 @@ export function ArticleForm({
                                 id="content"
                                 label="Inhoud"
                                 error={errors.content}
+                                hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                             >
                                 <textarea
                                     id="content"
@@ -291,6 +296,7 @@ export function ArticleForm({
                                     aria-describedby={fieldDescription(
                                         'content',
                                         errors.content,
+                                        true,
                                     )}
                                     className="min-h-64 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                 />
@@ -409,8 +415,16 @@ export function ArticleForm({
     );
 }
 
-function fieldDescription(id: string, error?: string): string | undefined {
-    return error ? `${id}-error` : undefined;
+function fieldDescription(
+    id: string,
+    error?: string,
+    hasHint = false,
+): string | undefined {
+    if (error) {
+        return `${id}-error`;
+    }
+
+    return hasHint ? `${id}-hint` : undefined;
 }
 
 function ArticleFormAside({ article }: { article?: EditableArticle }) {
