@@ -14,7 +14,7 @@ beforeEach(function () {
 test('the news index lists only published articles with an excerpt', function () {
     $published = Article::factory()->published()->create([
         'title' => 'Nieuw seizoen van start',
-        'content' => 'Dit seizoen gaan we weer **racen** op de baan in Alkmaar.',
+        'content' => "Dit seizoen gaan we weer **racen** op de baan in Alkmaar.\n\n![Indoor race](<https://media.example/indoor-race.jpg>)",
         'published_at' => now()->subDay(),
     ]);
     Article::factory()->create(['title' => 'Conceptartikel']);
@@ -93,7 +93,7 @@ test('an article detail exposes content, category and author', function () {
         'author_id' => $author->id,
         'title' => 'Nieuw seizoen van start',
         'slug' => 'nieuw-seizoen-van-start',
-        'content' => 'Dit seizoen gaan we weer **racen** op de baan in Alkmaar.',
+        'content' => "Dit seizoen gaan we weer **racen** op de baan in Alkmaar.\n\n![Indoor race](<https://media.example/indoor-race.jpg>)",
         'category' => ArticleCategory::Announcement,
         'cover_image_id' => $coverImage->id,
     ]);
@@ -107,7 +107,7 @@ test('an article detail exposes content, category and author', function () {
             ->where('article.slug', 'nieuw-seizoen-van-start')
             ->where(
                 'article.contentHtml',
-                "<p>Dit seizoen gaan we weer <strong>racen</strong> op de baan in Alkmaar.</p>\n",
+                "<p>Dit seizoen gaan we weer <strong>racen</strong> op de baan in Alkmaar.</p>\n<p><img src=\"https://media.example/indoor-race.jpg\" alt=\"Indoor race\" /></p>\n",
             )
             ->where('article.category', ArticleCategory::Announcement->value)
             ->where('article.author.name', 'Jane Pilot')

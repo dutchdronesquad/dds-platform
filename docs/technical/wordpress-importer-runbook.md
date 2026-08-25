@@ -60,6 +60,8 @@ php artisan wordpress:rehearse \
 
 Use `--refresh-source` only with the cleanup phase when the normalized Article still matches its recorded cleanup checksum but must be rebuilt from the verified offline source bundle, for example after fixing a normalizer bug. The command verifies the original source checksum and still refuses to overwrite unrelated manual edits. Recheck and reapprove every changed cleanup output afterwards.
 
+Cleanup output uses safe Markdown. A legacy `plain_text` cleanup is automatically rebuilt from the checksum-verified source, imported inline images remain visible, and the first imported inline image becomes the cover when WordPress did not define featured media. Existing covers and later editorial changes are preserved.
+
 ## DDS-022A: Provision And Execute Staging
 
 ### 1. Collect The Approved Inputs
@@ -130,6 +132,8 @@ The command inventories the public REST collections, then stores only posts with
 ### 4. Build `selection.json`
 
 Use valid JSON without comments. The operator owns `source`, `defaults`, selection lists, explicit redirects, and initial author mappings. The importer owns generated `mappings`, `runs`, and `rehearsal` data; do not delete or casually edit those sections between repeated runs.
+
+The page phase creates the three code-approved DDS locations when their target slug does not exist yet. Repeated imports preserve later editorial changes. Unknown location slugs remain a blocking error.
 
 A representative manifest shape is:
 

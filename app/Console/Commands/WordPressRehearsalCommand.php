@@ -120,7 +120,11 @@ final class WordPressRehearsalCommand extends Command
             $passRows,
         );
         $this->newLine();
-        $this->line('Publieke samples: '.count($samples).' | Geslaagd: '.count(array_filter($samples, fn (array $sample): bool => $sample['passed'] === true)));
+        $passedSamples = count(array_filter($samples, fn (array $sample): bool => $sample['passed'] === true));
+        $manuallyAcceptedSamples = (bool) $this->option('approve-manual-review')
+            ? count(array_filter($samples, fn (array $sample): bool => $sample['passed'] !== true && Arr::get($sample, 'manual_review_eligible') === true))
+            : 0;
+        $this->line('Publieke samples: '.count($samples)." | Geslaagd: {$passedSamples} | Handmatig geaccepteerd: {$manuallyAcceptedSamples}");
         $this->line("Importreview: {$importReportPath}");
         $this->line("Rehearsalbewijs: {$rehearsalReportPath}");
 
@@ -134,7 +138,7 @@ final class WordPressRehearsalCommand extends Command
             return self::FAILURE;
         }
 
-        $this->components->success('Rehearsalstatus: READY; twee imports bleven idempotent en alle checks slaagden.');
+        $this->components->success('Rehearsalstatus: READY; twee imports bleven idempotent en alle vereiste controles zijn geaccepteerd.');
 
         return self::SUCCESS;
     }

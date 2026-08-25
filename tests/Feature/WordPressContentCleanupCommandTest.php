@@ -75,11 +75,11 @@ test('it normalizes content rewrites known links and media and is idempotent', f
         ->toContain('Indoor seizoen')
         ->toContain('het vorige bericht (/news/ander-bericht)')
         ->toContain('ons verhaal (/about)')
-        ->toContain("Afbeelding: Race drone ({$mediaAsset->url()})")
+        ->toContain("![Race drone](<{$mediaAsset->url()}>)")
         ->toContain('Video: https://www.youtube.com/embed/abc123')
         ->not->toContain('<', '[gallery', 'elementor', 'Deel dit bericht')
         ->and($cleanup)->toMatchArray([
-            'format' => 'plain_text',
+            'format' => 'markdown',
             'source_checksum_sha256' => hash('sha256', $rawContent),
             'output_checksum_sha256' => hash('sha256', $content),
             'unresolved_links' => [],
@@ -102,6 +102,59 @@ test('it normalizes content rewrites known links and media and is idempotent', f
         ->assertSuccessful();
 
     expect($article->refresh()->content)->toBe($content);
+});
+
+test('it upgrades unchanged plain text cleanup and uses the first imported image as a missing cover', function () {
+    $rawContent = '<p>Een oud bericht.</p><img src="https://legacy.example/wp-content/uploads/2018/race.jpg" alt="FPV race">';
+    $article = Article::factory()->create([
+        'content' => 'Een oud bericht. Afbeelding: FPV race (https://media.example/race.jpg)',
+        'cover_image_id' => null,
+    ]);
+    $mediaAsset = MediaAsset::factory()->named('race.jpg')->create();
+    $manifest = wordpressCleanupManifest($article, mediaAsset: $mediaAsset);
+    data_set($manifest, 'mappings.media.49925.source_url', 'https://legacy.example/wp-content/uploads/2018/race.jpg');
+    data_set($manifest, 'mappings.posts.49916.content_checksum_sha256', hash('sha256', $rawContent));
+    data_set($manifest, 'mappings.posts.49916.cleanup', [
+        'format' => 'plain_text',
+        'source_checksum_sha256' => hash('sha256', $rawContent),
+        'output_checksum_sha256' => hash('sha256', $article->content),
+        'unresolved_links' => [],
+        'missing_media' => [],
+        'suspicious_markup' => [],
+        'transformations' => [],
+    ]);
+    writeWordPressCleanupManifest($this->manifestPath, $manifest);
+    Http::fake([
+        'https://legacy.example/wp-json/wp/v2/posts/49916' => Http::response([
+            'id' => 49916,
+            'content' => ['rendered' => $rawContent],
+        ]),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'cleanup',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('opgeschoond')
+        ->assertSuccessful();
+
+    expect($article->refresh())
+        ->content->toContain("![FPV race](<{$mediaAsset->url()}>)")
+        ->cover_image_id->toBe($mediaAsset->id)
+        ->and(data_get(json_decode(File::get($this->manifestPath), true), 'mappings.posts.49916.cleanup'))
+        ->toMatchArray([
+            'format' => 'markdown',
+            'fallback_cover_media_asset_id' => $mediaAsset->id,
+        ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'cleanup',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('hergebruikt')
+        ->assertSuccessful();
 });
 
 test('it reports unresolved media unsafe markup and protects manual edits', function () {

@@ -128,6 +128,160 @@ test('it records an incomplete second count without triggering an undefined inde
         ->toBe('Het aantal articles wijzigde tussen pass één (1) en pass twee (ontbreekt).');
 });
 
+test('it accepts an edge-blocked sample only after explicit manual review', function () {
+    File::put($this->manifestPath, '{}');
+    $sample = [
+        'type' => 'article',
+        'reference' => '344',
+        'url' => 'https://staging.example/news/example',
+        'expected' => 'HTTP 200',
+        'actual' => 'HTTP 403',
+        'passed' => false,
+        'manual_review_eligible' => true,
+        'message' => 'Publieke sample gaf geen HTTP 200.',
+    ];
+
+    $pending = app(RecordWordPressRehearsal::class)->handle(
+        manifestPath: $this->manifestPath,
+        reportPath: $this->reportPath,
+        baseUrl: 'https://staging.example',
+        firstPass: [],
+        secondPass: [],
+        firstCounts: [],
+        secondCounts: [],
+        samples: [$sample],
+        artifacts: [],
+        importReportExitCode: 0,
+        manualReviewApproved: false,
+    );
+
+    expect($pending['status'])->toBe('blocked')
+        ->and($pending['blockers'])->toHaveCount(2);
+
+    $approved = app(RecordWordPressRehearsal::class)->handle(
+        manifestPath: $this->manifestPath,
+        reportPath: $this->reportPath,
+        baseUrl: 'https://staging.example',
+        firstPass: [],
+        secondPass: [],
+        firstCounts: [],
+        secondCounts: [],
+        samples: [$sample],
+        artifacts: [],
+        importReportExitCode: 0,
+        manualReviewApproved: true,
+    );
+
+    expect($approved['status'])->toBe('ready')
+        ->and($approved['blockers'])->toBeEmpty()
+        ->and(File::get($this->reportPath))->toContain('| manual |');
+});
+
+test('it records Laravel Cloud edge blocks as manually accepted after review', function () {
+    [$article, , $location] = writeReadyRehearsalManifest($this->manifestPath);
+
+    Http::fake(function (Request $request) {
+        if (str_starts_with($request->url(), 'https://legacy.example/wp-json/wp/v2/pages')) {
+            return Http::response([
+                rehearsalPageRecord(49498, 'sportpaleis', 'Sportpaleis', 'https://legacy.example/sportpaleis/', '<p>Indoor locatie.</p>'),
+                rehearsalPageRecord(316, 'about-us', 'About Us', 'https://legacy.example/about-us/', '<p>Over DDS.</p>'),
+            ]);
+        }
+
+        if ($request->url() === 'https://legacy.example/wp-json/wp/v2/posts/49916') {
+            return Http::response([
+                'id' => 49916,
+                'content' => ['rendered' => '<p>Broninhoud.</p>'],
+            ]);
+        }
+
+        if (str_contains($request->url(), '/storage/')) {
+            return Http::response('Imported media.', 200);
+        }
+
+        return Http::response('Edge request blocked.', 403);
+    });
+
+    $this->pendingArtisan('wordpress:rehearse', [
+        '--manifest' => $this->manifestPath,
+        '--base-url' => 'https://staging.example',
+        '--report' => $this->reportPath,
+        '--approve-manual-review' => true,
+    ])
+        ->expectsOutputToContain('Publieke samples: 7 | Geslaagd: 1 | Handmatig geaccepteerd: 6')
+        ->expectsOutputToContain('Rehearsalstatus: READY')
+        ->assertSuccessful();
+
+    expect($article->exists)->toBeTrue()
+        ->and($location->exists)->toBeTrue()
+        ->and(File::get($this->reportPath))->toContain('| manual |');
+});
+
+test('it checks absolute media URLs on their configured storage host', function () {
+    config()->set('filesystems.disks.media.url', 'https://media.example');
+    [$article, $mediaAsset, $location] = writeReadyRehearsalManifest($this->manifestPath);
+    $mediaAsset->file()?->update([
+        'disk' => 'media',
+        'conversions_disk' => 'media',
+    ]);
+    $mediaAsset->unsetRelation('media');
+    fakeReadyRehearsalResponses($article, $location);
+
+    $this->pendingArtisan('wordpress:rehearse', [
+        '--manifest' => $this->manifestPath,
+        '--base-url' => 'https://staging.example',
+        '--report' => $this->reportPath,
+        '--approve-manual-review' => true,
+    ])->assertSuccessful();
+
+    Http::assertSent(fn (Request $request): bool => str_starts_with($request->url(), 'https://media.example/'));
+});
+
+test('it never accepts an unavailable media sample through manual edge review', function () {
+    [$article, , $location] = writeReadyRehearsalManifest($this->manifestPath);
+
+    Http::fake(function (Request $request) use ($article, $location) {
+        if (str_starts_with($request->url(), 'https://legacy.example/wp-json/wp/v2/pages')) {
+            return Http::response([
+                rehearsalPageRecord(49498, 'sportpaleis', 'Sportpaleis', 'https://legacy.example/sportpaleis/', '<p>Indoor locatie.</p>'),
+                rehearsalPageRecord(316, 'about-us', 'About Us', 'https://legacy.example/about-us/', '<p>Over DDS.</p>'),
+            ]);
+        }
+
+        if ($request->url() === 'https://legacy.example/wp-json/wp/v2/posts/49916') {
+            return Http::response([
+                'id' => 49916,
+                'content' => ['rendered' => '<p>Broninhoud.</p>'],
+            ]);
+        }
+
+        if (str_contains($request->url(), '/storage/')) {
+            return Http::response('Media unavailable.', 403);
+        }
+
+        $path = (string) parse_url($request->url(), PHP_URL_PATH);
+        $redirectTargets = [
+            '/2025/indoor-seizoen' => '/news/'.$article->slug,
+            '/sportpaleis' => '/locations/'.$location->slug,
+            '/about-us' => '/about',
+        ];
+
+        return isset($redirectTargets[$path])
+            ? Http::response('', 301, ['Location' => $redirectTargets[$path]])
+            : Http::response('Public sample.', 200);
+    });
+
+    $this->pendingArtisan('wordpress:rehearse', [
+        '--manifest' => $this->manifestPath,
+        '--base-url' => 'https://staging.example',
+        '--report' => $this->reportPath,
+        '--approve-manual-review' => true,
+    ])
+        ->expectsOutputToContain('Publieke sample media 49925 faalde: HTTP 403')
+        ->expectsOutputToContain('Rehearsalstatus: BLOCKED')
+        ->assertFailed();
+});
+
 /** @return array{Article, MediaAsset, Location} */
 function writeReadyRehearsalManifest(string $manifestPath): array
 {
@@ -267,6 +421,13 @@ function fakeReadyRehearsalResponses(Article $article, Location $location): void
             return Http::response([
                 rehearsalPageRecord(49498, 'sportpaleis', 'Sportpaleis', 'https://legacy.example/sportpaleis/', '<p>Indoor locatie.</p>'),
                 rehearsalPageRecord(316, 'about-us', 'About Us', 'https://legacy.example/about-us/', '<p>Over DDS.</p>'),
+            ]);
+        }
+
+        if ($request->url() === 'https://legacy.example/wp-json/wp/v2/posts/49916') {
+            return Http::response([
+                'id' => 49916,
+                'content' => ['rendered' => '<p>Broninhoud.</p>'],
             ]);
         }
 

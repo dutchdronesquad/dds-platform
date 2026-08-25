@@ -54,7 +54,7 @@ final class CleanWordPressImportedContent
 
         $report = $this->emptyReport($reportPath);
         $linkMappings = $this->linkMappings($manifest);
-        $mediaMappings = $this->mediaMappings($manifest);
+        [$mediaMappings, $importedImagesByUrl] = $this->mediaData($manifest);
         $internalHosts = $this->internalHosts($manifest);
         $reportRows = [];
 
@@ -86,8 +86,10 @@ final class CleanWordPressImportedContent
 
             $hasUnchangedCleanupOutput = is_string($previousOutputChecksum)
                 && hash_equals($previousOutputChecksum, $currentChecksum);
+            $requiresMarkdownUpgrade = $hasUnchangedCleanupOutput
+                && Arr::get($existingCleanup, 'format') !== 'markdown';
 
-            if ($hasUnchangedCleanupOutput && ! $refreshSource) {
+            if ($hasUnchangedCleanupOutput && ! $refreshSource && ! $requiresMarkdownUpgrade) {
                 $cleanup = $existingCleanup;
 
                 $report['reused']++;
@@ -108,7 +110,7 @@ final class CleanWordPressImportedContent
                 continue;
             }
 
-            $sourceContent = $refreshSource
+            $sourceContent = $refreshSource || $requiresMarkdownUpgrade
                 ? $this->sourceContent($manifest, $wordpressId, $sourceChecksum)
                 : $article->content;
 
@@ -125,8 +127,11 @@ final class CleanWordPressImportedContent
                 mediaMappings: $mediaMappings,
                 internalHosts: $internalHosts,
             );
+            $fallbackCover = $article->cover_image_id === null
+                ? $this->firstImportedImage($importedImagesByUrl, $result['embedded_media_urls'])
+                : null;
             $cleanup = [
-                'format' => 'plain_text',
+                'format' => 'markdown',
                 'source_checksum_sha256' => $sourceChecksum,
                 'output_checksum_sha256' => hash('sha256', $result['content']),
                 'unresolved_links' => $result['unresolved_links'],
@@ -135,6 +140,10 @@ final class CleanWordPressImportedContent
                 'transformations' => $result['transformations'],
                 'cleaned_at' => now()->toIso8601String(),
             ];
+
+            if ($fallbackCover instanceof MediaAsset) {
+                $cleanup['fallback_cover_media_asset_id'] = $fallbackCover->getKey();
+            }
 
             if (
                 Arr::get($existingCleanup, 'output_checksum_sha256') === $cleanup['output_checksum_sha256']
@@ -150,14 +159,20 @@ final class CleanWordPressImportedContent
                 $report['items'][] = [
                     'wordpress_id' => $wordpressId,
                     'status' => 'klaar',
-                    'message' => "Article {$article->getKey()} kan naar platte tekst worden opgeschoond.",
+                    'message' => "Article {$article->getKey()} kan naar veilige Markdown worden opgeschoond.",
                 ];
 
                 continue;
             }
 
-            DB::transaction(function () use ($article, $result): void {
-                $article->update(['content' => $result['content']]);
+            DB::transaction(function () use ($article, $fallbackCover, $result): void {
+                $attributes = ['content' => $result['content']];
+
+                if ($fallbackCover instanceof MediaAsset) {
+                    $attributes['cover_image_id'] = $fallbackCover->getKey();
+                }
+
+                $article->update($attributes);
             });
 
             Arr::set($manifest, "mappings.posts.{$wordpressId}.cleanup", $cleanup);
@@ -165,7 +180,7 @@ final class CleanWordPressImportedContent
             $report['items'][] = [
                 'wordpress_id' => $wordpressId,
                 'status' => 'opgeschoond',
-                'message' => "Article {$article->getKey()} is als platte tekst opgeslagen.",
+                'message' => "Article {$article->getKey()} is als veilige Markdown opgeslagen.",
             ];
         }
 
@@ -270,11 +285,12 @@ final class CleanWordPressImportedContent
 
     /**
      * @param  array<string, mixed>  $manifest
-     * @return array<string, string>
+     * @return array{array<string, string>, array<string, MediaAsset>}
      */
-    private function mediaMappings(array $manifest): array
+    private function mediaData(array $manifest): array
     {
-        $mappings = [];
+        $mappingRows = [];
+        $mediaAssetIds = [];
 
         foreach ((array) Arr::get($manifest, 'mappings.media', []) as $mapping) {
             if (! is_array($mapping)) {
@@ -283,14 +299,56 @@ final class CleanWordPressImportedContent
 
             $sourceUrl = Arr::get($mapping, 'source_url');
             $mediaAssetId = Arr::get($mapping, 'media_asset_id');
-            $mediaAsset = is_int($mediaAssetId) ? MediaAsset::query()->find($mediaAssetId) : null;
 
-            if (is_string($sourceUrl) && $mediaAsset instanceof MediaAsset && $mediaAsset->url() !== '') {
-                $mappings[$this->canonicalMediaUrl($sourceUrl)] = $mediaAsset->url();
+            if (is_string($sourceUrl) && is_int($mediaAssetId)) {
+                $mappingRows[] = [
+                    'source_url' => $sourceUrl,
+                    'media_asset_id' => $mediaAssetId,
+                ];
+                $mediaAssetIds[] = $mediaAssetId;
             }
         }
 
-        return $mappings;
+        $mediaAssets = MediaAsset::query()
+            ->with('media')
+            ->whereIn('id', array_values(array_unique($mediaAssetIds)))
+            ->get()
+            ->keyBy('id');
+        $mediaMappings = [];
+        $importedImagesByUrl = [];
+
+        foreach ($mappingRows as $mapping) {
+            $mediaAsset = $mediaAssets->get($mapping['media_asset_id']);
+
+            if (! $mediaAsset instanceof MediaAsset || $mediaAsset->url() === '') {
+                continue;
+            }
+
+            $mediaMappings[$this->canonicalMediaUrl($mapping['source_url'])] = $mediaAsset->url();
+
+            if ($mediaAsset->isImage()) {
+                $importedImagesByUrl[$mediaAsset->url()] = $mediaAsset;
+            }
+        }
+
+        return [$mediaMappings, $importedImagesByUrl];
+    }
+
+    /**
+     * @param  array<string, MediaAsset>  $importedImagesByUrl
+     * @param  list<string>  $embeddedMediaUrls
+     */
+    private function firstImportedImage(array $importedImagesByUrl, array $embeddedMediaUrls): ?MediaAsset
+    {
+        foreach ($embeddedMediaUrls as $embeddedMediaUrl) {
+            $mediaAsset = $importedImagesByUrl[$embeddedMediaUrl] ?? null;
+
+            if ($mediaAsset instanceof MediaAsset) {
+                return $mediaAsset;
+            }
+        }
+
+        return null;
     }
 
     /**
