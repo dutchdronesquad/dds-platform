@@ -3,6 +3,16 @@
 use App\Enums\LocationEnvironment;
 
 return [
+    'cleanup' => [
+        'normalizer_version' => 2,
+        'unavailable_links' => [
+            'https://dutchdronesquad.nl/wp-content/uploads/2019/03/DDS-Informatie-en-voorschriften-V1.0-NL.pdf' => 'niet meer online beschikbaar',
+            'https://dutchdronesquad.nl/wp-content/uploads/2019/03/DDS-Information-and-regulations-V1.0-ENG.pdf' => 'niet meer online beschikbaar',
+            'https://dutchdronesquad.nl/livestream/' => 'niet meer online beschikbaar',
+            'https://dutchdronesquad.nl/wp-content/uploads/2019/11/DDS-Informatie-en-voorschriften-V1.4-The-next-race.pdf' => 'niet meer online beschikbaar',
+            'https://dutchdronesquad.nl/wp-content/uploads/2019/11/DDS-Information-and-regulations-V1.4-The-next-race.pdf' => 'niet meer online beschikbaar',
+        ],
+    ],
     'locations' => [
         'sportpaleis-alkmaar' => [
             'name' => 'Sportpaleis Alkmaar',

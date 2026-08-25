@@ -157,6 +157,65 @@ test('it upgrades unchanged plain text cleanup and uses the first imported image
         ->assertSuccessful();
 });
 
+test('it upgrades older Markdown cleanup and replaces approved unavailable links', function () {
+    $unavailableLinks = [
+        'https://dutchdronesquad.nl/wp-content/uploads/2019/03/DDS-Informatie-en-voorschriften-V1.0-NL.pdf',
+        'https://dutchdronesquad.nl/wp-content/uploads/2019/03/DDS-Information-and-regulations-V1.0-ENG.pdf',
+        'https://dutchdronesquad.nl/livestream/',
+        'https://dutchdronesquad.nl/wp-content/uploads/2019/11/DDS-Informatie-en-voorschriften-V1.4-The-next-race.pdf',
+        'https://dutchdronesquad.nl/wp-content/uploads/2019/11/DDS-Information-and-regulations-V1.4-The-next-race.pdf',
+    ];
+    $rawContent = collect($unavailableLinks)
+        ->map(fn (string $url, int $index): string => '<a href="'.$url.'">Oude bron '.($index + 1).'</a>')
+        ->implode(' ');
+    $article = Article::factory()->create(['content' => $rawContent]);
+    $manifest = wordpressCleanupManifest($article);
+    data_set($manifest, 'mappings.posts.49916.cleanup', [
+        'format' => 'markdown',
+        'source_checksum_sha256' => hash('sha256', $rawContent),
+        'output_checksum_sha256' => hash('sha256', $article->content),
+        'unresolved_links' => $unavailableLinks,
+        'missing_media' => [],
+        'suspicious_markup' => [],
+        'transformations' => [],
+    ]);
+    writeWordPressCleanupManifest($this->manifestPath, $manifest);
+    Http::fake([
+        'https://legacy.example/wp-json/wp/v2/posts/49916' => Http::response([
+            'id' => 49916,
+            'content' => ['rendered' => $rawContent],
+        ]),
+    ]);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'cleanup',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('opgeschoond')
+        ->assertSuccessful();
+
+    $cleanup = data_get(json_decode(File::get($this->manifestPath), true), 'mappings.posts.49916.cleanup');
+
+    expect($article->refresh()->content)
+        ->toContain('Oude bron 1 (niet meer online beschikbaar)', 'Oude bron 5 (niet meer online beschikbaar)')
+        ->not->toContain(...$unavailableLinks)
+        ->and($cleanup)->toMatchArray([
+            'format' => 'markdown',
+            'normalizer_version' => 2,
+            'unresolved_links' => [],
+        ])
+        ->and($cleanup['transformations'])->toHaveCount(5);
+
+    $this->pendingArtisan('wordpress:import', [
+        'phase' => 'cleanup',
+        '--manifest' => $this->manifestPath,
+        '--report' => $this->reportPath,
+    ])
+        ->expectsOutputToContain('hergebruikt')
+        ->assertSuccessful();
+});
+
 test('it reports unresolved media unsafe markup and protects manual edits', function () {
     $rawContent = '<p onclick="alert(1)"><img src="/wp-content/uploads/missing.jpg"><a href="javascript:alert(1)">Fout</a><iframe src="https://player.example/video"></iframe></p>';
     $article = Article::factory()->create(['content' => $rawContent]);
