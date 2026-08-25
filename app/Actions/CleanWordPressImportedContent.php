@@ -53,6 +53,7 @@ final class CleanWordPressImportedContent
         }
 
         $report = $this->emptyReport($reportPath);
+        $normalizerVersion = (int) config('wordpress-import.cleanup.normalizer_version', 1);
         $linkMappings = $this->linkMappings($manifest);
         [$mediaMappings, $importedImagesByUrl] = $this->mediaData($manifest);
         $internalHosts = $this->internalHosts($manifest);
@@ -86,10 +87,13 @@ final class CleanWordPressImportedContent
 
             $hasUnchangedCleanupOutput = is_string($previousOutputChecksum)
                 && hash_equals($previousOutputChecksum, $currentChecksum);
-            $requiresMarkdownUpgrade = $hasUnchangedCleanupOutput
-                && Arr::get($existingCleanup, 'format') !== 'markdown';
+            $requiresCleanupUpgrade = $hasUnchangedCleanupOutput
+                && (
+                    Arr::get($existingCleanup, 'format') !== 'markdown'
+                    || Arr::get($existingCleanup, 'normalizer_version') !== $normalizerVersion
+                );
 
-            if ($hasUnchangedCleanupOutput && ! $refreshSource && ! $requiresMarkdownUpgrade) {
+            if ($hasUnchangedCleanupOutput && ! $refreshSource && ! $requiresCleanupUpgrade) {
                 $cleanup = $existingCleanup;
 
                 $report['reused']++;
@@ -110,7 +114,7 @@ final class CleanWordPressImportedContent
                 continue;
             }
 
-            $sourceContent = $refreshSource || $requiresMarkdownUpgrade
+            $sourceContent = $refreshSource || $requiresCleanupUpgrade
                 ? $this->sourceContent($manifest, $wordpressId, $sourceChecksum)
                 : $article->content;
 
@@ -132,6 +136,7 @@ final class CleanWordPressImportedContent
                 : null;
             $cleanup = [
                 'format' => 'markdown',
+                'normalizer_version' => $normalizerVersion,
                 'source_checksum_sha256' => $sourceChecksum,
                 'output_checksum_sha256' => hash('sha256', $result['content']),
                 'unresolved_links' => $result['unresolved_links'],
@@ -277,6 +282,12 @@ final class CleanWordPressImportedContent
 
             if (is_string($sourceUrl) && is_string($path) && in_array($targetType, ['route', 'location'], true)) {
                 $mappings[$this->canonicalUrl($sourceUrl)] = $path;
+            }
+        }
+
+        foreach ((array) config('wordpress-import.cleanup.unavailable_links', []) as $sourceUrl => $replacement) {
+            if (is_string($sourceUrl) && is_string($replacement) && $replacement !== '') {
+                $mappings[$this->canonicalUrl($sourceUrl)] = $replacement;
             }
         }
 
