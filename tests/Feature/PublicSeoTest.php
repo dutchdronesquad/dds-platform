@@ -85,6 +85,9 @@ test('the application layout exposes DDS favicon assets', function () {
     $appleTouchIconDimensions = getimagesize(public_path('apple-touch-icon.png'));
     $appleTouchIcon = imagecreatefrompng(public_path('apple-touch-icon.png'));
 
+    assert(is_array($faviconDimensions));
+    assert(is_array($appleTouchIconDimensions));
+
     expect($appleTouchIcon)->toBeInstanceOf(GdImage::class);
     assert($appleTouchIcon instanceof GdImage);
 
