@@ -83,17 +83,9 @@ test('the application layout exposes DDS favicon assets', function () {
 
     $faviconDimensions = getimagesize(public_path('favicon.ico'));
     $appleTouchIconDimensions = getimagesize(public_path('apple-touch-icon.png'));
-    $appleTouchIcon = imagecreatefrompng(public_path('apple-touch-icon.png'));
 
     assert(is_array($faviconDimensions));
     assert(is_array($appleTouchIconDimensions));
-
-    expect($appleTouchIcon)->toBeInstanceOf(GdImage::class);
-    assert($appleTouchIcon instanceof GdImage);
-
-    $cornerColor = imagecolorat($appleTouchIcon, 0, 0);
-
-    imagedestroy($appleTouchIcon);
 
     expect(hash_file('sha256', public_path('favicon.svg')))
         ->toBe(hash_file('sha256', public_path('brand/dds-logo.svg')))
@@ -108,7 +100,20 @@ test('the application layout exposes DDS favicon assets', function () {
         ->and($appleTouchIconDimensions[0])
         ->toBe(180)
         ->and($appleTouchIconDimensions[1])
-        ->toBe(180)
-        ->and(($cornerColor >> 24) & 0x7F)
-        ->toBe(127);
+        ->toBe(180);
+
+    if (! extension_loaded('gd')) {
+        return;
+    }
+
+    $appleTouchIcon = imagecreatefrompng(public_path('apple-touch-icon.png'));
+
+    expect($appleTouchIcon)->toBeInstanceOf(GdImage::class);
+    assert($appleTouchIcon instanceof GdImage);
+
+    $cornerColor = imagecolorat($appleTouchIcon, 0, 0);
+
+    imagedestroy($appleTouchIcon);
+
+    expect(($cornerColor >> 24) & 0x7F)->toBe(127);
 });
