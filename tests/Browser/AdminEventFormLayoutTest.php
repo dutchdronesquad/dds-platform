@@ -122,12 +122,15 @@ test('event create responds to the available form width instead of the viewport'
             "(() => { const headings = Array.from(document.querySelectorAll('[data-testid=\"admin-form-layout\"] h2')).map((heading) => heading.textContent?.trim()); return JSON.stringify(headings) === JSON.stringify(['Basisinformatie', 'Wanneer', 'Capaciteit en prijs', 'Inschrijving', 'Publieke pagina']); })()",
         )
         ->fill('#title', 'Indoor Training Éindhoven')
-        ->assertScript(
-            "document.querySelector('input[name=\"slug\"]')?.value === 'indoor-training-eindhoven'",
+        ->assertValue('#slug', '')
+        ->assertAttribute(
+            '#slug',
+            'placeholder',
+            'Automatisch uit titel en startdatum',
         )
         ->assertVisible('#slug')
-        ->assertSee('Publieke URL: /events/indoor-training-eindhoven')
         ->fill('#slug', 'eigen-event-url')
+        ->assertSee('Publieke URL: /events/eigen-event-url')
         ->fill('#title', 'Nieuwe eventtitel')
         ->assertScript(
             "document.querySelector('input[name=\"slug\"]')?.value === 'eigen-event-url'",

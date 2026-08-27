@@ -53,7 +53,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { createSlug } from '@/lib/create-slug';
 import { show as publicEventShow } from '@/routes/events';
 import type {
     AdminRegistrationStatus,
@@ -113,9 +112,6 @@ export function EventForm({
 }) {
     const [title, setTitle] = useState(event?.title ?? '');
     const [slug, setSlug] = useState(event?.slug ?? '');
-    const [slugManuallyEdited, setSlugManuallyEdited] = useState(
-        Boolean(event?.slug),
-    );
     const [registrationStatus, setRegistrationStatus] = useState(
         event?.registrationStatus ?? 'closed',
     );
@@ -194,7 +190,7 @@ export function EventForm({
                             description={
                                 event
                                     ? 'De titel, het type en de locatie vormen de herkenbare basis van het event.'
-                                    : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel gemaakt.'
+                                    : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel en startdatum gemaakt.'
                             }
                         >
                             <div className="grid gap-5 @min-[40rem]/fields:grid-cols-2">
@@ -213,10 +209,6 @@ export function EventForm({
                                                 inputEvent.target.value;
 
                                             setTitle(nextTitle);
-
-                                            if (!slugManuallyEdited) {
-                                                setSlug(createSlug(nextTitle));
-                                            }
                                         }}
                                         required
                                         maxLength={255}
@@ -600,14 +592,9 @@ export function EventForm({
                                                 inputEvent.target.value;
 
                                             setSlug(nextSlug);
-                                            setSlugManuallyEdited(
-                                                nextSlug !== '' &&
-                                                    nextSlug !==
-                                                        createSlug(title),
-                                            );
                                         }}
                                         maxLength={255}
-                                        placeholder="Automatisch uit titel"
+                                        placeholder="Automatisch uit titel en startdatum"
                                         autoComplete="off"
                                         autoCapitalize="none"
                                         spellCheck={false}

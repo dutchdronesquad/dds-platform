@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -59,7 +60,7 @@ class StoreEventRequest extends FormRequest
             ],
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
                 'alpha_dash:ascii',
@@ -98,9 +99,21 @@ class StoreEventRequest extends FormRequest
     {
         $validated = $this->validated();
         $price = Arr::pull($validated, 'price_euros');
+        $slug = Arr::pull($validated, 'slug');
+
+        if (! is_string($slug) || $slug === '') {
+            $event = $this->event();
+            $slug = $event instanceof Event
+                ? $event->slug
+                : $this->uniqueSlug(
+                    $validated['title'],
+                    CarbonImmutable::parse($validated['starts_at']),
+                );
+        }
 
         return [
             ...$validated,
+            'slug' => $slug,
             'price_cents' => $price === null ? null : (int) round((float) $price * 100),
         ];
     }
@@ -127,17 +140,29 @@ class StoreEventRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        if ($this->string('slug')->trim()->isEmpty() && $this->filled('title')) {
-            $this->merge(['slug' => Str::slug($this->string('title')->toString())]);
-        }
-    }
-
     protected function event(): ?Event
     {
         $event = $this->route('event');
 
         return $event instanceof Event ? $event : null;
+    }
+
+    private function uniqueSlug(string $title, CarbonImmutable $startsAt): string
+    {
+        $titleSlug = Str::slug($title) ?: 'event';
+        $dateSuffix = '-'.$startsAt->format('Y-m-d');
+        $sequence = 1;
+
+        do {
+            $sequenceSuffix = $sequence === 1 ? '' : '-'.$sequence;
+            $slug = Str::limit(
+                $titleSlug,
+                255 - Str::length($dateSuffix) - Str::length($sequenceSuffix),
+                '',
+            ).$dateSuffix.$sequenceSuffix;
+            $sequence++;
+        } while (Event::query()->where('slug', $slug)->exists());
+
+        return $slug;
     }
 }
