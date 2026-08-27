@@ -328,7 +328,7 @@ test('editors can create and update events but cannot publish or delete them', f
         ]))
         ->assertRedirect();
 
-    $event = Event::query()->where('slug', 'editor-training')->firstOrFail();
+    $event = Event::query()->where('slug', 'editor-training-2026-10-15')->firstOrFail();
 
     $this->actingAs($editor)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
@@ -350,7 +350,7 @@ test('editors can create and update events but cannot publish or delete them', f
     $this->assertModelExists($event);
 });
 
-test('admins can create events with normalized prices and generated slugs', function () {
+test('admins can create events with normalized prices and date-based generated slugs', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     $location = Location::factory()->create();
@@ -365,7 +365,7 @@ test('admins can create events with normalized prices and generated slugs', func
         ]))
         ->assertRedirect();
 
-    $event = Event::query()->where('slug', 'indoor-training-oktober')->firstOrFail();
+    $event = Event::query()->where('slug', 'indoor-training-oktober-2026-10-15')->firstOrFail();
 
     expect($event)
         ->title->toBe('Indoor Training Oktober')
@@ -376,6 +376,52 @@ test('admins can create events with normalized prices and generated slugs', func
         ->status->toBe(EventStatus::Draft)
         ->type->toBe(EventType::Training)
         ->registration_status->toBe(EventRegistrationStatus::Open);
+});
+
+test('generated event slugs receive a sequence when title and start date match', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    Event::factory()->create([
+        'title' => 'FPV Vliegavond',
+        'slug' => 'fpv-vliegavond-2026-10-15',
+        'starts_at' => '2026-10-15T18:00',
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'title' => 'FPV Vliegavond',
+            'slug' => '',
+        ]))
+        ->assertRedirect();
+
+    expect(Event::query()->where('slug', 'fpv-vliegavond-2026-10-15-2')->exists())->toBeTrue();
+});
+
+test('generated event slugs remain stable when an event is updated', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    $event = Event::factory()->create([
+        'location_id' => $location->id,
+        'title' => 'FPV Vliegavond',
+        'slug' => 'fpv-vliegavond-2026-10-15',
+        'starts_at' => '2026-10-15T18:00',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'title' => 'FPV Trainingsavond',
+            'slug' => '',
+            'starts_at' => '2027-10-21T18:00',
+            'ends_at' => '2027-10-21T22:00',
+            'registration_deadline_at' => '2027-10-20T23:59',
+        ]))
+        ->assertRedirect(route('admin.events.edit', $event));
+
+    expect($event->refresh())
+        ->title->toBe('FPV Trainingsavond')
+        ->slug->toBe('fpv-vliegavond-2026-10-15');
 });
 
 test('editors can duplicate events as uniquely named drafts', function () {
