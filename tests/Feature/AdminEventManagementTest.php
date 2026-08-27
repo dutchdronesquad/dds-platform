@@ -10,6 +10,7 @@ use App\Models\Season;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -420,6 +421,43 @@ test('editors can duplicate events as uniquely named drafts', function () {
     $this->post(route('admin.events.duplicate', $sourceEvent));
 
     expect(Event::query()->where('slug', 'vrijdagtraining-kopie-2')->exists())->toBeTrue();
+});
+
+test('event duplication retries when the unique slug is claimed during creation', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $sourceEvent = Event::factory()->create([
+        'title' => 'Raceavond',
+        'slug' => 'raceavond',
+    ]);
+    $simulatedCollision = false;
+
+    Event::creating(function (Event $event) use ($sourceEvent, &$simulatedCollision): void {
+        if ($simulatedCollision || $event->slug !== 'raceavond-kopie') {
+            return;
+        }
+
+        $simulatedCollision = true;
+        $attributes = $sourceEvent->getAttributes();
+        unset($attributes['id']);
+        $attributes['slug'] = $event->slug;
+        $attributes['created_at'] = now();
+        $attributes['updated_at'] = now();
+
+        DB::table($sourceEvent->getTable())->insert($attributes);
+    });
+
+    $this->actingAs($editor)
+        ->post(route('admin.events.duplicate', $sourceEvent))
+        ->assertRedirect()
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event gedupliceerd als concept.',
+        ]);
+
+    expect($simulatedCollision)->toBeTrue()
+        ->and(Event::query()->where('slug', 'raceavond-kopie')->exists())->toBeFalse()
+        ->and(Event::query()->where('slug', 'raceavond-kopie-2')->exists())->toBeTrue();
 });
 
 test('event activity shows manual editors and system or import records', function () {

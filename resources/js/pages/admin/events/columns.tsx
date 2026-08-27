@@ -251,7 +251,11 @@ function EventActions({ event }: { event: EventRecord }) {
 
                 {event.capabilities.duplicate && (
                     <DropdownMenuItem asChild className="w-full">
-                        <Link href={duplicate(event.id)}>
+                        <Link
+                            href={duplicate(event.id)}
+                            method="post"
+                            as="button"
+                        >
                             <Copy />
                             Dupliceren
                         </Link>

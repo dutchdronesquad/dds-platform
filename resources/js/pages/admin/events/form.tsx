@@ -780,9 +780,7 @@ function EventStatusPanel({
                                 variant="outline"
                                 className="hover:border-signal-200 hover:text-signal-900 dark:hover:text-signal-200 h-10 w-full justify-start rounded-lg border-neutral-200 bg-white px-3 text-neutral-700 shadow-none hover:bg-signal-50 focus-visible:ring-signal-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:border-signal-500/30 dark:hover:bg-signal-500/10"
                                 disabled={isDirty}
-                                onClick={() =>
-                                    router.visit(duplicate(event.id))
-                                }
+                                onClick={() => router.post(duplicate(event.id))}
                             >
                                 <Copy />
                                 Event dupliceren
