@@ -32,8 +32,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { dashboard, home } from '@/routes';
 
-type ResourceId = 'events' | 'media' | 'users' | 'roles' | 'redirects';
-
 type Props = {
     openPoints: {
         closedRegistrationEvents: number;
@@ -62,7 +60,6 @@ type Props = {
         title: string;
     } | null;
     recentChanges: RecentChange[];
-    resources: Record<ResourceId, boolean>;
     stats: {
         draftEvents: number;
         recentChanges: number;
@@ -94,14 +91,6 @@ type DashboardAction = {
     title: string;
 };
 
-const plannedAreas = [
-    { id: 'media', title: 'Media', icon: Images },
-] satisfies Array<{
-    id: ResourceId;
-    title: string;
-    icon: typeof CalendarDays;
-}>;
-
 const registrationLabels: Record<RegistrationStatus, string> = {
     closed: 'Registratie gesloten',
     full: 'Registratie vol',
@@ -121,7 +110,6 @@ export default function Dashboard({
     nextEvent,
     openPoints,
     recentChanges,
-    resources,
     stats,
 }: Props) {
     const openPointItems = [
@@ -227,10 +215,6 @@ export default function Dashboard({
               ]
             : []),
     ];
-
-    const visiblePlannedAreas = plannedAreas.filter(
-        (area) => resources[area.id],
-    );
 
     return (
         <>
@@ -482,30 +466,6 @@ export default function Dashboard({
                             )}
                         </div>
                     </section>
-
-                    {visiblePlannedAreas.length > 0 && (
-                        <aside className="flex flex-col gap-3 border-t border-neutral-200 pt-5 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800">
-                            <div>
-                                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                                    In voorbereiding
-                                </p>
-                                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                    Deze beheeronderdelen worden later actief.
-                                </p>
-                            </div>
-                            <ul className="flex flex-wrap gap-2">
-                                {visiblePlannedAreas.map((area) => (
-                                    <li
-                                        key={area.id}
-                                        className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
-                                    >
-                                        <area.icon className="size-3.5" />
-                                        {area.title}
-                                    </li>
-                                ))}
-                            </ul>
-                        </aside>
-                    )}
                 </div>
             </div>
         </>
