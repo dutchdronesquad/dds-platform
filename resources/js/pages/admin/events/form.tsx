@@ -1,4 +1,4 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, router } from '@inertiajs/react';
 import {
     ArrowUpRight,
     Ban,
@@ -6,6 +6,7 @@ import {
     CircleAlert,
     ClipboardCheck,
     Coins,
+    Copy,
     ExternalLink,
     EyeOff,
     FileText,
@@ -19,6 +20,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
     destroy,
+    duplicate,
     index,
 } from '@/actions/App/Http/Controllers/Admin/EventController';
 import {
@@ -769,6 +771,21 @@ function EventStatusPanel({
                                         (opent in een nieuw tabblad)
                                     </span>
                                 </Link>
+                            </Button>
+                        )}
+
+                        {event.capabilities.duplicate && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="hover:border-signal-200 hover:text-signal-900 dark:hover:text-signal-200 h-10 w-full justify-start rounded-lg border-neutral-200 bg-white px-3 text-neutral-700 shadow-none hover:bg-signal-50 focus-visible:ring-signal-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:border-signal-500/30 dark:hover:bg-signal-500/10"
+                                disabled={isDirty}
+                                onClick={() =>
+                                    router.visit(duplicate(event.id))
+                                }
+                            >
+                                <Copy />
+                                Event dupliceren
                             </Button>
                         )}
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\DuplicateEvent;
 use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
@@ -34,7 +35,10 @@ final class EventController extends Controller
 
     private const string SITUATION_WITHOUT_SEASON = 'without_season';
 
-    public function __construct(private MediaAssetPickerData $mediaAssetPickerData) {}
+    public function __construct(
+        private DuplicateEvent $duplicateEvent,
+        private MediaAssetPickerData $mediaAssetPickerData,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -93,6 +97,17 @@ final class EventController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event opgeslagen.']);
 
         return to_route('admin.events.edit', $event);
+    }
+
+    public function duplicate(Event $event): RedirectResponse
+    {
+        Gate::authorize('duplicate', $event);
+
+        $duplicate = $this->duplicateEvent->handle($event);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Event gedupliceerd als concept.']);
+
+        return to_route('admin.events.edit', $duplicate);
     }
 
     public function destroy(Event $event): RedirectResponse
@@ -161,7 +176,7 @@ final class EventController extends Controller
      *     registrationStatus: string,
      *     location: array{name: string, city: string},
      *     season: array{name: string, slug: string}|null,
-     *     capabilities: array{update: bool, delete: bool, publish: bool, cancel: bool}
+     *     capabilities: array{update: bool, duplicate: bool, delete: bool, publish: bool, cancel: bool}
      * }>
      */
     private function events(User $user, array $filters): LengthAwarePaginator
@@ -230,6 +245,7 @@ final class EventController extends Controller
                 ],
                 'capabilities' => [
                     'update' => $user->can('update', $event),
+                    'duplicate' => $user->can('duplicate', $event),
                     'delete' => $user->can('delete', $event),
                     'publish' => $user->can('publish', $event),
                     'cancel' => $user->can('cancel', $event),
@@ -406,6 +422,7 @@ final class EventController extends Controller
                 ],
             ],
             'capabilities' => [
+                'duplicate' => $user->can('duplicate', $event),
                 'delete' => $user->can('delete', $event),
                 'publish' => $user->can('publish', $event),
                 'cancel' => $user->can('cancel', $event),

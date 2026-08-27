@@ -96,6 +96,8 @@ Route::middleware([
             ->name('events.unpublish');
         Route::patch('events/{event}/cancel', [EventStatusController::class, 'cancel'])
             ->name('events.cancel');
+        Route::post('events/{event}/duplicate', [AdminEventController::class, 'duplicate'])
+            ->name('events.duplicate');
         Route::resource('events', AdminEventController::class)->except('show');
         Route::get('locations/address-suggestions', LocationAddressSuggestController::class)
             ->middleware('throttle:location-geocoding')

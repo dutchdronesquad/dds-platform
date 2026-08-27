@@ -1,10 +1,11 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { adminTableFeatures } from '@/components/admin/admin-data-table';
-import { Ban, EyeOff, Pencil, Send, Tags, Trash2 } from 'lucide-react';
+import { Ban, Copy, EyeOff, Pencil, Send, Tags, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
     destroy,
+    duplicate,
     edit,
 } from '@/actions/App/Http/Controllers/Admin/EventController';
 import {
@@ -206,7 +207,10 @@ function EventActions({ event }: { event: EventRecord }) {
     const canCancel = event.capabilities.cancel && event.status === 'published';
     const canDelete = event.capabilities.delete;
     const hasPrimaryActions =
-        event.capabilities.update || canPublish || canUnpublish;
+        event.capabilities.update ||
+        event.capabilities.duplicate ||
+        canPublish ||
+        canUnpublish;
     const hasActions = hasPrimaryActions || canCancel || canDelete;
     const confirmation = pendingAction
         ? {
@@ -241,6 +245,15 @@ function EventActions({ event }: { event: EventRecord }) {
                         <Link href={edit(event.id)}>
                             <Pencil />
                             Bewerken
+                        </Link>
+                    </DropdownMenuItem>
+                )}
+
+                {event.capabilities.duplicate && (
+                    <DropdownMenuItem asChild className="w-full">
+                        <Link href={duplicate(event.id)}>
+                            <Copy />
+                            Dupliceren
                         </Link>
                     </DropdownMenuItem>
                 )}

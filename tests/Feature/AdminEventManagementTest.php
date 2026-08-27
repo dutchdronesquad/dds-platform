@@ -34,7 +34,9 @@ test('event management requires a management role and event permission', functio
         ->assertForbidden();
 
     expect($user->can('view', $event))->toBeFalse()
-        ->and($editor->can('view', $event))->toBeTrue();
+        ->and($user->can('duplicate', $event))->toBeFalse()
+        ->and($editor->can('view', $event))->toBeTrue()
+        ->and($editor->can('duplicate', $event))->toBeTrue();
 });
 
 test('admins can review events with operational status and actions', function () {
@@ -64,6 +66,7 @@ test('admins can review events with operational status and actions', function ()
             ->where('events.data.0.type', EventType::Training->value)
             ->where('events.data.0.registrationStatus', EventRegistrationStatus::Open->value)
             ->where('events.data.0.capabilities.update', true)
+            ->where('events.data.0.capabilities.duplicate', true)
             ->where('events.data.0.capabilities.delete', true)
             ->where('events.data.0.capabilities.publish', true)
             ->where('events.data.0.capabilities.cancel', true),
@@ -127,6 +130,7 @@ test('admins can open event forms with complete options and editable values', fu
             ->where('event.registrationStatus', EventRegistrationStatus::Waitlist->value)
             ->where('event.registrationUrl', 'https://example.com/wachtlijst')
             ->where('event.capabilities.delete', true)
+            ->where('event.capabilities.duplicate', true)
             ->where('event.capabilities.publish', true)
             ->where('event.capabilities.cancel', true)
             ->has('options.types', 5),
@@ -371,6 +375,51 @@ test('admins can create events with normalized prices and generated slugs', func
         ->status->toBe(EventStatus::Draft)
         ->type->toBe(EventType::Training)
         ->registration_status->toBe(EventRegistrationStatus::Open);
+});
+
+test('editors can duplicate events as uniquely named drafts', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $sourceEvent = Event::factory()->published()->training()->inSeason()->withCoverImage()->create([
+        'title' => 'Vrijdagtraining',
+        'slug' => 'vrijdagtraining',
+        'registration_status' => EventRegistrationStatus::Open,
+        'registration_url' => 'https://example.com/vrijdagtraining',
+    ]);
+
+    $this->actingAs($editor)
+        ->post(route('admin.events.duplicate', $sourceEvent))
+        ->assertRedirect()
+        ->assertInertiaFlash('toast', [
+            'type' => 'success',
+            'message' => 'Event gedupliceerd als concept.',
+        ]);
+
+    $firstDuplicate = Event::query()->where('slug', 'vrijdagtraining-kopie')->firstOrFail();
+
+    expect($firstDuplicate)
+        ->title->toBe('Vrijdagtraining (kopie)')
+        ->location_id->toBe($sourceEvent->location_id)
+        ->season_id->toBe($sourceEvent->season_id)
+        ->cover_image_id->toBe($sourceEvent->cover_image_id)
+        ->content->toBe($sourceEvent->content)
+        ->starts_at->toEqual($sourceEvent->starts_at)
+        ->ends_at->toEqual($sourceEvent->ends_at)
+        ->type->toBe($sourceEvent->type)
+        ->price_cents->toBe($sourceEvent->price_cents)
+        ->capacity->toBe($sourceEvent->capacity)
+        ->registration_opens_at->toEqual($sourceEvent->registration_opens_at)
+        ->registration_deadline_at->toEqual($sourceEvent->registration_deadline_at)
+        ->registration_status->toBe($sourceEvent->registration_status)
+        ->registration_url->toBe($sourceEvent->registration_url)
+        ->status->toBe(EventStatus::Draft)
+        ->published_at->toBeNull()
+        ->created_by->toBe($editor->id)
+        ->updated_by->toBe($editor->id);
+
+    $this->post(route('admin.events.duplicate', $sourceEvent));
+
+    expect(Event::query()->where('slug', 'vrijdagtraining-kopie-2')->exists())->toBeTrue();
 });
 
 test('event activity shows manual editors and system or import records', function () {
