@@ -50,6 +50,13 @@ class EventPolicy
         return $user->can(Permission::DeleteEvents->value);
     }
 
+    public function duplicate(User $user, Event $event): bool
+    {
+        return $this->view($user, $event)
+            && $this->create($user)
+            && $this->update($user, $event);
+    }
+
     public function publish(User $user, Event $event): bool
     {
         return $user->hasRole(Role::Admin->value);

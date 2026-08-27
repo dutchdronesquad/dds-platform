@@ -26,6 +26,7 @@ export type EventRecord = {
     capabilities: {
         cancel: boolean;
         delete: boolean;
+        duplicate: boolean;
         publish: boolean;
         update: boolean;
     };
@@ -80,6 +81,7 @@ export type EditableEvent = {
     capabilities: {
         cancel: boolean;
         delete: boolean;
+        duplicate: boolean;
         publish: boolean;
     };
     capacity: number | null;
