@@ -19,6 +19,7 @@ type DateTimePickerProps = {
     id: string;
     label: string;
     name: string;
+    showTodayShortcut?: boolean;
 };
 
 function parseDateTime(value?: string): { date?: Date; time: string } {
@@ -53,6 +54,7 @@ function DateTimePicker({
     id,
     label,
     name,
+    showTodayShortcut = false,
 }: DateTimePickerProps) {
     const initialValue = parseDateTime(defaultValue);
     const [date, setDate] = useState<Date | undefined>(initialValue.date);
@@ -114,6 +116,22 @@ function DateTimePicker({
                         }}
                         autoFocus
                     />
+                    {showTodayShortcut && (
+                        <div className="border-t border-border p-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                    setDate(new Date());
+                                    setOpen(false);
+                                }}
+                            >
+                                Vandaag
+                            </Button>
+                        </div>
+                    )}
                 </PopoverContent>
             </Popover>
             <TimePicker

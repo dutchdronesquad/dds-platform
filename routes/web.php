@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\EventStatusController;
 use App\Http\Controllers\Admin\LocationAddressLookupController;
 use App\Http\Controllers\Admin\LocationAddressSuggestController;
 use App\Http\Controllers\Admin\LocationController as AdminLocationController;
+use App\Http\Controllers\Admin\MarkdownPreviewController;
 use App\Http\Controllers\Admin\MediaAssetArchiveController;
 use App\Http\Controllers\Admin\MediaAssetController;
 use App\Http\Controllers\Admin\MediaAssetPickerController;
@@ -79,6 +80,8 @@ Route::middleware([
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->name('admin.')->group(function () {
+        Route::post('markdown-preview', MarkdownPreviewController::class)
+            ->name('markdown-preview');
         Route::get('media/picker', MediaAssetPickerController::class)
             ->name('media.picker');
         Route::post('media/quick-upload', MediaAssetQuickUploadController::class)

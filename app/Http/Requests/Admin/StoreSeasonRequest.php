@@ -4,9 +4,9 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\SeasonTicketSalesState;
 use App\Models\Season;
+use App\Rules\RegistrationUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 
 class StoreSeasonRequest extends FormRequest
@@ -23,17 +23,8 @@ class StoreSeasonRequest extends FormRequest
      */
     public function rules(): array
     {
-        $season = $this->season();
-
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                'alpha_dash:ascii',
-                Rule::unique(Season::class, 'slug')->ignore($season),
-            ],
             'ticket_offered' => ['sometimes', 'boolean'],
             'ticket_sales_state' => [
                 'nullable',
@@ -58,25 +49,17 @@ class StoreSeasonRequest extends FormRequest
                     $this->boolean('ticket_offered')
                     && $this->input('ticket_sales_state') === SeasonTicketSalesState::Available->value,
                 ),
-                'url:http,https',
+                new RegistrationUrl,
                 'max:2048',
             ],
             'ticket_copy' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
-    /** @return array{name: string, slug?: string} */
+    /** @return array{name: string} */
     public function seasonData(): array
     {
-        $validated = $this->validated();
-        $seasonData = ['name' => $this->string('name')->toString()];
-        $slug = Arr::get($validated, 'slug');
-
-        if (is_string($slug) && $slug !== '') {
-            $seasonData['slug'] = $slug;
-        }
-
-        return $seasonData;
+        return ['name' => $this->string('name')->toString()];
     }
 
     /** @return array<string, mixed>|null */
@@ -105,7 +88,6 @@ class StoreSeasonRequest extends FormRequest
     {
         return [
             'name' => 'seizoensnaam',
-            'slug' => 'URL-slug',
             'ticket_sales_state' => 'verkoopstatus',
             'ticket_price_euros' => 'ticketprijs',
             'ticket_capacity' => 'ticketlimiet',
