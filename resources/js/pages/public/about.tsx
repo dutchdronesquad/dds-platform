@@ -490,11 +490,21 @@ const teamMembers = [
         initials: 'KS',
         name: 'Klaas Schoute',
         note: 'Oprichter · techniek en development',
+        portrait: {
+            src: '/images/dds/team/team-klaas.png',
+            alt: 'Klaas Schoute van Dutch Drone Squad',
+            position: 'center center',
+        },
     },
     {
         initials: 'NK',
         name: 'Nico Kraakman',
         note: 'Financiën · lessen op maat',
+        portrait: {
+            src: '/images/dds/team/team-nico.png',
+            alt: 'Nico Kraakman van Dutch Drone Squad',
+            position: '72% center',
+        },
     },
     {
         initials: 'ZM',
@@ -512,6 +522,9 @@ const teamMembers = [
         note: 'Trackdesigner · team track · tijdregistratie · sinds 2025',
     },
 ];
+
+const teamPortraitFrameClassName =
+    'relative aspect-[4/5] w-[5.5rem] overflow-hidden bg-deep-signal md:w-auto';
 
 function BehindTheRaceSection() {
     return (
@@ -549,24 +562,44 @@ function BehindTheRaceSection() {
                                 key={member.name}
                                 className="grid w-[82vw] max-w-xs shrink-0 snap-start grid-cols-[5.5rem_1fr] items-center gap-4 bg-warmup p-3 md:block md:w-auto md:max-w-none"
                             >
-                                <div
-                                    aria-hidden="true"
-                                    data-testid="team-portrait-placeholder"
-                                    className="relative isolate aspect-[4/5] w-[5.5rem] overflow-hidden bg-deep-signal text-white md:w-auto"
-                                >
-                                    <span className="absolute top-0 right-0 h-1/2 w-2 bg-dds-orange md:w-3" />
-                                    <span className="absolute bottom-0 left-0 h-px w-2/3 bg-dds-cyan/65" />
-                                    <span className="absolute top-2 left-2 font-mono text-[0.5rem] font-semibold tracking-[0.12em] text-white/45 md:top-5 md:left-5 md:text-[0.65rem] md:tracking-[0.14em]">
-                                        TEAM /{' '}
-                                        {String(index + 1).padStart(2, '0')}
-                                    </span>
-                                    <span className="absolute inset-0 grid place-items-center font-public-display text-3xl font-semibold tracking-[-0.08em] text-dds-cyan md:text-7xl xl:text-6xl">
-                                        {member.initials}
-                                    </span>
-                                    <span className="absolute right-4 bottom-4 left-4 hidden border-t border-white/18 pt-3 text-[0.65rem] font-semibold tracking-[0.12em] text-white/58 uppercase md:block">
-                                        Portret volgt
-                                    </span>
-                                </div>
+                                {member.portrait ? (
+                                    <div
+                                        data-portrait-frame=""
+                                        className={teamPortraitFrameClassName}
+                                    >
+                                        <img
+                                            src={member.portrait.src}
+                                            alt={member.portrait.alt}
+                                            loading="lazy"
+                                            data-testid="team-portrait"
+                                            className="absolute inset-0 h-full w-full object-cover"
+                                            style={{
+                                                objectPosition:
+                                                    member.portrait.position,
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div
+                                        aria-hidden="true"
+                                        data-portrait-frame=""
+                                        data-testid="team-portrait-placeholder"
+                                        className={`${teamPortraitFrameClassName} isolate text-white`}
+                                    >
+                                        <span className="absolute top-0 right-0 h-1/2 w-2 bg-dds-orange md:w-3" />
+                                        <span className="absolute bottom-0 left-0 h-px w-2/3 bg-dds-cyan/65" />
+                                        <span className="absolute top-2 left-2 font-mono text-[0.5rem] font-semibold tracking-[0.12em] text-white/45 md:top-5 md:left-5 md:text-[0.65rem] md:tracking-[0.14em]">
+                                            TEAM /{' '}
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                        <span className="absolute inset-0 grid place-items-center font-public-display text-3xl font-semibold tracking-[-0.08em] text-dds-cyan md:text-7xl xl:text-6xl">
+                                            {member.initials}
+                                        </span>
+                                        <span className="absolute right-4 bottom-4 left-4 hidden border-t border-white/18 pt-3 text-[0.65rem] font-semibold tracking-[0.12em] text-white/58 uppercase md:block">
+                                            Portret volgt
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="min-w-0 self-center">
                                     <h3 className="font-public-display text-lg font-semibold tracking-[-0.025em] md:mt-5 md:text-xl">
                                         {member.name}
@@ -574,9 +607,11 @@ function BehindTheRaceSection() {
                                     <p className="mt-1 text-sm leading-6 text-deep-signal/72 md:min-h-12">
                                         {member.note}
                                     </p>
-                                    <span className="mt-2 block text-[0.65rem] font-semibold tracking-[0.12em] text-deep-signal uppercase md:hidden">
-                                        Portret volgt
-                                    </span>
+                                    {!member.portrait && (
+                                        <span className="mt-2 block text-[0.65rem] font-semibold tracking-[0.12em] text-deep-signal uppercase md:hidden">
+                                            Portret volgt
+                                        </span>
+                                    )}
                                 </div>
                             </li>
                         ))}
