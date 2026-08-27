@@ -71,7 +71,7 @@ test('event forms use one main surface with flat sections and a context sidebar'
             "(() => { const ids = ['price_euros', 'capacity', 'starts_at', 'ends_at']; const fields = ids.map((id) => document.querySelector('[data-field=\"' + id + '\"]')); if (fields.some((field) => field === null)) return false; const widths = fields.map((field) => field.getBoundingClientRect().width); return Math.max(...widths) - Math.min(...widths) < 1; })()",
         )
         ->assertScript(
-            "(() => { const slug = document.querySelector('#slug'); const content = document.querySelector('#content'); if (slug === null || content === null) return false; return Math.abs(slug.getBoundingClientRect().width - content.getBoundingClientRect().width) < 1; })()",
+            "(() => { const content = document.querySelector('#content'); const field = document.querySelector('[data-field=\"content\"]'); if (content === null || field === null) return false; return content.getBoundingClientRect().width > 700 && content.getBoundingClientRect().right <= field.getBoundingClientRect().right; })()",
         )
         ->resize(640, 900)
         ->assertScript(
@@ -122,18 +122,20 @@ test('event create responds to the available form width instead of the viewport'
             "(() => { const headings = Array.from(document.querySelectorAll('[data-testid=\"admin-form-layout\"] h2')).map((heading) => heading.textContent?.trim()); return JSON.stringify(headings) === JSON.stringify(['Basisinformatie', 'Wanneer', 'Capaciteit en prijs', 'Inschrijving', 'Publieke pagina']); })()",
         )
         ->fill('#title', 'Indoor Training Éindhoven')
-        ->assertValue('#slug', '')
-        ->assertAttribute(
-            '#slug',
-            'placeholder',
-            'Automatisch uit titel en startdatum',
-        )
-        ->assertVisible('#slug')
-        ->fill('#slug', 'eigen-event-url')
-        ->assertSee('Publieke URL: /events/eigen-event-url')
-        ->fill('#title', 'Nieuwe eventtitel')
+        ->assertMissing('#slug')
+        ->assertMissing('input[name="slug"]')
+        ->assertSee('De publieke URL wordt automatisch uit de titel en startdatum gemaakt.')
+        ->fill('#content', "## Programma\n\n- Briefing\n- Vrij vliegen")
+        ->click('button[aria-controls="content-preview"]')
+        ->assertSee('Programma')
         ->assertScript(
-            "document.querySelector('input[name=\"slug\"]')?.value === 'eigen-event-url'",
+            "document.querySelector('#content-preview h2')?.textContent === 'Programma' && document.querySelector('#content-preview li')?.textContent === 'Briefing'",
+        )
+        ->click('button[aria-controls="content-editor"]')
+        ->click('#registration_opens_at')
+        ->click('internal:role=button[name="Vandaag"s]')
+        ->assertScript(
+            "document.querySelector('#registration_opens_at')?.textContent?.includes('Kies datum') === false",
         )
         ->assertSee('Deelnameprijs (optioneel)')
         ->assertScript(

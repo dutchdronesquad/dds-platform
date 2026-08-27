@@ -40,6 +40,7 @@ import {
     AdminFormSection,
 } from '@/components/admin/admin-form';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -92,7 +93,7 @@ const eventFormOutlineItems = [
         title: 'Inschrijving',
     },
     {
-        description: 'Publieke URL en inhoud',
+        description: 'Omslag en inhoud',
         icon: Globe,
         id: 'event-public-page',
         title: 'Publieke pagina',
@@ -111,7 +112,6 @@ export function EventForm({
     options: EventFormOptions;
 }) {
     const [title, setTitle] = useState(event?.title ?? '');
-    const [slug, setSlug] = useState(event?.slug ?? '');
     const [registrationStatus, setRegistrationStatus] = useState(
         event?.registrationStatus ?? 'closed',
     );
@@ -503,7 +503,7 @@ export function EventForm({
                                             event?.registrationUrl ?? ''
                                         }
                                         maxLength={2048}
-                                        placeholder="https://…"
+                                        placeholder="https://… of mailto:…"
                                         inputMode="url"
                                         autoComplete="url"
                                         required={registrationRequiresUrl}
@@ -535,6 +535,7 @@ export function EventForm({
                                         defaultValue={
                                             event?.registrationOpensAt ?? ''
                                         }
+                                        showTodayShortcut
                                         aria-invalid={Boolean(
                                             errors.registration_opens_at,
                                         )}
@@ -575,41 +576,9 @@ export function EventForm({
                             className="@container/fields"
                             icon={Globe}
                             title="Publieke pagina"
-                            description="Beheer de URL en de uitgebreide informatie die bezoekers op de eventpagina zien."
+                            description="Voeg een omslag en uitgebreide informatie toe. De publieke URL wordt automatisch uit de titel en startdatum gemaakt."
                         >
                             <div className="grid gap-5">
-                                <FormField
-                                    id="slug"
-                                    label="URL-slug (optioneel)"
-                                    error={errors.slug}
-                                >
-                                    <Input
-                                        id="slug"
-                                        name="slug"
-                                        value={slug}
-                                        onChange={(inputEvent) => {
-                                            const nextSlug =
-                                                inputEvent.target.value;
-
-                                            setSlug(nextSlug);
-                                        }}
-                                        maxLength={255}
-                                        placeholder="Automatisch uit titel en startdatum"
-                                        autoComplete="off"
-                                        autoCapitalize="none"
-                                        spellCheck={false}
-                                        aria-invalid={Boolean(errors.slug)}
-                                        aria-describedby={fieldDescription(
-                                            'slug',
-                                            errors.slug,
-                                        )}
-                                    />
-                                    {slug && (
-                                        <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                                            Publieke URL: /events/{slug}
-                                        </p>
-                                    )}
-                                </FormField>
                                 <FormField
                                     id="cover_image_id"
                                     label="Omslagafbeelding (optioneel)"
@@ -633,7 +602,7 @@ export function EventForm({
                                     error={errors.content}
                                     hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                                 >
-                                    <textarea
+                                    <MarkdownEditor
                                         id="content"
                                         name="content"
                                         defaultValue={event?.content ?? ''}
@@ -646,7 +615,6 @@ export function EventForm({
                                             errors.content,
                                             true,
                                         )}
-                                        className="min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                     />
                                 </FormField>
                             </div>

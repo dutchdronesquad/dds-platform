@@ -24,6 +24,7 @@ import {
     AdminFormOutline,
     AdminFormSection,
 } from '@/components/admin/admin-form';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
@@ -36,7 +37,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { createSlug } from '@/lib/create-slug';
 import { show as publicSeasonShow } from '@/routes/seasons';
 import type { EditableSeason, SalesState, SalesStateOption } from './types';
 
@@ -54,7 +54,7 @@ const advancedTicketErrorKeys = [
 
 const seasonFormOutlineItems = [
     {
-        description: 'Naam en publieke URL',
+        description: 'Naam en automatische URL',
         icon: CalendarRange,
         id: 'season-basics',
         title: 'Seizoensgegevens',
@@ -77,10 +77,6 @@ export function SeasonForm({
     season?: EditableSeason;
 }) {
     const [name, setName] = useState(season?.name ?? '');
-    const [slug, setSlug] = useState(season?.slug ?? '');
-    const [slugManuallyEdited, setSlugManuallyEdited] = useState(
-        Boolean(season?.slug),
-    );
     const [ticketOffered, setTicketOffered] = useState(
         season?.ticketOffered ?? false,
     );
@@ -165,13 +161,9 @@ export function SeasonForm({
                                     className="@container/fields"
                                     icon={CalendarRange}
                                     title="Seizoensgegevens"
-                                    description={
-                                        season
-                                            ? 'De naam verschijnt bij gekoppelde events en op de publieke seizoenpagina. Laat de URL-slug leeg om hem opnieuw uit de naam te maken.'
-                                            : 'Geef het seizoen een herkenbare naam. De URL wordt automatisch uit deze naam gemaakt.'
-                                    }
+                                    description="De naam verschijnt bij gekoppelde events en op de publieke seizoenpagina. De URL wordt bij het aanmaken automatisch uit deze naam gemaakt."
                                 >
-                                    <div className="grid items-start gap-5 @min-[40rem]/fields:grid-cols-2">
+                                    <div className="max-w-2xl">
                                         <FormField
                                             id="name"
                                             label="Seizoensnaam"
@@ -182,22 +174,11 @@ export function SeasonForm({
                                                     id="name"
                                                     name="name"
                                                     value={name}
-                                                    onChange={(event) => {
-                                                        const nextName =
-                                                            event.target.value;
-
-                                                        setName(nextName);
-
-                                                        if (
-                                                            !slugManuallyEdited
-                                                        ) {
-                                                            setSlug(
-                                                                createSlug(
-                                                                    nextName,
-                                                                ),
-                                                            );
-                                                        }
-                                                    }}
+                                                    onChange={(event) =>
+                                                        setName(
+                                                            event.target.value,
+                                                        )
+                                                    }
                                                     required
                                                     maxLength={255}
                                                     autoFocus
@@ -206,37 +187,6 @@ export function SeasonForm({
                                                             ? undefined
                                                             : 'Zomerseizoen 2026'
                                                     }
-                                                    {...fieldProps}
-                                                />
-                                            )}
-                                        </FormField>
-                                        <FormField
-                                            id="slug"
-                                            label="URL-slug (optioneel)"
-                                            error={errors.slug}
-                                        >
-                                            {(fieldProps) => (
-                                                <Input
-                                                    id="slug"
-                                                    name="slug"
-                                                    value={slug}
-                                                    onChange={(event) => {
-                                                        const nextSlug =
-                                                            event.target.value;
-
-                                                        setSlug(nextSlug);
-                                                        setSlugManuallyEdited(
-                                                            nextSlug !== '' &&
-                                                                nextSlug !==
-                                                                    createSlug(
-                                                                        name,
-                                                                    ),
-                                                        );
-                                                    }}
-                                                    maxLength={255}
-                                                    placeholder="Automatisch uit seizoensnaam"
-                                                    autoCapitalize="none"
-                                                    spellCheck={false}
                                                     {...fieldProps}
                                                 />
                                             )}
@@ -506,7 +456,7 @@ export function SeasonForm({
                                                                 type="url"
                                                                 inputMode="url"
                                                                 maxLength={2048}
-                                                                placeholder="https://tickets.example.nl/…"
+                                                                placeholder="https://… of mailto:…"
                                                                 defaultValue={
                                                                     season?.ticketRegistrationUrl ??
                                                                     ''
@@ -587,6 +537,7 @@ export function SeasonForm({
                                                                             season?.ticketSalesOpensAt ??
                                                                             ''
                                                                         }
+                                                                        showTodayShortcut
                                                                         {...fieldProps}
                                                                     />
                                                                 )}
@@ -653,7 +604,7 @@ export function SeasonForm({
                                                                 {(
                                                                     fieldProps,
                                                                 ) => (
-                                                                    <textarea
+                                                                    <MarkdownEditor
                                                                         id="ticket_copy"
                                                                         name="ticket_copy"
                                                                         defaultValue={
@@ -666,7 +617,6 @@ export function SeasonForm({
                                                                         }
                                                                         placeholder="Toegang tot alle events in dit seizoen…"
                                                                         {...fieldProps}
-                                                                        className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm"
                                                                     />
                                                                 )}
                                                             </FormField>

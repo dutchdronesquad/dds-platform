@@ -95,22 +95,20 @@ test('season ticket fields use a balanced layout and combined date time controls
         ->assertNoJavaScriptErrors()
         ->assertMissing('input[type="time"]')
         ->assertScript(
-            // The two form sections read top-to-bottom (name/URL, then the ticket
+            // The two form sections read top-to-bottom (name, then the ticket
             // section) rather than sitting side by side, so the "Seizoensticket"
-            // section starts below the "Naam en URL" section and both span the
+            // section starts below the basic section and both span the
             // full width of the form column.
             "(() => { const sections = document.querySelectorAll('[data-testid=\"season-form-sections\"] > section'); if (sections.length !== 2) return false; const [first, second] = sections; const firstBounds = first.getBoundingClientRect(); const secondBounds = second.getBoundingClientRect(); return secondBounds.top >= firstBounds.bottom && Math.abs(firstBounds.width - secondBounds.width) < 1 && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
         ->assertScript(
-            // Within the first section, name and URL slug sit side by side once
-            // there is enough width, i.e. they share a row.
-            "(() => { const name = document.querySelector('#name'); const slug = document.querySelector('#slug'); if (name === null || slug === null) return false; return Math.abs(name.getBoundingClientRect().top - slug.getBoundingClientRect().top) < 1; })()",
+            "(() => { const name = document.querySelector('#name'); const section = document.querySelector('#season-basics'); if (name === null || section === null) return false; return name.getBoundingClientRect().width <= 672 && name.getBoundingClientRect().width < section.getBoundingClientRect().width; })()",
         )
+        ->assertMissing('#slug')
+        ->assertMissing('input[name="slug"]')
         ->resize(640, 900)
         ->assertScript(
-            // On a narrow viewport the name and URL slug fields stack instead of
-            // sitting side by side, and nothing overflows horizontally.
-            "(() => { const name = document.querySelector('#name'); const slug = document.querySelector('#slug'); if (name === null || slug === null) return false; return slug.getBoundingClientRect().top >= name.getBoundingClientRect().bottom && document.documentElement.scrollWidth <= window.innerWidth; })()",
+            "document.querySelector('#name') !== null && document.documentElement.scrollWidth <= window.innerWidth",
         )
         ->resize(1440, 1000)
         ->assertAriaAttribute('#ticket_offered', 'checked', 'true')
@@ -145,6 +143,16 @@ test('season ticket fields use a balanced layout and combined date time controls
         )
         ->assertScript(
             "(() => { const trigger = document.querySelector('#ticket_sales_opens_at_time'); const date = document.querySelector('#ticket_sales_opens_at'); return trigger !== null && date !== null && trigger.getBoundingClientRect().height === date.getBoundingClientRect().height; })()",
+        )
+        ->fill('#ticket_copy', "## Seizoensticket\n\nToegang tot **alle events**.")
+        ->click('button[aria-controls="ticket_copy-preview"]')
+        ->assertScript(
+            "document.querySelector('#ticket_copy-preview h2')?.textContent === 'Seizoensticket' && document.querySelector('#ticket_copy-preview strong')?.textContent === 'alle events'",
+        )
+        ->click('#ticket_sales_opens_at')
+        ->click('internal:role=button[name="Vandaag"s]')
+        ->assertScript(
+            "document.querySelector('#ticket_sales_opens_at')?.textContent?.includes('Kies datum') === false",
         )
         ->assertNoJavaScriptErrors();
 });

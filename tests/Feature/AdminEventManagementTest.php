@@ -111,8 +111,8 @@ test('admins can open event forms with complete options and editable values', fu
             ->component('admin/events/create')
             ->where('canManageSeasons', true)
             ->has('options.locations', 2)
-            ->where('options.locations.0.label', 'Alpha Hal — Alkmaar')
-            ->where('options.locations.1.label', 'Zulu Hal — Zwolle')
+            ->where('options.locations.0.label', 'Alpha Hal')
+            ->where('options.locations.1.label', 'Zulu Hal')
             ->has('options.seasons', 1)
             ->where('options.seasons.0.label', 'Wintercompetitie')
             ->has('options.types', 5)
@@ -329,15 +329,18 @@ test('editors can create and update events but cannot publish or delete them', f
         ->assertRedirect();
 
     $event = Event::query()->where('slug', 'editor-training-2026-10-15')->firstOrFail();
+    $generatedSlug = $event->slug;
 
     $this->actingAs($editor)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
             'title' => 'Bijgewerkte editor training',
-            'slug' => 'bijgewerkte-editor-training',
+            'slug' => 'wordt-genegeerd',
         ]))
         ->assertRedirect(route('admin.events.edit', $event));
 
-    expect($event->refresh()->title)->toBe('Bijgewerkte editor training');
+    expect($event->refresh())
+        ->title->toBe('Bijgewerkte editor training')
+        ->slug->toBe($generatedSlug);
 
     $this->actingAs($editor)
         ->patch(route('admin.events.publish', $event))
@@ -360,7 +363,7 @@ test('admins can create events with normalized prices and date-based generated s
         ->post(route('admin.events.store'), validEventPayload($location, [
             'season_id' => $season->id,
             'title' => 'Indoor Training Oktober',
-            'slug' => '',
+            'slug' => 'handmatige-slug-wordt-genegeerd',
             'price_euros' => '12.50',
         ]))
         ->assertRedirect();
@@ -412,7 +415,7 @@ test('generated event slugs remain stable when an event is updated', function ()
     $this->actingAs($admin)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
             'title' => 'FPV Trainingsavond',
-            'slug' => '',
+            'slug' => 'deze-mag-de-url-niet-wijzigen',
             'starts_at' => '2027-10-21T18:00',
             'ends_at' => '2027-10-21T22:00',
             'registration_deadline_at' => '2027-10-20T23:59',
@@ -517,19 +520,17 @@ test('event activity shows manual editors and system or import records', functio
     $this->actingAs($admin)
         ->post(route('admin.events.store'), validEventPayload($location, [
             'title' => 'Handmatig event',
-            'slug' => 'handmatig-event',
         ]))
         ->assertInertiaFlash('toast', [
             'type' => 'success',
             'message' => 'Event aangemaakt als concept.',
         ]);
 
-    $event = Event::query()->where('slug', 'handmatig-event')->firstOrFail();
+    $event = Event::query()->where('slug', 'handmatig-event-2026-10-15')->firstOrFail();
 
     $this->actingAs($editor)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
             'title' => 'Bewerkt event',
-            'slug' => 'handmatig-event',
         ]))
         ->assertInertiaFlash('toast', [
             'type' => 'success',
@@ -591,6 +592,33 @@ test('event requests reject invalid chronology and references', function () {
             'registration_opens_at',
             'registration_url',
         ]);
+});
+
+test('event registration links accept mailto urls', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'registration_url' => 'MAILTO:inschrijven@dutchdronesquad.nl?subject=Trainingavond',
+        ]))
+        ->assertRedirect();
+
+    expect(Event::query()->sole()->registration_url)
+        ->toBe('MAILTO:inschrijven@dutchdronesquad.nl?subject=Trainingavond');
+});
+
+test('event registration links reject encoded control characters', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'registration_url' => 'mailto:inschrijven@dutchdronesquad.nl?subject=Training%0d%0aBcc:spam@example.com',
+        ]))
+        ->assertSessionHasErrors('registration_url');
 });
 
 test('admins can publish cancel unpublish and remove events with public visibility following status', function () {
@@ -663,7 +691,6 @@ function validEventPayload(Location $location, array $overrides = []): array
         'location_id' => $location->id,
         'season_id' => null,
         'title' => 'Trainingavond',
-        'slug' => 'trainingavond',
         'content' => 'Neem je racequad en videobril mee.',
         'starts_at' => '2026-10-15T18:00',
         'ends_at' => '2026-10-15T22:00',

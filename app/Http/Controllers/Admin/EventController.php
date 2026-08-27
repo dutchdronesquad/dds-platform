@@ -362,12 +362,12 @@ final class EventController extends Controller
     {
         return [
             'locations' => Location::query()
-                ->select(['id', 'name', 'city'])
+                ->select(['id', 'name'])
                 ->orderBy('name')
                 ->get()
                 ->map(fn (Location $location): array => [
                     'id' => $location->id,
-                    'label' => "{$location->name} — {$location->city}",
+                    'label' => $location->name,
                 ]),
             'seasons' => Season::query()
                 ->select(['id', 'name'])

@@ -307,7 +307,7 @@ test('event forms select reusable active media and retain an already archived co
         ]))
         ->assertRedirect();
 
-    $event = Event::query()->where('slug', 'media-event')->firstOrFail();
+    $event = Event::query()->where('title', 'Media event')->firstOrFail();
 
     expect($event->cover_image_id)->toBe($coverImage->id);
 
@@ -362,7 +362,6 @@ function eventPayload(Location $location, array $overrides = []): array
     return [
         'location_id' => $location->id,
         'title' => 'Media event',
-        'slug' => 'media-event',
         'starts_at' => now()->addDay()->toIso8601String(),
         'type' => EventType::Training->value,
         'registration_status' => EventRegistrationStatus::Closed->value,

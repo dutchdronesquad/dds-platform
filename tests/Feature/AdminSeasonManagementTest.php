@@ -121,7 +121,7 @@ test('admins can create seasons with an optional ticket price and limit', functi
     $this->actingAs($admin)
         ->post(route('admin.seasons.store'), validSeasonPayload([
             'name' => 'Winter 2027',
-            'slug' => '',
+            'slug' => 'handmatige-slug-wordt-genegeerd',
             'ticket_price_euros' => '149.95',
             'ticket_capacity' => 40,
         ]))
@@ -212,19 +212,34 @@ test('admins can update seasons and stop offering their ticket', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     $season = Season::factory()->withTicketOffer()->create();
+    $originalSlug = $season->slug;
 
     $this->actingAs($admin)
         ->put(route('admin.seasons.update', $season), [
             'name' => 'Zomerseizoen 2028',
-            'slug' => 'zomerseizoen-2028',
+            'slug' => 'deze-mag-de-url-niet-wijzigen',
             'ticket_offered' => false,
         ])
-        ->assertRedirect(route('admin.seasons.edit', 'zomerseizoen-2028'));
+        ->assertRedirect(route('admin.seasons.edit', $originalSlug));
 
     expect($season->refresh())
         ->name->toBe('Zomerseizoen 2028')
-        ->slug->toBe('zomerseizoen-2028')
+        ->slug->toBe($originalSlug)
         ->and($season->seasonTicket()->exists())->toBeFalse();
+});
+
+test('season ticket links accept mailto urls', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin)
+        ->post(route('admin.seasons.store'), validSeasonPayload([
+            'ticket_registration_url' => 'mailto:tickets@dutchdronesquad.nl?subject=Seizoensticket',
+        ]))
+        ->assertRedirect();
+
+    expect(SeasonTicket::query()->sole()->registration_url)
+        ->toBe('mailto:tickets@dutchdronesquad.nl?subject=Seizoensticket');
 });
 
 test('season ticket validation rejects invalid sales windows and values', function () {
@@ -289,7 +304,6 @@ function validSeasonPayload(array $overrides = []): array
 {
     return [
         'name' => 'Seizoen 2027',
-        'slug' => 'seizoen-2027',
         'ticket_offered' => true,
         'ticket_sales_state' => SeasonTicketSalesState::Available->value,
         'ticket_price_euros' => '125.00',
