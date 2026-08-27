@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\Permission;
-use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Location;
@@ -22,7 +21,6 @@ final class DashboardController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $isAdmin = $user->hasRole(Role::Admin->value);
         $canViewEvents = $user->can(Permission::ViewEvents->value);
         $canManageSeasons = $user->can('viewAny', Season::class);
         $referenceTime = now();
@@ -36,7 +34,6 @@ final class DashboardController extends Controller
             : ['total' => 0, 'recent' => 0];
 
         return Inertia::render('dashboard', [
-            'resources' => $this->resources($user, $isAdmin, $canViewEvents),
             'capabilities' => [
                 'createEvents' => $user->can('create', Event::class),
                 'createLocations' => $user->can('create', Location::class),
@@ -60,26 +57,6 @@ final class DashboardController extends Controller
             'recentChanges' => $this->recentChanges($canViewEvents, $canManageSeasons, $recentCutoff),
             'isEmpty' => $eventSummary['total'] + $seasonSummary['total'] === 0,
         ]);
-    }
-
-    /**
-     * @return array{
-     *     events: bool,
-     *     media: bool,
-     *     users: bool,
-     *     roles: bool,
-     *     redirects: bool
-     * }
-     */
-    private function resources(User $user, bool $isAdmin, bool $canViewEvents): array
-    {
-        return [
-            'events' => $canViewEvents,
-            'media' => $isAdmin,
-            'users' => $user->can(Permission::ViewUsers->value),
-            'roles' => $user->can(Permission::ViewRoles->value),
-            'redirects' => $user->can(Permission::ViewRedirects->value),
-        ];
     }
 
     /**
