@@ -947,7 +947,25 @@ test('about page tells the DDS story and stays usable', function () {
             'document.querySelectorAll("[data-testid=about-timeline] time").length === 6',
         )
         ->assertScript(
-            'document.querySelectorAll("[data-testid=team-portrait-placeholder]").length === 5',
+            'document.querySelectorAll("[data-testid=team-portrait]").length === 2',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=team-portrait]")].map((image) => image.getAttribute("src")).join(",") === "/images/dds/team/team-klaas.png,/images/dds/team/team-nico.png"',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=team-portrait]")].every((image) => image.alt.trim().length > 0)',
+        )
+        ->assertScript(
+            '[...document.querySelectorAll("[data-testid=team-portrait]")].every((image) => !image.closest("li")?.textContent.includes("Portret volgt"))',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-portrait-frame]").length === 5',
+        )
+        ->assertScript(
+            '(() => { const frames = [...document.querySelectorAll("[data-portrait-frame]")].map((frame) => frame.getBoundingClientRect()); return frames.every((frame) => Math.abs(frame.width - frames[0].width) < 1 && Math.abs(frame.height - frames[0].height) < 1); })()',
+        )
+        ->assertScript(
+            'document.querySelectorAll("[data-testid=team-portrait-placeholder]").length === 3',
         )
         ->assertAttribute('[data-testid="team-list"]', 'tabindex', '0')
         ->assertScript(
