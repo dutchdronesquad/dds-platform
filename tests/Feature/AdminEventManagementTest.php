@@ -601,12 +601,24 @@ test('event registration links accept mailto urls', function () {
 
     $this->actingAs($admin)
         ->post(route('admin.events.store'), validEventPayload($location, [
-            'registration_url' => 'mailto:inschrijven@dutchdronesquad.nl?subject=Trainingavond',
+            'registration_url' => 'MAILTO:inschrijven@dutchdronesquad.nl?subject=Trainingavond',
         ]))
         ->assertRedirect();
 
     expect(Event::query()->sole()->registration_url)
-        ->toBe('mailto:inschrijven@dutchdronesquad.nl?subject=Trainingavond');
+        ->toBe('MAILTO:inschrijven@dutchdronesquad.nl?subject=Trainingavond');
+});
+
+test('event registration links reject encoded control characters', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'registration_url' => 'mailto:inschrijven@dutchdronesquad.nl?subject=Training%0d%0aBcc:spam@example.com',
+        ]))
+        ->assertSessionHasErrors('registration_url');
 });
 
 test('admins can publish cancel unpublish and remove events with public visibility following status', function () {

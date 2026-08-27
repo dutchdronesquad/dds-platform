@@ -27,13 +27,15 @@ final class RegistrationUrl implements ValidationRule
             return;
         }
 
-        if (! Str::startsWith($value, 'mailto:') || preg_match('/[\x00-\x1F\x7F]/', $value) === 1) {
+        $decodedValue = rawurldecode($value);
+
+        if (strncasecmp($value, 'mailto:', 7) !== 0 || preg_match('/[\x00-\x1F\x7F]/', $decodedValue) === 1) {
             $fail('De :attribute moet een geldige http-, https- of mailto-link zijn.');
 
             return;
         }
 
-        $recipient = rawurldecode(Str::before(Str::after($value, 'mailto:'), '?'));
+        $recipient = Str::before(substr($decodedValue, 7), '?');
 
         if (filter_var($recipient, FILTER_VALIDATE_EMAIL) === false) {
             $fail('De :attribute moet een geldig e-mailadres in de mailto-link bevatten.');

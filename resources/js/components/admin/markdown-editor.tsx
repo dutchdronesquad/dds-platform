@@ -76,6 +76,7 @@ export function MarkdownEditor({
                     size="sm"
                     aria-controls={previewId}
                     aria-pressed={mode === 'preview'}
+                    disabled={preview.processing}
                     onClick={showPreview}
                     className={cn(
                         'h-8',
