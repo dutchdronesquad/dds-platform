@@ -143,6 +143,7 @@ export function LocationForm({
             {...form}
             className="grid gap-0"
             options={{ preserveScroll: true }}
+            setDefaultsOnSuccess
         >
             {({ errors, isDirty, processing, recentlySuccessful }) => {
                 const hasAddressErrors = Boolean(

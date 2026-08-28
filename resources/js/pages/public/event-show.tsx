@@ -31,10 +31,11 @@ import type { PublicEventDetail, SeoMetadata } from '@/types';
 
 type Props = {
     event: PublicEventDetail;
+    isPreview?: boolean;
     seo: SeoMetadata;
 };
 
-export default function EventShow({ event, seo }: Props) {
+export default function EventShow({ event, isPreview = false, seo }: Props) {
     const isCancelled = event.status === 'cancelled';
     const registrationLabel = getRegistrationLabel(event, isCancelled);
     const canRegister = canRegisterForEvent(event, isCancelled);
@@ -42,6 +43,15 @@ export default function EventShow({ event, seo }: Props) {
     return (
         <>
             <PublicSeoHead metadata={seo} />
+
+            {isPreview && (
+                <div
+                    role="status"
+                    className="border-b border-dds-orange/35 bg-flight-100 px-public-gutter py-3 text-center text-sm font-semibold text-deep-signal dark:border-dds-orange/25 dark:bg-flight-500/15 dark:text-white"
+                >
+                    Voorbeeldweergave · dit event is nog niet gepubliceerd
+                </div>
+            )}
 
             <PublicHero
                 kicker={eventTypeLabels[event.type]}

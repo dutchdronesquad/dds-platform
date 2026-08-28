@@ -150,6 +150,43 @@ test('admins can open event forms with complete options and editable values', fu
         );
 });
 
+test('authorized editors can preview a draft event without publishing it', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $event = Event::factory()->create([
+        'title' => 'Concepttraining',
+        'status' => EventStatus::Draft,
+        'published_at' => null,
+    ]);
+
+    $this->actingAs($editor)
+        ->get(route('admin.events.preview', $event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('public/event-show')
+            ->where('event.id', $event->id)
+            ->where('event.title', 'Concepttraining')
+            ->where('isPreview', true)
+            ->where('seo.robots', 'noindex, nofollow'),
+        );
+
+    expect($event->fresh()->status)->toBe(EventStatus::Draft)
+        ->and($event->fresh()->published_at)->toBeNull();
+});
+
+test('event previews require event management access', function () {
+    $event = Event::factory()->create();
+
+    $this->get(route('admin.events.preview', $event))
+        ->assertRedirect(route('login'));
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('admin.events.preview', $event))
+        ->assertForbidden();
+});
+
 test('event filters search the relevant context and keep query parameters in pagination', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

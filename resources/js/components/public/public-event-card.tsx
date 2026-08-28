@@ -23,7 +23,7 @@ import {
 } from '@/lib/event-formatting';
 import { cn } from '@/lib/utils';
 import { show as eventShow } from '@/routes/events';
-import type { PublicEventSummary } from '@/types';
+import type { EventStatus, PublicEventSummary } from '@/types';
 
 type Props = {
     event: PublicEventSummary;
@@ -384,7 +384,14 @@ export function PublicEventRegistrationStatus({
     className,
     event,
     label,
-}: Pick<Props, 'event'> & { className?: string; label?: string }) {
+}: {
+    className?: string;
+    event: Pick<
+        PublicEventSummary,
+        'registrationDeadlineAt' | 'registrationOpensAt' | 'registrationStatus'
+    > & { status: EventStatus };
+    label?: string;
+}) {
     const isCancelled = event.status === 'cancelled';
     const registrationIsUpcoming = isEventRegistrationUpcoming(event);
     const StatusIcon = isCancelled

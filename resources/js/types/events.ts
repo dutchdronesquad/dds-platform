@@ -1,6 +1,6 @@
 export type EventType = 'training' | 'race' | 'demo' | 'workshop' | 'other';
 
-export type EventStatus = 'published' | 'cancelled';
+export type EventStatus = 'draft' | 'published' | 'cancelled';
 
 export type EventRegistrationStatus = 'closed' | 'open' | 'waitlist' | 'full';
 
@@ -51,12 +51,15 @@ export type PublicEventSummary = {
     } | null;
     slug: string;
     startsAt: string;
-    status: EventStatus;
+    status: Exclude<EventStatus, 'draft'>;
     title: string;
     type: EventType;
 };
 
-export type PublicEventDetail = Omit<PublicEventSummary, 'location'> & {
+export type PublicEventDetail = Omit<
+    PublicEventSummary,
+    'location' | 'status'
+> & {
     contentHtml: string | null;
     location: PublicEventSummary['location'] & {
         houseNumber: string;
@@ -67,6 +70,7 @@ export type PublicEventDetail = Omit<PublicEventSummary, 'location'> & {
     };
     registrationUrl: string | null;
     seasonContext: PublicSeasonContext | null;
+    status: EventStatus;
 };
 
 export type PublicSeasonEvent = PublicEventSummary;
