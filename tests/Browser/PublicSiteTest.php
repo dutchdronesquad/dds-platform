@@ -709,7 +709,7 @@ test('events without loose registration hide stale registration planning', funct
         ->on()->iPhone14Pro()
         ->withTimezone('Europe/Amsterdam')
         ->assertSee('Voor dit event wordt geen losse inschrijving aangeboden')
-        ->assertSee('Niet aangeboden')
+        ->assertSee('Geen losse inschrijving')
         ->assertDontSee('Aanmelden vanaf')
         ->assertDontSee('Inschrijfdeadline verstreken')
         ->assertDontSee('Gesloten sinds')

@@ -247,7 +247,7 @@ export function getEventRegistrationDetail(
         return {
             label: 'Status',
             note: 'Voor dit event wordt geen losse inschrijving aangeboden',
-            value: 'Niet aangeboden',
+            value: 'Geen losse inschrijving',
         };
     }
 
