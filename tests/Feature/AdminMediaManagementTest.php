@@ -1,7 +1,6 @@
 <?php
 
 use App\Actions\Admin\StoreMediaAsset;
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Enums\Role;
 use App\Models\Event;
@@ -364,7 +363,10 @@ function eventPayload(Location $location, array $overrides = []): array
         'title' => 'Media event',
         'starts_at' => now()->addDay()->toIso8601String(),
         'type' => EventType::Training->value,
-        'registration_status' => EventRegistrationStatus::Closed->value,
+        'registration_enabled' => false,
+        'registration_closed_manually' => false,
+        'registration_full' => false,
+        'registration_waitlist_enabled' => false,
         ...$overrides,
     ];
 }

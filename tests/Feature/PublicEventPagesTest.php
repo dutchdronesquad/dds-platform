@@ -9,11 +9,16 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Models\SeasonTicket;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withoutVite();
+});
+
+afterEach(function () {
+    CarbonImmutable::setTestNow();
 });
 
 test('the event index lists only published upcoming events in chronological order', function () {
@@ -28,7 +33,9 @@ test('the event index lists only published upcoming events in chronological orde
         'season_id' => Season::factory()->create(['name' => 'Seizoen 2026/27']),
         'price_cents' => 1500,
         'capacity' => 16,
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
+        'registration_opens_at' => now()->subDay(),
+        'registration_deadline_at' => now()->addDays(6),
     ]);
     $cancelledEvent = Event::factory()->cancelled()->create([
         'title' => 'Cancelled workshop',
@@ -103,6 +110,43 @@ test('the event index filters upcoming events by type', function () {
         );
 });
 
+test('registration opens and closes automatically while keeping its link private outside the window', function () {
+    $event = Event::factory()->published()->create([
+        'starts_at' => '2026-10-15 18:00:00',
+        'registration_enabled' => true,
+        'registration_opens_at' => '2026-09-15 10:00:00',
+        'registration_deadline_at' => '2026-10-14 23:59:00',
+        'registration_url' => 'https://example.com/automatic-registration',
+    ]);
+
+    CarbonImmutable::setTestNow('2026-09-15 09:59:59');
+
+    $this->get(route('events.show', $event))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.registrationStatus', EventRegistrationStatus::Closed->value)
+            ->where('event.registrationIsUpcoming', true)
+            ->where('event.registrationUrl', null),
+        );
+
+    CarbonImmutable::setTestNow('2026-09-15 10:00:00');
+
+    $this->get(route('events.show', $event))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.registrationStatus', EventRegistrationStatus::Open->value)
+            ->where('event.registrationIsUpcoming', false)
+            ->where('event.registrationUrl', 'https://example.com/automatic-registration'),
+        );
+
+    CarbonImmutable::setTestNow('2026-10-14 23:59:00');
+
+    $this->get(route('events.show', $event))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.registrationStatus', EventRegistrationStatus::Closed->value)
+            ->where('event.registrationIsUpcoming', false)
+            ->where('event.registrationUrl', null),
+        );
+});
+
 test('training and race filters expose a compact public season summary', function () {
     $season = Season::factory()->create([
         'name' => 'Wintercompetitie voor indoorpiloten 2026/27',
@@ -150,13 +194,13 @@ test('a public season page shows one ticket for all published events', function 
         'price_cents' => 1500,
         'registration_opens_at' => now()->subWeek(),
         'registration_deadline_at' => now()->addMonth()->subDay(),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     $finalEvent = Event::factory()->published()->training()->for($season)->create([
         'title' => 'Finaleavond',
         'starts_at' => now()->addMonths(2),
         'price_cents' => 1750,
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     $draftEvent = Event::factory()->training()->for($season)->create([
         'title' => 'Nog niet aangekondigd',
@@ -328,7 +372,7 @@ test('a published training detail exposes practical and registration information
             'cover_image_id' => $coverImage,
             'registration_opens_at' => '2026-09-15 10:00:00',
             'registration_deadline_at' => '2026-10-14 23:59:00',
-            'registration_status' => EventRegistrationStatus::Open,
+            'registration_enabled' => true,
             'registration_url' => 'https://example.com/register',
         ]);
 
@@ -355,11 +399,13 @@ test('a published training detail exposes practical and registration information
             ->where('event.location.mapUrl', 'https://www.google.com/maps/search/?api=1&query=Sportpaleis%20Alkmaar%2C%20Terborchlaan%20200%2C%201816%20LE%20Alkmaar%2C%20NL')
             ->where('event.priceCents', 1500)
             ->where('event.capacity', 15)
-            ->where('event.registrationStatus', EventRegistrationStatus::Open->value)
+            ->where('event.registrationStatus', EventRegistrationStatus::Closed->value)
+            ->where('event.registrationEnabled', true)
+            ->where('event.registrationIsUpcoming', true)
             ->where('event.season.name', 'Wintercompetitie 2026/27')
             ->where('event.registrationOpensAt', $event->registration_opens_at?->toIso8601String())
             ->where('event.registrationDeadlineAt', $event->registration_deadline_at?->toIso8601String())
-            ->where('event.registrationUrl', 'https://example.com/register')
+            ->where('event.registrationUrl', null)
             ->where('event.image.src', $coverImage->url())
             ->where('event.image.alt', 'Pilots preparing for an indoor training heat')
             ->where('seo.title', 'Indoor training round 01')
@@ -457,7 +503,9 @@ test('a previously published cancelled event remains public with its state', fun
         'published_at' => now()->subDay(),
         'price_cents' => 2000,
         'capacity' => 36,
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
         'registration_url' => 'https://example.com/stale-registration-link',
     ]);
 
@@ -468,7 +516,7 @@ test('a previously published cancelled event remains public with its state', fun
             ->where('event.priceCents', 2000)
             ->where('event.capacity', 36)
             ->where('event.registrationStatus', EventRegistrationStatus::Open->value)
-            ->where('event.registrationUrl', 'https://example.com/stale-registration-link'),
+            ->where('event.registrationUrl', null),
         );
 });
 

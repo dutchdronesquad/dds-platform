@@ -42,11 +42,11 @@ test('the local demo event command creates the same representative dataset on re
         ->toBe($firstRun)
         ->and(demoRecordIds())->toBe($firstIds)
         ->and($firstRun)->toHaveCount(10)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->registration_status)->toBe(EventRegistrationStatus::Closed)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[1]]->registration_status)->toBe(EventRegistrationStatus::Open)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[2]]->registration_status)->toBe(EventRegistrationStatus::Open)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[3]]->registration_status)->toBe(EventRegistrationStatus::Closed)
-        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[4]]->registration_status)->toBe(EventRegistrationStatus::Closed)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->currentRegistrationStatus())->toBe(EventRegistrationStatus::Closed)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[1]]->currentRegistrationStatus())->toBe(EventRegistrationStatus::Open)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[2]]->currentRegistrationStatus())->toBe(EventRegistrationStatus::Open)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[3]]->currentRegistrationStatus())->toBe(EventRegistrationStatus::Closed)
+        ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[4]]->currentRegistrationStatus())->toBe(EventRegistrationStatus::Closed)
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[5]]->status)->toBe(EventStatus::Cancelled)
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[0]]->title)->toBe('FPV vliegavond - juni 2026')
         ->and($events[DevelopmentEventSeeder::EVENT_SLUGS[1]]->title)->toBe('Indoor FPV-clubrace met kwalificaties en finales')
@@ -324,7 +324,7 @@ test('direct demo seeder mutations refuse to run in production', function (strin
 })->with(['run', 'reset']);
 
 /**
- * @return list<array<string, int|string|null>>
+ * @return list<array<string, bool|int|string|null>>
  */
 function demoEventsSnapshot(): array
 {
@@ -345,7 +345,11 @@ function demoEventsSnapshot(): array
             'capacity' => $event->capacity,
             'registration_opens_at' => $event->registration_opens_at?->toIso8601String(),
             'registration_deadline_at' => $event->registration_deadline_at?->toIso8601String(),
-            'registration_status' => $event->registration_status->value,
+            'registration_enabled' => $event->registration_enabled,
+            'registration_closed_manually' => $event->registration_closed_manually,
+            'registration_full' => $event->registration_full,
+            'registration_waitlist_enabled' => $event->registration_waitlist_enabled,
+            'current_registration_status' => $event->currentRegistrationStatus()->value,
             'registration_url' => $event->registration_url,
             'location' => $event->location->slug,
             'season' => $event->season?->name,

@@ -143,6 +143,8 @@ export function formatEventPrice(priceCents: number | null): string {
 
 type RegistrationTiming = {
     registrationDeadlineAt: string | null;
+    registrationEnabled: boolean;
+    registrationIsUpcoming: boolean;
     registrationOpensAt: string | null;
     registrationStatus: EventRegistrationStatus;
     status: EventStatus;
@@ -156,25 +158,16 @@ export type EventRegistrationDetail = {
 
 export function isEventRegistrationUpcoming(
     event: RegistrationTiming,
-    now = new Date(),
 ): boolean {
-    return (
-        event.status !== 'cancelled' &&
-        event.registrationStatus === 'closed' &&
-        event.registrationOpensAt !== null &&
-        new Date(event.registrationOpensAt) > now
-    );
+    return event.status !== 'cancelled' && event.registrationIsUpcoming;
 }
 
-export function getEventRegistrationLabel(
-    event: RegistrationTiming,
-    now = new Date(),
-): string {
+export function getEventRegistrationLabel(event: RegistrationTiming): string {
     if (event.status === 'cancelled') {
         return eventStatusLabels.cancelled;
     }
 
-    if (isEventRegistrationUpcoming(event, now)) {
+    if (isEventRegistrationUpcoming(event)) {
         return 'Nog niet geopend';
     }
 
@@ -238,7 +231,7 @@ export function getEventRegistrationDetail(
     }
 
     if (
-        isEventRegistrationUpcoming(event, now) &&
+        isEventRegistrationUpcoming(event) &&
         event.registrationOpensAt !== null
     ) {
         const opensAt = formatEventDateTime(event.registrationOpensAt);
@@ -260,6 +253,14 @@ export function getEventRegistrationDetail(
             label: 'Gesloten sinds',
             note: `Inschrijfdeadline verstreken · gesloten sinds ${deadline}`,
             value: deadline,
+        };
+    }
+
+    if (!event.registrationEnabled) {
+        return {
+            label: 'Status',
+            note: 'Voor dit event wordt geen losse inschrijving aangeboden',
+            value: 'Niet aangeboden',
         };
     }
 

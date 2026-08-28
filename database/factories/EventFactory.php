@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Models\Event;
@@ -41,9 +40,12 @@ class EventFactory extends Factory
             'type' => EventType::Other,
             'price_cents' => fake()->numberBetween(0, 5000),
             'capacity' => fake()->numberBetween(12, 16),
+            'registration_enabled' => false,
+            'registration_closed_manually' => false,
+            'registration_full' => false,
+            'registration_waitlist_enabled' => false,
             'registration_opens_at' => (clone $startsAt)->modify('-1 month'),
             'registration_deadline_at' => (clone $startsAt)->modify('-1 day')->setTime(23, 59),
-            'registration_status' => EventRegistrationStatus::Closed,
             'registration_url' => null,
         ];
     }

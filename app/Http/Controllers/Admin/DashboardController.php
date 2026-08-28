@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\Permission;
 use App\Http\Controllers\Controller;
@@ -48,7 +47,6 @@ final class DashboardController extends Controller
             'openPoints' => [
                 'draftEvents' => $eventSummary['drafts'],
                 'closedRegistrationEvents' => $eventSummary['closedRegistrations'],
-                'expiredRegistrationEvents' => $eventSummary['expiredRegistrations'],
                 'missingContentEvents' => $eventSummary['withoutContent'],
                 'missingCoverEvents' => $eventSummary['withoutCover'],
                 'unassignedUpcomingEvents' => $eventSummary['withoutSeason'],
@@ -66,7 +64,6 @@ final class DashboardController extends Controller
      *     upcoming: int,
      *     recent: int,
      *     closedRegistrations: int,
-     *     expiredRegistrations: int,
      *     withoutContent: int,
      *     withoutCover: int,
      *     withoutSeason: int
@@ -80,16 +77,11 @@ final class DashboardController extends Controller
             ->selectRaw('count(case when status = ? then 1 end) as drafts', [EventStatus::Draft->value])
             ->selectRaw('count(case when starts_at >= ? and status != ? then 1 end) as upcoming', [$referenceTime, EventStatus::Cancelled->value])
             ->selectRaw('count(case when updated_at >= ? then 1 end) as recent', [$recentCutoff])
-            ->selectRaw('count(case when starts_at >= ? and status = ? and registration_status = ? then 1 end) as closed_registrations', [
+            ->selectRaw('count(case when starts_at >= ? and status = ? and (registration_enabled = ? or registration_closed_manually = ?) then 1 end) as closed_registrations', [
                 $referenceTime,
                 EventStatus::Published->value,
-                EventRegistrationStatus::Closed->value,
-            ])
-            ->selectRaw('count(case when starts_at >= ? and status != ? and registration_status = ? and registration_deadline_at < ? then 1 end) as expired_registrations', [
-                $referenceTime,
-                EventStatus::Cancelled->value,
-                EventRegistrationStatus::Open->value,
-                $referenceTime,
+                false,
+                true,
             ])
             ->selectRaw('count(case when starts_at >= ? and status != ? and (content is null or content = ?) then 1 end) as without_content', [
                 $referenceTime,
@@ -112,7 +104,6 @@ final class DashboardController extends Controller
             'upcoming' => (int) $summary->upcoming,
             'recent' => (int) $summary->recent,
             'closedRegistrations' => (int) $summary->closed_registrations,
-            'expiredRegistrations' => (int) $summary->expired_registrations,
             'withoutContent' => (int) $summary->without_content,
             'withoutCover' => (int) $summary->without_cover,
             'withoutSeason' => (int) $summary->without_season,
@@ -147,7 +138,19 @@ final class DashboardController extends Controller
     private function nextEvent(CarbonInterface $referenceTime): ?array
     {
         $event = Event::query()
-            ->select(['id', 'location_id', 'title', 'starts_at', 'status', 'registration_status'])
+            ->select([
+                'id',
+                'location_id',
+                'title',
+                'starts_at',
+                'status',
+                'registration_enabled',
+                'registration_closed_manually',
+                'registration_full',
+                'registration_waitlist_enabled',
+                'registration_opens_at',
+                'registration_deadline_at',
+            ])
             ->with('location:id,name,city')
             ->where('starts_at', '>=', $referenceTime)
             ->where('status', '!=', EventStatus::Cancelled)
@@ -164,7 +167,7 @@ final class DashboardController extends Controller
             'title' => $event->title,
             'startsAt' => $event->starts_at->toIso8601String(),
             'status' => $event->status->value,
-            'registrationStatus' => $event->registration_status->value,
+            'registrationStatus' => $event->currentRegistrationStatus($referenceTime)->value,
             'location' => [
                 'name' => $event->location->name,
                 'city' => $event->location->city,
@@ -268,7 +271,6 @@ final class DashboardController extends Controller
      *     upcoming: int,
      *     recent: int,
      *     closedRegistrations: int,
-     *     expiredRegistrations: int,
      *     withoutContent: int,
      *     withoutCover: int,
      *     withoutSeason: int
@@ -282,7 +284,6 @@ final class DashboardController extends Controller
             'upcoming' => 0,
             'recent' => 0,
             'closedRegistrations' => 0,
-            'expiredRegistrations' => 0,
             'withoutContent' => 0,
             'withoutCover' => 0,
             'withoutSeason' => 0,

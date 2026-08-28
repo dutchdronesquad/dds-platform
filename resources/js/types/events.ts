@@ -42,6 +42,8 @@ export type PublicEventSummary = {
     };
     priceCents: number | null;
     registrationDeadlineAt: string | null;
+    registrationEnabled: boolean;
+    registrationIsUpcoming: boolean;
     registrationOpensAt: string | null;
     registrationStatus: EventRegistrationStatus;
     season: {

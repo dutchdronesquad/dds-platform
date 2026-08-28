@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Admin\DuplicateEvent;
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
@@ -26,8 +25,6 @@ use Inertia\Response;
 final class EventController extends Controller
 {
     private const string SITUATION_CLOSED_REGISTRATION = 'closed_registration';
-
-    private const string SITUATION_EXPIRED_REGISTRATION = 'expired_registration';
 
     private const string SITUATION_WITHOUT_CONTENT = 'without_content';
 
@@ -131,7 +128,6 @@ final class EventController extends Controller
         $situations = array_values(array_filter(
             [
                 self::SITUATION_CLOSED_REGISTRATION,
-                self::SITUATION_EXPIRED_REGISTRATION,
                 self::SITUATION_WITHOUT_CONTENT,
                 self::SITUATION_WITHOUT_COVER,
                 self::SITUATION_WITHOUT_SEASON,
@@ -192,7 +188,12 @@ final class EventController extends Controller
                 'published_at',
                 'status',
                 'type',
-                'registration_status',
+                'registration_enabled',
+                'registration_closed_manually',
+                'registration_full',
+                'registration_waitlist_enabled',
+                'registration_opens_at',
+                'registration_deadline_at',
                 'updated_by',
                 'updated_at',
             ])
@@ -234,7 +235,7 @@ final class EventController extends Controller
                 'publishedAt' => $event->published_at?->toIso8601String(),
                 'status' => $event->status->value,
                 'type' => $event->type->value,
-                'registrationStatus' => $event->registration_status->value,
+                'registrationStatus' => $event->currentRegistrationStatus()->value,
                 'location' => [
                     'name' => $event->location->name,
                     'city' => $event->location->city,
@@ -271,17 +272,11 @@ final class EventController extends Controller
                     $query
                         ->where('starts_at', '>=', $referenceTime)
                         ->where('status', EventStatus::Published->value)
-                        ->where('registration_status', EventRegistrationStatus::Closed->value);
-                });
-            }
-
-            if (in_array(self::SITUATION_EXPIRED_REGISTRATION, $situations, true)) {
-                $query->orWhere(function (Builder $query) use ($referenceTime): void {
-                    $query
-                        ->where('starts_at', '>=', $referenceTime)
-                        ->where('status', '!=', EventStatus::Cancelled->value)
-                        ->where('registration_status', EventRegistrationStatus::Open->value)
-                        ->where('registration_deadline_at', '<', $referenceTime);
+                        ->where(function (Builder $query): void {
+                            $query
+                                ->where('registration_enabled', false)
+                                ->orWhere('registration_closed_manually', true);
+                        });
                 });
             }
 
@@ -378,7 +373,6 @@ final class EventController extends Controller
                     'label' => $season->name,
                 ]),
             'types' => $this->typeOptions(),
-            'registrationStatuses' => $this->registrationStatusOptions(),
         ];
     }
 
@@ -406,7 +400,10 @@ final class EventController extends Controller
             'capacity' => $event->capacity,
             'registrationOpensAt' => $event->registration_opens_at?->toIso8601String(),
             'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
-            'registrationStatus' => $event->registration_status->value,
+            'registrationEnabled' => $event->registration_enabled,
+            'registrationClosedManually' => $event->registration_closed_manually,
+            'registrationFull' => $event->registration_full,
+            'registrationWaitlistEnabled' => $event->registration_waitlist_enabled,
             'registrationUrl' => $event->registration_url,
             'publishedAt' => $event->published_at?->toIso8601String(),
             'activity' => [
@@ -444,8 +441,7 @@ final class EventController extends Controller
     private function situationOptions(): array
     {
         return [
-            ['value' => self::SITUATION_CLOSED_REGISTRATION, 'label' => 'Registratie gesloten'],
-            ['value' => self::SITUATION_EXPIRED_REGISTRATION, 'label' => 'Inschrijfdeadline verlopen'],
+            ['value' => self::SITUATION_CLOSED_REGISTRATION, 'label' => 'Inschrijving niet actief'],
             ['value' => self::SITUATION_WITHOUT_CONTENT, 'label' => 'Zonder inhoud'],
             ['value' => self::SITUATION_WITHOUT_COVER, 'label' => 'Zonder omslagafbeelding'],
             ['value' => self::SITUATION_WITHOUT_SEASON, 'label' => 'Zonder seizoen'],
@@ -461,17 +457,6 @@ final class EventController extends Controller
             ['value' => EventType::Demo->value, 'label' => 'Demo'],
             ['value' => EventType::Workshop->value, 'label' => 'Workshop'],
             ['value' => EventType::Other->value, 'label' => 'Overig'],
-        ];
-    }
-
-    /** @return list<array{value: string, label: string}> */
-    private function registrationStatusOptions(): array
-    {
-        return [
-            ['value' => EventRegistrationStatus::Closed->value, 'label' => 'Gesloten'],
-            ['value' => EventRegistrationStatus::Open->value, 'label' => 'Open'],
-            ['value' => EventRegistrationStatus::Waitlist->value, 'label' => 'Wachtlijst'],
-            ['value' => EventRegistrationStatus::Full->value, 'label' => 'Vol'],
         ];
     }
 }

@@ -35,9 +35,12 @@ final class SeasonController extends Controller
                 'type',
                 'price_cents',
                 'capacity',
+                'registration_enabled',
+                'registration_closed_manually',
+                'registration_full',
+                'registration_waitlist_enabled',
                 'registration_opens_at',
                 'registration_deadline_at',
-                'registration_status',
             ])
             ->publiclyVisible()
             ->with([

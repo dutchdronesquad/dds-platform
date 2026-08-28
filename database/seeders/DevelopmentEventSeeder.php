@@ -483,7 +483,13 @@ final class DevelopmentEventSeeder extends Seeder
 
         foreach ($fixtures as $fixture) {
             $factory = $fixture['factory'];
-            unset($fixture['factory']);
+            $legacyRegistrationStatus = $fixture['registration_status'];
+            unset($fixture['factory'], $fixture['registration_status']);
+
+            $fixture['registration_enabled'] = $legacyRegistrationStatus === EventRegistrationStatus::Open;
+            $fixture['registration_closed_manually'] = false;
+            $fixture['registration_full'] = false;
+            $fixture['registration_waitlist_enabled'] = false;
 
             if ($fixture['season_id'] === $season->id) {
                 $fixture['price_cents'] = 1500;
@@ -503,16 +509,8 @@ final class DevelopmentEventSeeder extends Seeder
                 && $fixture['registration_opens_at'] instanceof CarbonImmutable
                 && $fixture['registration_deadline_at'] instanceof CarbonImmutable
             ) {
-                $registrationIsOpen = $referenceDate->betweenIncluded(
-                    $fixture['registration_opens_at'],
-                    $fixture['registration_deadline_at'],
-                );
-                $fixture['registration_status'] = $registrationIsOpen
-                    ? EventRegistrationStatus::Open
-                    : EventRegistrationStatus::Closed;
-                $fixture['registration_url'] = $registrationIsOpen
-                    ? $registrationUrl
-                    : null;
+                $fixture['registration_enabled'] = true;
+                $fixture['registration_url'] = $registrationUrl;
             }
 
             $attributes = $factory->make([
