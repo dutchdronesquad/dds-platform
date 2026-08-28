@@ -522,7 +522,7 @@ function NewsCard({ item }: NewsCardProps) {
                 href={item.href}
                 className="group block h-full rounded-sm focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-paper focus-visible:outline-none"
             >
-                <div className="relative mb-6 aspect-[16/10] overflow-hidden bg-deep-signal/8">
+                <div className="relative mb-6 aspect-[16/9] overflow-hidden bg-deep-signal/8">
                     <img
                         src={
                             item.image?.src ??
