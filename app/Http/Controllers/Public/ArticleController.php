@@ -10,6 +10,7 @@ use App\Support\PublicArticleData;
 use App\Support\SeoMetadata;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -72,6 +73,21 @@ final class ArticleController extends Controller
     {
         abort_unless($article->isPubliclyVisible(), 404);
 
+        return $this->renderArticle($article, $seoMetadata);
+    }
+
+    public function preview(Article $article, SeoMetadata $seoMetadata): Response
+    {
+        Gate::authorize('view', $article);
+
+        return $this->renderArticle($article, $seoMetadata, true);
+    }
+
+    private function renderArticle(
+        Article $article,
+        SeoMetadata $seoMetadata,
+        bool $isPreview = false,
+    ): Response {
         $article->load([
             'author:id,name',
             'coverImage:id,alt_text',
@@ -94,7 +110,9 @@ final class ArticleController extends Controller
                 'canonical_path' => route('news.show', ['article' => $article->slug], false),
                 'image_path' => $image['src'],
                 'image_alt' => $image['alt'],
+                ...($isPreview ? ['robots' => 'noindex, nofollow'] : []),
             ]),
+            'isPreview' => $isPreview,
         ]);
     }
 }

@@ -11,6 +11,7 @@ import type {
 
 type Props = {
     article: PublicArticleDetail;
+    isPreview?: boolean;
     seo: SeoMetadata;
 };
 
@@ -26,10 +27,23 @@ const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
 });
 
-export default function ArticleShow({ article, seo }: Props) {
+export default function ArticleShow({
+    article,
+    isPreview = false,
+    seo,
+}: Props) {
     return (
         <>
             <PublicSeoHead metadata={seo} />
+
+            {isPreview && (
+                <div
+                    role="status"
+                    className="border-b border-dds-orange/35 bg-flight-100 px-public-gutter py-3 text-center text-sm font-semibold text-deep-signal dark:border-dds-orange/25 dark:bg-flight-500/15 dark:text-white"
+                >
+                    Voorbeeldweergave · dit artikel is nog niet gepubliceerd
+                </div>
+            )}
 
             <PublicHero
                 kicker={categoryLabels[article.category]}
@@ -58,7 +72,9 @@ export default function ArticleShow({ article, seo }: Props) {
                                 label="Gepubliceerd"
                                 value={
                                     article.publishedAt === null
-                                        ? 'Onbekend'
+                                        ? isPreview
+                                            ? 'Nog niet gepubliceerd'
+                                            : 'Onbekend'
                                         : dateFormatter.format(
                                               new Date(article.publishedAt),
                                           )

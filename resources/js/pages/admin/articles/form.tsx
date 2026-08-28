@@ -1,6 +1,7 @@
 import { Form, Link } from '@inertiajs/react';
 import {
     ArrowUpRight,
+    CircleAlert,
     ExternalLink,
     FileText,
     Save,
@@ -13,6 +14,7 @@ import {
     destroy,
     index,
 } from '@/actions/App/Http/Controllers/Admin/ArticleController';
+import { preview } from '@/actions/App/Http/Controllers/Public/ArticleController';
 import { AdminActivityMetadata } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import {
@@ -116,15 +118,15 @@ export function ArticleForm({
                             <Save />
                             {processing ? (
                                 'Opslaan…'
-                            ) : article ? (
+                            ) : (
                                 <>
-                                    <span className="sm:hidden">Opslaan</span>
+                                    <span className="sm:hidden">
+                                        {compactSaveLabel(status)}
+                                    </span>
                                     <span className="hidden sm:inline">
-                                        Wijzigingen opslaan
+                                        {saveLabel(status, Boolean(article))}
                                     </span>
                                 </>
-                            ) : (
-                                'Artikel aanmaken'
                             )}
                         </Button>
                     </AdminFormActions>
@@ -134,7 +136,12 @@ export function ArticleForm({
                         asideLayoutClassName="@min-[56rem]/admin-page:grid-cols-[minmax(0,1fr)_18.5rem] @min-[84rem]/admin-page:grid-cols-[minmax(0,1fr)_21.5rem]"
                         className="mx-auto w-full"
                         contentClassName="@container/article-main"
-                        aside={<ArticleFormAside article={article} />}
+                        aside={
+                            <ArticleFormAside
+                                article={article}
+                                isDirty={isDirty}
+                            />
+                        }
                     >
                         <AdminFormErrorSummary errors={errors} />
 
@@ -333,6 +340,13 @@ export function ArticleForm({
                                         )}
                                         onValueChange={setStatus}
                                     />
+                                    <div
+                                        aria-live="polite"
+                                        className="flex gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-xs leading-5 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300"
+                                    >
+                                        <CircleAlert className="mt-0.5 size-3.5 shrink-0" />
+                                        <span>{statusExplanation(status)}</span>
+                                    </div>
                                 </FormField>
                                 <FormField
                                     id="published_at"
@@ -428,7 +442,13 @@ function fieldDescription(
     return hasHint ? `${id}-hint` : undefined;
 }
 
-function ArticleFormAside({ article }: { article?: EditableArticle }) {
+function ArticleFormAside({
+    article,
+    isDirty,
+}: {
+    article?: EditableArticle;
+    isDirty: boolean;
+}) {
     return (
         <div className="overflow-clip rounded-2xl border border-neutral-200 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-950">
             <section className="p-5 @min-[84rem]/admin-page:p-6">
@@ -440,6 +460,40 @@ function ArticleFormAside({ article }: { article?: EditableArticle }) {
                         ? `${article.status === 'published' ? 'Gepubliceerd' : article.status === 'archived' ? 'Gearchiveerd' : 'Concept'}`
                         : 'Nog niet aangemaakt'}
                 </p>
+                {article?.status === 'draft' &&
+                    (isDirty ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled
+                            className="border-signal-200 text-signal-800 dark:text-signal-200 mt-4 h-11 w-full justify-start rounded-xl bg-signal-50/70 px-3 shadow-none dark:border-signal-500/25 dark:bg-signal-500/10"
+                        >
+                            <ExternalLink />
+                            Voorbeeld bekijken
+                            <ArrowUpRight className="ml-auto size-3.5 opacity-60" />
+                        </Button>
+                    ) : (
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="border-signal-200 text-signal-800 hover:text-signal-900 dark:text-signal-200 mt-4 h-11 w-full justify-start rounded-xl bg-signal-50/70 px-3 shadow-none hover:border-signal-300 hover:bg-signal-100 focus-visible:ring-signal-500/30 dark:border-signal-500/25 dark:bg-signal-500/10 dark:hover:border-signal-500/40 dark:hover:bg-signal-500/15 dark:hover:text-signal-100"
+                        >
+                            <Link
+                                data-sidebar-action="preview"
+                                href={preview(article.id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <ExternalLink />
+                                Voorbeeld bekijken
+                                <ArrowUpRight className="ml-auto size-3.5 opacity-60" />
+                                <span className="sr-only">
+                                    {' '}
+                                    (opent in een nieuw tabblad)
+                                </span>
+                            </Link>
+                        </Button>
+                    ))}
                 {article && article.status === 'published' && (
                     <Button
                         asChild
@@ -470,6 +524,42 @@ function ArticleFormAside({ article }: { article?: EditableArticle }) {
             />
         </div>
     );
+}
+
+function statusExplanation(status: string): string {
+    if (status === 'published') {
+        return 'Dit artikel wordt publiek. Zonder publicatiedatum gebeurt dat meteen; met een toekomstige datum pas op dat moment.';
+    }
+
+    if (status === 'archived') {
+        return 'Dit artikel wordt opgeslagen, maar is niet publiek zichtbaar.';
+    }
+
+    return 'Dit artikel wordt als concept opgeslagen en is alleen via de voorbeeldweergave zichtbaar.';
+}
+
+function compactSaveLabel(status: string): string {
+    if (status === 'published') {
+        return 'Publiceren';
+    }
+
+    if (status === 'archived') {
+        return 'Archiveren';
+    }
+
+    return 'Concept opslaan';
+}
+
+function saveLabel(status: string, isEditing: boolean): string {
+    if (status === 'published') {
+        return isEditing ? 'Wijzigingen publiceren' : 'Artikel publiceren';
+    }
+
+    if (status === 'archived') {
+        return 'Artikel archiveren';
+    }
+
+    return 'Opslaan als concept';
 }
 
 function FormField({

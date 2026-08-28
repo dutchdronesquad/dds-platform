@@ -104,6 +104,43 @@ test('admins can open article forms with complete options and editable values', 
         );
 });
 
+test('authorized editors can preview a draft article without publishing it', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $article = Article::factory()->create([
+        'title' => 'Conceptartikel',
+        'status' => ArticleStatus::Draft,
+        'published_at' => null,
+    ]);
+
+    $this->actingAs($editor)
+        ->get(route('admin.articles.preview', $article))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('public/article-show')
+            ->where('article.id', $article->id)
+            ->where('article.title', 'Conceptartikel')
+            ->where('isPreview', true)
+            ->where('seo.robots', 'noindex, nofollow'),
+        );
+
+    expect($article->fresh()->status)->toBe(ArticleStatus::Draft)
+        ->and($article->fresh()->published_at)->toBeNull();
+});
+
+test('article previews require article management access', function () {
+    $article = Article::factory()->create();
+
+    $this->get(route('admin.articles.preview', $article))
+        ->assertRedirect(route('login'));
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('admin.articles.preview', $article))
+        ->assertForbidden();
+});
+
 test('editors can create and update articles but cannot delete them', function () {
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);
