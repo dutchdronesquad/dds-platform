@@ -5,4 +5,5 @@ Before planning or editing, find the row whose globs match the file's path and r
 | Applies to | Rule file |
 | --- | --- |
 | resources/js/pages/admin/**/form.tsx | .ai/rules/admin.md |
+| resources/js/components/admin/admin-form.tsx | .ai/rules/components-admin.md |
 | app/Http/Controllers/Public/{Article,Event}Controller.php | .ai/rules/controllers-public.md |

@@ -74,6 +74,29 @@ test('dirty season forms register a compatible browser unload warning', function
         ->assertNoJavaScriptErrors();
 });
 
+test('dirty season forms use a platform dialog for internal navigation', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/seasons/create')
+        ->on()->desktop()
+        ->fill('#name', 'Wintercompetitie')
+        ->click('[data-sidebar="menu-button"][href="/dashboard/events"]')
+        ->assertPathIs('/dashboard/seasons/create')
+        ->assertVisible('[data-testid="unsaved-changes-dialog"]')
+        ->assertSee('Wijzigingen niet opgeslagen')
+        ->assertSee('Als je nu weggaat, gaan deze verloren.')
+        ->press('Verder bewerken')
+        ->assertMissing('[data-testid="unsaved-changes-dialog"]')
+        ->assertValue('#name', 'Wintercompetitie')
+        ->click('[data-sidebar="menu-button"][href="/dashboard/events"]')
+        ->press('Wijzigingen verwerpen')
+        ->assertPathIs('/dashboard/events')
+        ->assertNoJavaScriptErrors();
+});
+
 test('a saved season form returns to the saved state', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

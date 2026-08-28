@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import type { PendingVisit } from '@inertiajs/core';
 import {
     AlertCircleIcon,
     CheckCircle2,
@@ -10,6 +11,15 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 export function AdminFormLayout({
@@ -360,8 +370,7 @@ export function AdminFormOutline({
 
         const updateActiveSection = () => {
             const isScrollable =
-                document.documentElement.scrollHeight >
-                window.innerHeight + 1;
+                document.documentElement.scrollHeight > window.innerHeight + 1;
             const isAtBottom =
                 isScrollable &&
                 window.innerHeight + window.scrollY >=
@@ -473,17 +482,26 @@ export function AdminFormOutline({
 }
 
 export function AdminFormNavigationGuard({ isDirty }: { isDirty: boolean }) {
+    const [pendingVisit, setPendingVisit] = useState<PendingVisit | null>(null);
+    const allowNextVisit = useRef(false);
+
     useEffect(() => {
         const removeBeforeListener = router.on('before', (event) => {
             const visit = event.detail.visit;
+
+            if (allowNextVisit.current) {
+                allowNextVisit.current = false;
+
+                return;
+            }
 
             if (!isDirty || visit.method !== 'get' || visit.prefetch) {
                 return;
             }
 
-            return window.confirm(
-                'Je hebt niet-opgeslagen wijzigingen. Wil je deze pagina toch verlaten?',
-            );
+            setPendingVisit(visit);
+
+            return false;
         });
 
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -503,5 +521,63 @@ export function AdminFormNavigationGuard({ isDirty }: { isDirty: boolean }) {
         };
     }, [isDirty]);
 
-    return null;
+    function continueEditing(): void {
+        setPendingVisit(null);
+    }
+
+    function discardChanges(): void {
+        if (pendingVisit === null) {
+            return;
+        }
+
+        const { cancelled, completed, id, interrupted, url, ...options } =
+            pendingVisit;
+
+        void cancelled;
+        void completed;
+        void id;
+        void interrupted;
+
+        setPendingVisit(null);
+        allowNextVisit.current = true;
+        router.visit(url, options);
+    }
+
+    return (
+        <Dialog
+            open={pendingVisit !== null}
+            onOpenChange={(open) => !open && continueEditing()}
+        >
+            <DialogContent
+                data-testid="unsaved-changes-dialog"
+                className="overflow-hidden p-0 sm:max-w-md"
+            >
+                <div className="flex items-start gap-4 p-6 pb-5">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300">
+                        <CircleAlert className="size-5" aria-hidden="true" />
+                    </span>
+                    <DialogHeader className="min-w-0 pt-0.5 text-left">
+                        <DialogTitle>Wijzigingen niet opgeslagen</DialogTitle>
+                        <DialogDescription className="leading-5">
+                            Je hebt wijzigingen aangebracht die nog niet zijn
+                            opgeslagen. Als je nu weggaat, gaan deze verloren.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+
+                <DialogFooter className="border-t border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/60">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={discardChanges}
+                    >
+                        Wijzigingen verwerpen
+                    </Button>
+                    <Button type="button" onClick={continueEditing}>
+                        Verder bewerken
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
