@@ -107,7 +107,7 @@ test('homepage news images use widescreen frames', function () {
     visit('/')
         ->on()->desktop()
         ->assertScript(
-            '(() => { const frames = [...document.querySelectorAll("#latest-news img")].map((image) => image.parentElement?.getBoundingClientRect()).filter(Boolean); return frames.length === 3 && frames.every((frame) => Math.abs(frame.width / frame.height - 16 / 9) < 0.01); })()',
+            '(() => { const frames = [...document.querySelectorAll("#latest-news img")].map((image) => image.getBoundingClientRect()); return frames.length === 3 && frames.every((frame) => Math.abs(frame.width / frame.height - 16 / 9) < 0.01); })()',
         )
         ->assertNoJavaScriptErrors();
 });
