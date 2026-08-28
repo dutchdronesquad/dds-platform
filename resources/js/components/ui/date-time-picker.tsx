@@ -112,6 +112,7 @@ function DateTimePicker({
                         defaultMonth={date}
                         onSelect={(selectedDate) => {
                             setDate(selectedDate);
+                            setTime((currentTime) => currentTime || '00:00');
                             setOpen(false);
                         }}
                         autoFocus
@@ -125,6 +126,9 @@ function DateTimePicker({
                                 className="w-full"
                                 onClick={() => {
                                     setDate(new Date());
+                                    setTime((currentTime) =>
+                                        currentTime || '00:00',
+                                    );
                                     setOpen(false);
                                 }}
                             >

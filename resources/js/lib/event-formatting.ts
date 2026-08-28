@@ -60,6 +60,7 @@ export const eventRegistrationLabels: Record<EventRegistrationStatus, string> =
 
 export const eventStatusLabels: Record<EventStatus, string> = {
     cancelled: 'Geannuleerd',
+    draft: 'Concept',
     published: 'Gepland',
 };
 

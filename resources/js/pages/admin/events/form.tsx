@@ -28,6 +28,7 @@ import {
     publish,
     unpublish,
 } from '@/actions/App/Http/Controllers/Admin/EventStatusController';
+import { preview } from '@/actions/App/Http/Controllers/Public/EventController';
 import { index as seasonsIndex } from '@/actions/App/Http/Controllers/Admin/SeasonController';
 import { AdminActivityMetadata } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
@@ -136,6 +137,7 @@ export function EventForm({
             {...form}
             className="grid gap-0"
             options={{ preserveScroll: true }}
+            setDefaultsOnSuccess
         >
             {({ errors, isDirty, processing, recentlySuccessful }) => (
                 <>
@@ -525,6 +527,7 @@ export function EventForm({
                                 <FormField
                                     id="registration_opens_at"
                                     label="Inschrijving opent (optioneel)"
+                                    hint="Laat leeg als inschrijven direct mogelijk is zodra de inschrijfstatus op open staat."
                                     error={errors.registration_opens_at}
                                     className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
                                 >
@@ -548,6 +551,7 @@ export function EventForm({
                                 <FormField
                                     id="registration_deadline_at"
                                     label="Inschrijfdeadline (optioneel)"
+                                    hint="Laat leeg als er geen automatische inschrijfdeadline is."
                                     error={errors.registration_deadline_at}
                                     className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
                                 >
@@ -706,6 +710,41 @@ function EventStatusPanel({
 
                 {event && (
                     <div className="mt-5 grid gap-4">
+                        {event.status === 'draft' &&
+                            (isDirty ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled
+                                    className="border-signal-200 text-signal-800 dark:text-signal-200 h-11 w-full justify-start rounded-xl bg-signal-50/70 px-3 shadow-none dark:border-signal-500/25 dark:bg-signal-500/10"
+                                >
+                                    <ExternalLink />
+                                    Voorbeeld bekijken
+                                    <ArrowUpRight className="ml-auto size-3.5 opacity-60" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="border-signal-200 text-signal-800 hover:text-signal-900 dark:text-signal-200 h-11 w-full justify-start rounded-xl bg-signal-50/70 px-3 shadow-none hover:border-signal-300 hover:bg-signal-100 focus-visible:ring-signal-500/30 dark:border-signal-500/25 dark:bg-signal-500/10 dark:hover:border-signal-500/40 dark:hover:bg-signal-500/15 dark:hover:text-signal-100"
+                                >
+                                    <Link
+                                        data-sidebar-action="preview"
+                                        href={preview(event.id)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <ExternalLink />
+                                        Voorbeeld bekijken
+                                        <ArrowUpRight className="ml-auto size-3.5 opacity-60" />
+                                        <span className="sr-only">
+                                            {' '}
+                                            (opent in een nieuw tabblad)
+                                        </span>
+                                    </Link>
+                                </Button>
+                            ))}
+
                         {event.status !== 'draft' && (
                             <Button
                                 asChild

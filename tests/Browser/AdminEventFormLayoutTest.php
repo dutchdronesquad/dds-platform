@@ -98,6 +98,27 @@ test('an empty event time uses a neutral placeholder and empty value', function 
         );
 });
 
+test('choosing an event date defaults its time to midnight', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/events/create')
+        ->on()->desktop()
+        ->click('#registration_opens_at')
+        ->click('internal:role=button[name="Vandaag"s]')
+        ->assertAriaAttribute(
+            '#registration_opens_at_time',
+            'label',
+            'Tijd kiezen voor Inschrijving opent, 00:00',
+        )
+        ->assertScript(
+            "document.querySelector('input[name=\"registration_opens_at\"]')?.value.endsWith('T00:00')",
+        )
+        ->assertNoJavaScriptErrors();
+});
+
 test('event create responds to the available form width instead of the viewport', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
@@ -178,7 +199,7 @@ test('event create responds to the available form width instead of the viewport'
         ->assertAriaAttribute(
             '#starts_at_time',
             'label',
-            'Tijd kiezen voor Start, nog niet ingesteld',
+            'Tijd kiezen voor Start, 00:00',
         )
         ->click('#starts_at_time')
         ->assertSee('Tijd kiezen')
@@ -271,6 +292,22 @@ test('the public event page opens in a new tab', function () {
         ->assertNoJavaScriptErrors()
         ->assertScript(
             "(() => { const publicLink = document.querySelector('a[href^=\"/events/\"][target=\"_blank\"]'); const unpublish = document.querySelector('[data-sidebar-action=\"unpublish\"]'); const cancel = document.querySelector('[data-sidebar-action=\"cancel\"]'); if (publicLink === null || unpublish === null || cancel === null) return false; const rel = new Set((publicLink.getAttribute('rel') ?? '').split(/\\s+/)); const publicHeight = publicLink.getBoundingClientRect().height; const secondaryActions = [unpublish, cancel]; return rel.has('noopener') && rel.has('noreferrer') && publicHeight >= 43 && publicHeight <= 45 && publicLink.getBoundingClientRect().width > unpublish.getBoundingClientRect().width * 1.9 && secondaryActions.every((action) => { const height = action.getBoundingClientRect().height; return height >= 39 && height <= 41 && getComputedStyle(action).borderRadius !== '0px' && action.querySelector('svg') !== null; }) && Math.abs(unpublish.getBoundingClientRect().top - cancel.getBoundingClientRect().top) < 1 && Math.abs(unpublish.getBoundingClientRect().width - cancel.getBoundingClientRect().width) < 1; })()",
+        );
+});
+
+test('an event preview opens in a new tab while the event remains a draft', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $event = Event::factory()->create();
+
+    $this->actingAs($admin);
+
+    visit("/dashboard/events/{$event->id}/edit")
+        ->on()->desktop()
+        ->resize(1440, 1000)
+        ->assertNoJavaScriptErrors()
+        ->assertScript(
+            "(() => { const previewLink = document.querySelector('a[href$=\"/preview\"][target=\"_blank\"]'); if (previewLink === null) return false; const rel = new Set((previewLink.getAttribute('rel') ?? '').split(/\\s+/)); return rel.has('noopener') && rel.has('noreferrer') && previewLink.dataset.sidebarAction === 'preview' && previewLink.textContent?.includes('Voorbeeld bekijken') === true; })()",
         );
 });
 

@@ -74,6 +74,30 @@ test('dirty season forms register a compatible browser unload warning', function
         ->assertNoJavaScriptErrors();
 });
 
+test('a saved season form returns to the saved state', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $season = Season::factory()->create([
+        'name' => 'Wintercompetitie',
+    ]);
+
+    $this->actingAs($admin);
+
+    visit("/dashboard/seasons/{$season->slug}/edit")
+        ->on()->desktop()
+        ->fill('#name', 'Wintercompetitie 2027')
+        ->assertScript(
+            "document.querySelector('[data-testid=\"admin-form-save-status\"]')?.dataset.state === 'dirty'",
+        )
+        ->press('Wijzigingen opslaan')
+        ->assertSee('Opgeslagen')
+        ->wait(3)
+        ->assertScript(
+            "document.querySelector('[data-testid=\"admin-form-save-status\"]')?.dataset.state === 'unchanged'",
+        )
+        ->assertNoJavaScriptErrors();
+});
+
 test('season ticket fields use a balanced layout and combined date time controls', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

@@ -11,6 +11,7 @@ use App\Support\PublicLocationData;
 use App\Support\PublicSeasonData;
 use App\Support\SeoMetadata;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -94,6 +95,21 @@ final class EventController extends Controller
     {
         abort_unless($event->isPubliclyVisible(), 404);
 
+        return $this->renderEvent($event, $seoMetadata);
+    }
+
+    public function preview(Event $event, SeoMetadata $seoMetadata): Response
+    {
+        Gate::authorize('view', $event);
+
+        return $this->renderEvent($event, $seoMetadata, true);
+    }
+
+    private function renderEvent(
+        Event $event,
+        SeoMetadata $seoMetadata,
+        bool $isPreview = false,
+    ): Response {
         $event->load([
             'location',
             'season:id,name,slug',
@@ -131,7 +147,9 @@ final class EventController extends Controller
                 'canonical_path' => route('events.show', ['event' => $event->slug], false),
                 'image_path' => $image['src'],
                 'image_alt' => $image['alt'],
+                ...($isPreview ? ['robots' => 'noindex, nofollow'] : []),
             ]),
+            'isPreview' => $isPreview,
         ]);
     }
 
