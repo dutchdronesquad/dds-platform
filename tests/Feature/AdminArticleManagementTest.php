@@ -191,6 +191,35 @@ test('admins can create articles with a generated slug and automatic publication
         ->and($article->published_at)->not->toBeNull();
 });
 
+test('article publication dates use local time in forms and UTC in storage', function () {
+    $this->travelTo('2026-08-28 12:00:00 UTC');
+
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $article = Article::factory()->create([
+        'title' => 'Lokale publicatietijd',
+        'slug' => 'lokale-publicatietijd',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.articles.update', $article), validArticlePayload([
+            'title' => 'Lokale publicatietijd',
+            'slug' => 'lokale-publicatietijd',
+            'status' => ArticleStatus::Published->value,
+            'published_at' => '2026-08-28T13:57',
+        ]))
+        ->assertRedirect(route('admin.articles.edit', $article));
+
+    expect($article->refresh()->published_at->toIso8601String())->toBe('2026-08-28T11:57:00+00:00')
+        ->and($article->isPubliclyVisible())->toBeTrue();
+
+    $this->get(route('admin.articles.edit', $article))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('article.publishedAt', '2026-08-28T13:57'),
+        );
+});
+
 test('article requests reject missing titles and invalid categories', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

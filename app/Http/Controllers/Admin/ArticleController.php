@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\StoreArticleRequest;
 use App\Http\Requests\Admin\UpdateArticleRequest;
 use App\Models\Article;
 use App\Models\User;
+use App\Support\LocalDateTime;
 use App\Support\MediaAssetPickerData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -203,7 +204,7 @@ final class ArticleController extends Controller
                 : $this->mediaAssetPickerData->one($article->coverImage),
             'category' => $article->category->value,
             'status' => $article->status->value,
-            'publishedAt' => $article->published_at?->format('Y-m-d\TH:i'),
+            'publishedAt' => LocalDateTime::forForm($article->published_at),
             'activity' => [
                 'createdAt' => $article->created_at->toIso8601String(),
                 'createdBy' => null,

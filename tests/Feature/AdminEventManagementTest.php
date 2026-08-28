@@ -464,6 +464,32 @@ test('generated event slugs remain stable when an event is updated', function ()
         ->slug->toBe('fpv-vliegavond-2026-10-15');
 });
 
+test('event dates use local time in forms and UTC in storage', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location))
+        ->assertRedirect();
+
+    $event = Event::query()->where('slug', 'trainingavond-2026-10-15')->firstOrFail();
+
+    expect($event->starts_at->toIso8601String())->toBe('2026-10-15T16:00:00+00:00')
+        ->and($event->ends_at?->toIso8601String())->toBe('2026-10-15T20:00:00+00:00')
+        ->and($event->registration_opens_at?->toIso8601String())->toBe('2026-09-15T08:00:00+00:00')
+        ->and($event->registration_deadline_at?->toIso8601String())->toBe('2026-10-14T21:59:00+00:00');
+
+    $this->get(route('admin.events.edit', $event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.startsAt', '2026-10-15T18:00')
+            ->where('event.endsAt', '2026-10-15T22:00')
+            ->where('event.registrationOpensAt', '2026-09-15T10:00')
+            ->where('event.registrationDeadlineAt', '2026-10-14T23:59'),
+        );
+});
+
 test('editors can duplicate events as uniquely named drafts', function () {
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);

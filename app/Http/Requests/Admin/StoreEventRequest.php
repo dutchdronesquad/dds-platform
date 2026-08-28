@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Rules\RegistrationUrl;
+use App\Support\LocalDateTime;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -127,6 +128,16 @@ class StoreEventRequest extends FormRequest
             'registration_status' => 'inschrijfstatus',
             'registration_url' => 'inschrijflink',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(LocalDateTime::valuesInUtc([
+            'starts_at' => $this->input('starts_at'),
+            'ends_at' => $this->input('ends_at'),
+            'registration_opens_at' => $this->input('registration_opens_at'),
+            'registration_deadline_at' => $this->input('registration_deadline_at'),
+        ]));
     }
 
     protected function event(): ?Event
