@@ -61,10 +61,8 @@ test('events expose their domain casts and relationships', function () {
         ->capacity->toBe(16)
         ->and($event->location->id)->toBe($location->id)
         ->and($event->season?->id)->toBe($season->id)
-        ->and($event->coverImage?->id)->toBe($coverImage->id);
-
-    expect($event->currentRegistrationStatus(CarbonImmutable::parse('2026-10-01')))
-        ->toBe(EventRegistrationStatus::Open);
+        ->and($event->coverImage?->id)->toBe($coverImage->id)
+        ->and($event->currentRegistrationStatus(CarbonImmutable::parse('2026-10-01')))->toBe(EventRegistrationStatus::Open);
 });
 
 test('event enum values are enforced by the database', function (string $column) {
@@ -87,9 +85,8 @@ test('new events default to a closed draft', function () {
         ->and($event->registration_enabled)->toBeFalse()
         ->and($event->registration_closed_manually)->toBeFalse()
         ->and($event->registration_full)->toBeFalse()
-        ->and($event->registration_waitlist_enabled)->toBeFalse();
-
-    expect($event->currentRegistrationStatus())->toBe(EventRegistrationStatus::Closed);
+        ->and($event->registration_waitlist_enabled)->toBeFalse()
+        ->and($event->currentRegistrationStatus())->toBe(EventRegistrationStatus::Closed);
 });
 
 test('registration status follows planning and manual overrides', function () {
