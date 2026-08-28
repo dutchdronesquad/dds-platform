@@ -113,6 +113,8 @@ Route::middleware([
             ->middleware('throttle:location-geocoding')
             ->name('locations.lookup-address');
         Route::resource('locations', AdminLocationController::class)->except('show');
+        Route::get('articles/{article}/preview', [ArticleController::class, 'preview'])
+            ->name('articles.preview');
         Route::resource('articles', AdminArticleController::class)->except('show');
         Route::resource('seasons', AdminSeasonController::class)->except('show');
         Route::resource('contact-submissions', AdminContactController::class)
