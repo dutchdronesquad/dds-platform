@@ -191,7 +191,7 @@ test('admins can create articles with a generated slug and automatic publication
         ->and($article->published_at)->not->toBeNull();
 });
 
-test('article publication dates use local time in forms and UTC in storage', function () {
+test('article publication dates preserve offset-defined moments in UTC', function () {
     $this->travelTo('2026-08-28 12:00:00 UTC');
 
     $admin = User::factory()->create();
@@ -206,7 +206,7 @@ test('article publication dates use local time in forms and UTC in storage', fun
             'title' => 'Lokale publicatietijd',
             'slug' => 'lokale-publicatietijd',
             'status' => ArticleStatus::Published->value,
-            'published_at' => '2026-08-28T13:57',
+            'published_at' => '2026-08-28T13:57:00+02:00',
         ]))
         ->assertRedirect(route('admin.articles.edit', $article));
 
@@ -216,7 +216,7 @@ test('article publication dates use local time in forms and UTC in storage', fun
     $this->get(route('admin.articles.edit', $article))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('article.publishedAt', '2026-08-28T13:57'),
+            ->where('article.publishedAt', '2026-08-28T11:57:00+00:00'),
         );
 });
 

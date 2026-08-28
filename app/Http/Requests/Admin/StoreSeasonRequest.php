@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\SeasonTicketSalesState;
 use App\Models\Season;
 use App\Rules\RegistrationUrl;
-use App\Support\LocalDateTime;
+use App\Support\UtcDateTime;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -101,7 +101,7 @@ class StoreSeasonRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(LocalDateTime::valuesInUtc([
+        $this->merge(UtcDateTime::valuesForStorage([
             'ticket_sales_opens_at' => $this->input('ticket_sales_opens_at'),
             'ticket_sales_closes_at' => $this->input('ticket_sales_closes_at'),
         ]));

@@ -13,7 +13,6 @@ use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
 use App\Models\User;
-use App\Support\LocalDateTime;
 use App\Support\MediaAssetPickerData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -397,16 +396,16 @@ final class EventController extends Controller
             'coverImage' => $event->coverImage === null
                 ? null
                 : $this->mediaAssetPickerData->one($event->coverImage),
-            'startsAt' => LocalDateTime::forForm($event->starts_at),
-            'endsAt' => LocalDateTime::forForm($event->ends_at),
+            'startsAt' => $event->starts_at->toIso8601String(),
+            'endsAt' => $event->ends_at?->toIso8601String(),
             'status' => $event->status->value,
             'type' => $event->type->value,
             'priceEuros' => $event->price_cents === null
                 ? null
                 : number_format($event->price_cents / 100, 2, '.', ''),
             'capacity' => $event->capacity,
-            'registrationOpensAt' => LocalDateTime::forForm($event->registration_opens_at),
-            'registrationDeadlineAt' => LocalDateTime::forForm($event->registration_deadline_at),
+            'registrationOpensAt' => $event->registration_opens_at?->toIso8601String(),
+            'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
             'registrationStatus' => $event->registration_status->value,
             'registrationUrl' => $event->registration_url,
             'publishedAt' => $event->published_at?->toIso8601String(),

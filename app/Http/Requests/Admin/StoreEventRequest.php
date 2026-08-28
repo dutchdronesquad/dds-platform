@@ -9,7 +9,7 @@ use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Rules\RegistrationUrl;
-use App\Support\LocalDateTime;
+use App\Support\UtcDateTime;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -132,7 +132,7 @@ class StoreEventRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(LocalDateTime::valuesInUtc([
+        $this->merge(UtcDateTime::valuesForStorage([
             'starts_at' => $this->input('starts_at'),
             'ends_at' => $this->input('ends_at'),
             'registration_opens_at' => $this->input('registration_opens_at'),

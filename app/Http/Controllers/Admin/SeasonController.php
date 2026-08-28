@@ -9,7 +9,6 @@ use App\Http\Requests\Admin\UpdateSeasonRequest;
 use App\Models\Event;
 use App\Models\Season;
 use App\Models\SeasonTicket;
-use App\Support\LocalDateTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -176,8 +175,8 @@ final class SeasonController extends Controller
                 ? null
                 : number_format($ticket->price_cents / 100, 2, '.', ''),
             'ticketCapacity' => $ticket?->capacity,
-            'ticketSalesOpensAt' => LocalDateTime::forForm($ticket?->sales_opens_at),
-            'ticketSalesClosesAt' => LocalDateTime::forForm($ticket?->sales_closes_at),
+            'ticketSalesOpensAt' => $ticket?->sales_opens_at?->toIso8601String(),
+            'ticketSalesClosesAt' => $ticket?->sales_closes_at?->toIso8601String(),
             'ticketRegistrationUrl' => $ticket?->registration_url,
             'ticketCopy' => $ticket?->copy,
             'activity' => [

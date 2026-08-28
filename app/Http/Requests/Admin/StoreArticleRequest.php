@@ -7,7 +7,7 @@ use App\Enums\ArticleStatus;
 use App\Models\Article;
 use App\Models\MediaAsset;
 use App\Models\User;
-use App\Support\LocalDateTime;
+use App\Support\UtcDateTime;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -98,7 +98,7 @@ class StoreArticleRequest extends FormRequest
             $this->merge(['published_at' => now()->toIso8601String()]);
         }
 
-        $this->merge(LocalDateTime::valuesInUtc([
+        $this->merge(UtcDateTime::valuesForStorage([
             'published_at' => $this->input('published_at'),
         ]));
     }

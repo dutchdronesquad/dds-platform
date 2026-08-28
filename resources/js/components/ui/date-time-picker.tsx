@@ -24,28 +24,35 @@ type DateTimePickerProps = {
 };
 
 function parseDateTime(value?: string): { date?: Date; time: string } {
-    const match = value?.match(
-        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/,
-    );
-
-    if (!match) {
+    if (!value) {
         return { time: '' };
     }
 
-    const [, year, month, day, hours, minutes] = match;
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return { time: '' };
+    }
 
     return {
-        date: new Date(Number(year), Number(month) - 1, Number(day)),
-        time: `${hours}:${minutes}`,
+        date,
+        time: format(date, 'HH:mm'),
     };
 }
 
 function formatDateTime(date: Date | undefined, time: string): string {
-    if (!date || !time) {
+    const timeMatch = time.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+
+    if (!date || !timeMatch) {
         return '';
     }
 
-    return `${format(date, 'yyyy-MM-dd')}T${time}`;
+    const [, hours, minutes] = timeMatch;
+    const dateTime = new Date(date);
+
+    dateTime.setHours(Number(hours), Number(minutes), 0, 0);
+
+    return dateTime.toISOString();
 }
 
 function DateTimePicker({

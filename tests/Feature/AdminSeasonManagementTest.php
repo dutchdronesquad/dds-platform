@@ -92,8 +92,8 @@ test('admins can open season forms with offered and optional ticket values', fun
             ->where('season.ticketSalesState', SeasonTicketSalesState::Available->value)
             ->where('season.ticketPriceEuros', '129.50')
             ->where('season.ticketCapacity', 40)
-            ->where('season.ticketSalesOpensAt', '2027-01-10T10:30')
-            ->where('season.ticketSalesClosesAt', '2027-02-10T23:00')
+            ->where('season.ticketSalesOpensAt', '2027-01-10T09:30:00+00:00')
+            ->where('season.ticketSalesClosesAt', '2027-02-10T22:00:00+00:00')
             ->where('season.ticketRegistrationUrl', 'https://example.com/wintercompetitie')
             ->where('season.ticketCopy', 'Toegang tot alle wedstrijden.')
             ->has('salesStateOptions', 4),
@@ -139,12 +139,15 @@ test('admins can create seasons with an optional ticket price and limit', functi
         ->and($ticket->registration_url)->toBe('https://example.com/seizoensticket');
 });
 
-test('season ticket dates use local time in forms and UTC in storage', function () {
+test('season ticket dates preserve offset-defined moments in UTC', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
 
     $this->actingAs($admin)
-        ->post(route('admin.seasons.store'), validSeasonPayload())
+        ->post(route('admin.seasons.store'), validSeasonPayload([
+            'ticket_sales_opens_at' => '2026-09-01T10:00:00+02:00',
+            'ticket_sales_closes_at' => '2026-12-01T10:00:00+01:00',
+        ]))
         ->assertRedirect();
 
     $season = Season::query()->where('slug', 'seizoen-2027')->firstOrFail();
@@ -156,8 +159,8 @@ test('season ticket dates use local time in forms and UTC in storage', function 
     $this->get(route('admin.seasons.edit', $season))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('season.ticketSalesOpensAt', '2026-09-01T10:00')
-            ->where('season.ticketSalesClosesAt', '2026-12-01T10:00'),
+            ->where('season.ticketSalesOpensAt', '2026-09-01T08:00:00+00:00')
+            ->where('season.ticketSalesClosesAt', '2026-12-01T09:00:00+00:00'),
         );
 });
 
