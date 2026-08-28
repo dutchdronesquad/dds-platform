@@ -29,6 +29,7 @@ use App\Http\Controllers\Public\LocationController;
 use App\Http\Controllers\Public\PartnerController;
 use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\SeasonController;
+use App\Http\Controllers\Public\SitemapController;
 use App\Http\Middleware\HandleLegacyRedirects;
 use App\Support\SeoMetadata;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 $seoMetadata = new SeoMetadata;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
