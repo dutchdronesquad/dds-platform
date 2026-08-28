@@ -74,10 +74,14 @@ class StoreEventRequest extends FormRequest
             'registration_waitlist_enabled' => [
                 'required',
                 'boolean',
-                Rule::prohibitedIf(
-                    $this->boolean('registration_waitlist_enabled')
-                    && ! $this->boolean('registration_full'),
-                ),
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (
+                        $this->boolean('registration_waitlist_enabled')
+                        && ! $this->boolean('registration_full')
+                    ) {
+                        $fail('De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.');
+                    }
+                },
             ],
             'registration_opens_at' => [
                 'nullable',
@@ -139,14 +143,6 @@ class StoreEventRequest extends FormRequest
             'registration_opens_at' => 'start inschrijving',
             'registration_deadline_at' => 'inschrijfdeadline',
             'registration_url' => 'inschrijflink',
-        ];
-    }
-
-    /** @return array<string, string> */
-    public function messages(): array
-    {
-        return [
-            'registration_waitlist_enabled.prohibited' => 'De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.',
         ];
     }
 

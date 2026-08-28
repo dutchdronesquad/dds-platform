@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -23,30 +22,22 @@ return new class extends Migration
         $referenceTime = now();
 
         DB::table('events')
-            ->select([
-                'id',
-                'registration_opens_at',
-                'registration_status',
-                'registration_url',
-            ])
-            ->orderBy('id')
-            ->eachById(function (object $event) use ($referenceTime): void {
-                $wasOpen = $event->registration_status === 'open';
-                $wasWaitlist = $event->registration_status === 'waitlist';
-                $wasFull = $event->registration_status === 'full';
-                $wasScheduled = $event->registration_status === 'closed'
-                    && $event->registration_url !== null
-                    && $event->registration_opens_at !== null
-                    && Carbon::parse($event->registration_opens_at)->greaterThan($referenceTime);
+            ->whereIn('registration_status', ['open', 'full', 'waitlist'])
+            ->update(['registration_enabled' => true]);
 
-                DB::table('events')
-                    ->where('id', $event->id)
-                    ->update([
-                        'registration_enabled' => $wasOpen || $wasWaitlist || $wasFull || $wasScheduled,
-                        'registration_full' => $wasWaitlist || $wasFull,
-                        'registration_waitlist_enabled' => $wasWaitlist,
-                    ]);
-            });
+        DB::table('events')
+            ->whereIn('registration_status', ['full', 'waitlist'])
+            ->update(['registration_full' => true]);
+
+        DB::table('events')
+            ->where('registration_status', 'waitlist')
+            ->update(['registration_waitlist_enabled' => true]);
+
+        DB::table('events')
+            ->where('registration_status', 'closed')
+            ->whereNotNull('registration_url')
+            ->where('registration_opens_at', '>', $referenceTime)
+            ->update(['registration_enabled' => true]);
 
         Schema::table('events', function (Blueprint $table) {
             $table->index(['registration_enabled', 'registration_deadline_at']);
