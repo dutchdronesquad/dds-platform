@@ -49,7 +49,6 @@ test('admins can visit the dashboard', function () {
             ->where('stats.recentChanges', 0)
             ->where('openPoints.draftEvents', 0)
             ->where('openPoints.closedRegistrationEvents', 0)
-            ->where('openPoints.expiredRegistrationEvents', 0)
             ->where('openPoints.missingContentEvents', 0)
             ->where('openPoints.missingCoverEvents', 0)
             ->where('openPoints.unassignedUpcomingEvents', 0)
@@ -121,7 +120,6 @@ test('dashboard shows operational open points and recent changes', function () {
     Event::factory()->published()->create([
         'title' => 'Race met gesloten registratie',
         'starts_at' => $referenceTime->addDays(2),
-        'registration_status' => EventRegistrationStatus::Closed,
         'updated_at' => $referenceTime->subMinutes(2),
         'updated_by' => $actor->id,
     ]);
@@ -130,7 +128,7 @@ test('dashboard shows operational open points and recent changes', function () {
         'title' => 'Race met open registratie',
         'starts_at' => $referenceTime->addDays(3),
         'registration_deadline_at' => $referenceTime->subHour(),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
         'updated_at' => $referenceTime->subMinutes(3),
         'updated_by' => $actor->id,
     ]);
@@ -144,7 +142,6 @@ test('dashboard shows operational open points and recent changes', function () {
             ->where('stats.recentChanges', 4)
             ->where('openPoints.draftEvents', 1)
             ->where('openPoints.closedRegistrationEvents', 1)
-            ->where('openPoints.expiredRegistrationEvents', 1)
             ->where('openPoints.missingContentEvents', 1)
             ->where('openPoints.missingCoverEvents', 3)
             ->where('openPoints.unassignedUpcomingEvents', 2)

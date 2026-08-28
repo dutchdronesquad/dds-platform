@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Location;
@@ -444,25 +443,35 @@ test('visitors can filter rendered event states and recover from an empty result
     Event::factory()->published()->training()->for($season)->create([
         'title' => 'Open training',
         'starts_at' => '2026-10-15 17:00:00',
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
     ]);
     Event::factory()->published()->create([
         'title' => 'Volle race',
         'starts_at' => '2026-10-22 17:00:00',
         'type' => EventType::Race,
-        'registration_status' => EventRegistrationStatus::Full,
+        'registration_enabled' => true,
+        'registration_full' => true,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
     ]);
     Event::factory()->published()->create([
         'title' => 'Wachtlijst workshop',
         'starts_at' => '2026-10-29 17:00:00',
         'type' => EventType::Workshop,
-        'registration_status' => EventRegistrationStatus::Waitlist,
+        'registration_enabled' => true,
+        'registration_full' => true,
+        'registration_waitlist_enabled' => true,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
     ]);
     Event::factory()->published()->create([
         'title' => 'Inschrijving opent later',
         'starts_at' => '2026-11-01 17:00:00',
         'registration_opens_at' => '2026-10-19 07:00:00',
-        'registration_status' => EventRegistrationStatus::Closed,
+        'registration_enabled' => true,
+        'registration_url' => 'https://example.com/later',
     ]);
     Event::factory()->cancelled()->create([
         'title' => 'Geannuleerde race',
@@ -544,9 +553,9 @@ test('event details render long content, dates, registration, and safe links on 
         'ends_at' => '2026-10-15 20:30:00',
         'capacity' => 16,
         'price_cents' => 1500,
-        'registration_opens_at' => '2026-09-15 10:00:00',
+        'registration_enabled' => true,
+        'registration_opens_at' => '2026-07-01 10:00:00',
         'registration_deadline_at' => '2026-10-14 23:59:00',
-        'registration_status' => EventRegistrationStatus::Open,
         'registration_url' => 'https://example.com/registration',
     ]);
     $seasonFinale = Event::factory()->for($location)->for($season)->published()->training()->create([
@@ -561,7 +570,9 @@ test('event details render long content, dates, registration, and safe links on 
         'starts_at' => '2027-03-18 17:00:00',
         'ends_at' => '2027-03-18 20:30:00',
         'price_cents' => 2500,
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
+        'registration_opens_at' => null,
+        'registration_deadline_at' => null,
         'registration_url' => 'https://example.com/spring-registration',
     ]);
     SeasonTicket::factory()->available()->for($season)->create([
@@ -683,6 +694,28 @@ test('event details render long content, dates, registration, and safe links on 
         ->assertNoJavaScriptErrors();
 });
 
+test('events without loose registration hide stale registration planning', function () {
+    $event = Event::factory()->published()->training()->create([
+        'title' => 'Training zonder losse inschrijving',
+        'slug' => 'training-zonder-losse-inschrijving',
+        'starts_at' => '2026-10-15 17:00:00',
+        'registration_enabled' => false,
+        'registration_opens_at' => '2026-07-01 10:00:00',
+        'registration_deadline_at' => '2026-08-01 23:59:00',
+        'registration_url' => 'https://example.com/old-registration',
+    ]);
+
+    visit("/events/{$event->slug}")
+        ->on()->iPhone14Pro()
+        ->withTimezone('Europe/Amsterdam')
+        ->assertSee('Voor dit event wordt geen losse inschrijving aangeboden')
+        ->assertSee('Geen losse inschrijving')
+        ->assertDontSee('Aanmelden vanaf')
+        ->assertDontSee('Inschrijfdeadline verstreken')
+        ->assertDontSee('Gesloten sinds')
+        ->assertNoJavaScriptErrors();
+});
+
 test('season context without a ticket offer stays informative without sales controls', function () {
     $season = Season::factory()->create([
         'name' => 'Vrij trainingsseizoen 2027',
@@ -694,8 +727,8 @@ test('season context without a ticket offer stays informative without sales cont
         'price_cents' => 1750,
         'registration_opens_at' => '2027-02-01 10:00:00',
         'registration_deadline_at' => '2027-02-14 23:59:00',
-        'registration_status' => EventRegistrationStatus::Closed,
-        'registration_url' => null,
+        'registration_enabled' => true,
+        'registration_url' => 'https://example.com/february-training',
     ]);
     Event::factory()->published()->training()->for($season)->create([
         'title' => 'Training met verlopen inschrijving',
@@ -704,8 +737,8 @@ test('season context without a ticket offer stays informative without sales cont
         'price_cents' => 1750,
         'registration_opens_at' => '2026-06-01 10:00:00',
         'registration_deadline_at' => '2026-07-10 21:59:00',
-        'registration_status' => EventRegistrationStatus::Closed,
-        'registration_url' => null,
+        'registration_enabled' => true,
+        'registration_url' => 'https://example.com/expired-training',
     ]);
 
     $page = visit("/events/{$event->slug}")
@@ -748,7 +781,6 @@ test('season event registration details are available on desktop hover', functio
     $season = Season::factory()->create();
     SeasonTicket::factory()->notOffered()->for($season)->create();
     Event::factory()->published()->training()->for($season)->create([
-        'registration_status' => EventRegistrationStatus::Closed,
         'registration_url' => null,
     ]);
 

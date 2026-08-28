@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\EventRegistrationStatus;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Location;
@@ -69,6 +68,21 @@ class StoreEventRequest extends FormRequest
             'type' => ['required', Rule::enum(EventType::class)],
             'price_euros' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:42949672.95'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'registration_enabled' => ['required', 'boolean'],
+            'registration_closed_manually' => ['required', 'boolean'],
+            'registration_full' => ['required', 'boolean'],
+            'registration_waitlist_enabled' => [
+                'required',
+                'boolean',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (
+                        $this->boolean('registration_waitlist_enabled')
+                        && ! $this->boolean('registration_full')
+                    ) {
+                        $fail('De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.');
+                    }
+                },
+            ],
             'registration_opens_at' => [
                 'nullable',
                 'date',
@@ -78,13 +92,9 @@ class StoreEventRequest extends FormRequest
                 ),
             ],
             'registration_deadline_at' => ['nullable', 'date', 'before_or_equal:starts_at'],
-            'registration_status' => ['required', Rule::enum(EventRegistrationStatus::class)],
             'registration_url' => [
                 'nullable',
-                Rule::requiredIf(in_array($this->input('registration_status'), [
-                    EventRegistrationStatus::Open->value,
-                    EventRegistrationStatus::Waitlist->value,
-                ], true)),
+                Rule::requiredIf($this->boolean('registration_enabled')),
                 new RegistrationUrl,
                 'max:2048',
             ],
@@ -126,9 +136,12 @@ class StoreEventRequest extends FormRequest
             'type' => 'eventtype',
             'price_euros' => 'prijs',
             'capacity' => 'deelnemerslimiet',
+            'registration_enabled' => 'inschrijving aanbieden',
+            'registration_closed_manually' => 'tijdelijk gesloten',
+            'registration_full' => 'vol',
+            'registration_waitlist_enabled' => 'wachtlijst',
             'registration_opens_at' => 'start inschrijving',
             'registration_deadline_at' => 'inschrijfdeadline',
-            'registration_status' => 'inschrijfstatus',
             'registration_url' => 'inschrijflink',
         ];
     }

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\EventRegistrationStatus;
 use App\Enums\Role;
 use App\Models\Event;
 use App\Models\Season;
@@ -31,7 +30,6 @@ test('admin dashboard prioritizes open points quick actions and recent changes',
     Event::factory()->published()->create([
         'title' => 'Race met gesloten registratie',
         'starts_at' => now()->addDays(2),
-        'registration_status' => EventRegistrationStatus::Closed,
         'updated_by' => $actor->id,
     ]);
     Event::factory()->published()->create([
@@ -39,7 +37,7 @@ test('admin dashboard prioritizes open points quick actions and recent changes',
         'title' => 'Race met open registratie',
         'starts_at' => now()->addDays(3),
         'registration_deadline_at' => now()->subHour(),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
         'updated_by' => $actor->id,
     ]);
 
@@ -65,14 +63,14 @@ test('admin dashboard prioritizes open points quick actions and recent changes',
             "(() => { const draftStat = document.querySelector('[data-testid=\"dashboard-stat-drafts\"]'); const upcomingStat = document.querySelector('[data-testid=\"dashboard-stat-upcoming\"]'); const recentStat = document.querySelector('[data-testid=\"dashboard-stat-recent\"]'); const quickActions = Array.from(document.querySelectorAll('[data-testid=\"quick-action\"]')).map((link) => new URL(link.href).pathname).sort(); return draftStat?.textContent.includes('1') && upcomingStat?.textContent.includes('3') && recentStat?.textContent.includes('4') && quickActions.join('|') === ['/dashboard/events/create', '/dashboard/seasons/create', '/dashboard/locations/create', '/dashboard/users'].sort().join('|') && document.querySelectorAll('[data-testid=\"recent-change\"]').length === 4 && document.querySelector('[data-testid=\"next-event\"]')?.textContent.includes('Eerstvolgende training') && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
         ->assertScript(
-            "(() => { const hasValue = (testId, value) => Array.from(new URL(document.querySelector('[data-testid=\"' + testId + '\"]').href).searchParams.values()).includes(value); return hasValue('open-point-closed-registration', 'closed_registration') && hasValue('open-point-expired-registration', 'expired_registration') && hasValue('open-point-without-content', 'without_content') && hasValue('open-point-without-cover', 'without_cover') && hasValue('open-point-without-season', 'without_season'); })()",
+            "(() => { const hasValue = (testId, value) => Array.from(new URL(document.querySelector('[data-testid=\"' + testId + '\"]').href).searchParams.values()).includes(value); return hasValue('open-point-closed-registration', 'closed_registration') && hasValue('open-point-without-content', 'without_content') && hasValue('open-point-without-cover', 'without_cover') && hasValue('open-point-without-season', 'without_season'); })()",
         )
         ->click('[data-testid="open-point-closed-registration"]')
         ->assertPathIs('/dashboard/events')
         ->assertSee('Race met gesloten registratie')
         ->assertDontSee('Race met open registratie')
         ->assertScript(
-            "(() => Array.from(new URL(window.location.href).searchParams.entries()).some(([key, value]) => key.startsWith('situation') && value === 'closed_registration') && document.querySelector('button[aria-label=\"Situatiefilter: Registratie gesloten\"]') !== null)()",
+            "(() => Array.from(new URL(window.location.href).searchParams.entries()).some(([key, value]) => key.startsWith('situation') && value === 'closed_registration') && document.querySelector('button[aria-label=\"Situatiefilter: Inschrijving niet actief\"]') !== null)()",
         )
         ->assertNoJavaScriptErrors();
 });

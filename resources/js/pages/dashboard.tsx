@@ -36,7 +36,6 @@ type Props = {
     openPoints: {
         closedRegistrationEvents: number;
         draftEvents: number;
-        expiredRegistrationEvents: number;
         missingContentEvents: number;
         missingCoverEvents: number;
         unassignedUpcomingEvents: number;
@@ -123,26 +122,15 @@ export default function Dashboard({
             title: 'Conceptevents',
         },
         {
-            count: openPoints.expiredRegistrationEvents,
-            description:
-                'Sluit de inschrijving of pas de inschrijfdeadline aan.',
-            href: eventsIndex({
-                query: { situation: ['expired_registration'] },
-            }),
-            icon: Clock3,
-            testId: 'open-point-expired-registration',
-            title: 'Inschrijving open na de deadline',
-        },
-        {
             count: openPoints.closedRegistrationEvents,
             description:
-                'Controleer of de inschrijving bewust gesloten blijft.',
+                'Bied inschrijving aan of haal de handmatige sluiting weg.',
             href: eventsIndex({
                 query: { situation: ['closed_registration'] },
             }),
             icon: CircleAlert,
             testId: 'open-point-closed-registration',
-            title: 'Komende events met gesloten registratie',
+            title: 'Komende events zonder actieve inschrijving',
         },
         {
             count: openPoints.unassignedUpcomingEvents,

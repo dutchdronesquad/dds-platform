@@ -456,7 +456,6 @@ function eventsRoute(filters: EventFiltersState) {
 function isEventSituation(value: string): value is AdminEventSituation {
     return [
         'closed_registration',
-        'expired_registration',
         'without_content',
         'without_cover',
         'without_season',

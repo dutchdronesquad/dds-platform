@@ -6,7 +6,6 @@ export type AdminEventStatus = 'cancelled' | 'draft' | 'published';
 
 export type AdminEventSituation =
     | 'closed_registration'
-    | 'expired_registration'
     | 'without_content'
     | 'without_cover'
     | 'without_season';
@@ -71,7 +70,6 @@ export type EventIndexProps = {
 
 export type EventFormOptions = {
     locations: Array<{ id: number; label: string }>;
-    registrationStatuses: SelectOption[];
     seasons: Array<{ id: number; label: string }>;
     types: SelectOption[];
 };
@@ -93,10 +91,13 @@ export type EditableEvent = {
     locationId: number;
     priceEuros: string | null;
     publishedAt: string | null;
+    registrationClosedManually: boolean;
     registrationDeadlineAt: string | null;
+    registrationEnabled: boolean;
+    registrationFull: boolean;
     registrationOpensAt: string | null;
-    registrationStatus: AdminRegistrationStatus;
     registrationUrl: string | null;
+    registrationWaitlistEnabled: boolean;
     seasonId: number | null;
     slug: string;
     startsAt: string;

@@ -25,6 +25,8 @@ final class PublicEventData
      *     registrationOpensAt: string|null,
      *     registrationDeadlineAt: string|null,
      *     registrationStatus: string,
+     *     registrationEnabled: bool,
+     *     registrationIsUpcoming: bool,
      *     season: array{id: int, slug: string, name: string}|null,
      *     location: array{name: string, city: string},
      *     image: array{src: string, alt: string},
@@ -49,7 +51,9 @@ final class PublicEventData
             'capacity' => $event->capacity,
             'registrationOpensAt' => $event->registration_opens_at?->toIso8601String(),
             'registrationDeadlineAt' => $event->registration_deadline_at?->toIso8601String(),
-            'registrationStatus' => $event->registration_status->value,
+            'registrationStatus' => $event->currentRegistrationStatus()->value,
+            'registrationEnabled' => $event->registration_enabled,
+            'registrationIsUpcoming' => $event->registrationIsUpcoming(),
             'season' => $event->season === null
                 ? null
                 : [

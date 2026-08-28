@@ -56,12 +56,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { show as publicEventShow } from '@/routes/events';
-import type {
-    AdminRegistrationStatus,
-    EditableEvent,
-    EventFormOptions,
-    SelectOption,
-} from './types';
+import type { EditableEvent, EventFormOptions, SelectOption } from './types';
 
 type MutationForm = {
     action: string;
@@ -88,7 +83,7 @@ const eventFormOutlineItems = [
         title: 'Capaciteit en prijs',
     },
     {
-        description: 'Status, link en deadlines',
+        description: 'Automatisch openen en sluiten',
         icon: ClipboardCheck,
         id: 'event-registration',
         title: 'Inschrijving',
@@ -113,9 +108,16 @@ export function EventForm({
     options: EventFormOptions;
 }) {
     const [title, setTitle] = useState(event?.title ?? '');
-    const [registrationStatus, setRegistrationStatus] = useState(
-        event?.registrationStatus ?? 'closed',
+    const [registrationEnabled, setRegistrationEnabled] = useState(
+        event?.registrationEnabled ?? false,
     );
+    const [registrationClosedManually, setRegistrationClosedManually] =
+        useState(event?.registrationClosedManually ?? false);
+    const [registrationFull, setRegistrationFull] = useState(
+        event?.registrationFull ?? false,
+    );
+    const [registrationWaitlistEnabled, setRegistrationWaitlistEnabled] =
+        useState(event?.registrationWaitlistEnabled ?? false);
     const [coverImage, setCoverImage] = useState(event?.coverImage ?? null);
 
     const defaultEventType =
@@ -128,9 +130,7 @@ export function EventForm({
         : options.locations.length === 1
           ? String(options.locations[0].id)
           : '';
-    const registrationRequiresUrl = ['open', 'waitlist'].includes(
-        registrationStatus,
-    );
+    const registrationRequiresUrl = registrationEnabled;
 
     return (
         <Form
@@ -439,138 +439,166 @@ export function EventForm({
                             className="@container/fields"
                             icon={ClipboardCheck}
                             title="Inschrijving"
-                            description="Bepaal welke inschrijfstatus bezoekers zien en waar de inschrijving naartoe leidt."
+                            description="Plan wanneer inschrijven mogelijk is. Het platform opent en sluit de inschrijving automatisch."
                         >
-                            <div className="grid gap-5 @min-[40rem]/fields:grid-cols-[16rem_minmax(18rem,1fr)]">
-                                <FormField
-                                    id="registration_status"
-                                    label="Inschrijfstatus"
-                                    error={errors.registration_status}
+                            <div className="overflow-hidden border-y border-neutral-200 dark:border-neutral-800">
+                                <RegistrationSwitch
+                                    id="registration_enabled"
+                                    checked={registrationEnabled}
+                                    description="Toon de inschrijving en gebruik de planning hieronder."
+                                    error={errors.registration_enabled}
+                                    onCheckedChange={setRegistrationEnabled}
+                                    title="Inschrijving aanbieden"
+                                />
+                                <div
+                                    id="event-registration-fields"
+                                    hidden={!registrationEnabled}
+                                    className="grid gap-6 border-t border-neutral-200 bg-white px-3 py-5 sm:px-4 sm:py-6 dark:border-neutral-800 dark:bg-neutral-950"
                                 >
-                                    <FormSelect
-                                        id="registration_status"
-                                        name="registration_status"
-                                        defaultValue={
-                                            event?.registrationStatus ??
-                                            'closed'
-                                        }
-                                        value={registrationStatus}
-                                        onValueChange={(value) =>
-                                            setRegistrationStatus(
-                                                value as AdminRegistrationStatus,
-                                            )
-                                        }
-                                        options={options.registrationStatuses}
-                                        required
-                                        invalid={Boolean(
-                                            errors.registration_status,
-                                        )}
-                                        describedBy={fieldDescription(
-                                            'registration_status',
-                                            errors.registration_status,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="registration_url"
-                                    label="Inschrijflink"
-                                    labelSuffix={
-                                        registrationRequiresUrl ? (
+                                    <FormField
+                                        id="registration_url"
+                                        label="Inschrijflink"
+                                        labelSuffix={
                                             <span className="rounded-full bg-flight-100 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-flight-700 uppercase dark:bg-flight-500/15 dark:text-flight-300">
                                                 Verplicht
                                             </span>
-                                        ) : (
-                                            <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
-                                                optioneel
-                                            </span>
-                                        )
-                                    }
-                                    hint={
-                                        registrationRequiresUrl
-                                            ? 'Verplicht bij een open inschrijving of wachtlijst.'
-                                            : undefined
-                                    }
-                                    error={errors.registration_url}
-                                    className={
-                                        registrationRequiresUrl
-                                            ? 'border-l-2 border-flight-300 pl-4 dark:border-flight-500/40'
-                                            : undefined
-                                    }
-                                >
-                                    <Input
-                                        id="registration_url"
-                                        name="registration_url"
-                                        type="url"
-                                        defaultValue={
-                                            event?.registrationUrl ?? ''
                                         }
-                                        maxLength={2048}
-                                        placeholder="https://… of mailto:…"
-                                        inputMode="url"
-                                        autoComplete="url"
-                                        required={registrationRequiresUrl}
-                                        aria-invalid={Boolean(
-                                            errors.registration_url,
-                                        )}
-                                        aria-describedby={fieldDescription(
-                                            'registration_url',
-                                            errors.registration_url,
-                                            registrationRequiresUrl,
-                                        )}
-                                    />
-                                </FormField>
-                            </div>
-                            <div
-                                data-testid="event-registration-dates"
-                                className="grid gap-5 @min-[44rem]/fields:grid-cols-2"
-                            >
-                                <FormField
-                                    id="registration_opens_at"
-                                    label="Inschrijving opent (optioneel)"
-                                    hint="Laat leeg als inschrijven direct mogelijk is zodra de inschrijfstatus op open staat."
-                                    error={errors.registration_opens_at}
-                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
-                                >
-                                    <DateTimePicker
-                                        id="registration_opens_at"
-                                        name="registration_opens_at"
-                                        label="Inschrijving opent"
-                                        defaultValue={
-                                            event?.registrationOpensAt ?? ''
-                                        }
-                                        showTodayShortcut
-                                        aria-invalid={Boolean(
-                                            errors.registration_opens_at,
-                                        )}
-                                        aria-describedby={fieldDescription(
-                                            'registration_opens_at',
-                                            errors.registration_opens_at,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="registration_deadline_at"
-                                    label="Inschrijfdeadline (optioneel)"
-                                    hint="Laat leeg als er geen automatische inschrijfdeadline is."
-                                    error={errors.registration_deadline_at}
-                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
-                                >
-                                    <DateTimePicker
-                                        id="registration_deadline_at"
-                                        name="registration_deadline_at"
-                                        label="Inschrijfdeadline"
-                                        defaultValue={
-                                            event?.registrationDeadlineAt ?? ''
-                                        }
-                                        aria-invalid={Boolean(
-                                            errors.registration_deadline_at,
-                                        )}
-                                        aria-describedby={fieldDescription(
-                                            'registration_deadline_at',
-                                            errors.registration_deadline_at,
-                                        )}
-                                    />
-                                </FormField>
+                                        hint="Deze link wordt pas publiek zodra de inschrijving automatisch opent."
+                                        error={errors.registration_url}
+                                        className="border-l-2 border-flight-300 pl-4 dark:border-flight-500/40"
+                                    >
+                                        <Input
+                                            id="registration_url"
+                                            name="registration_url"
+                                            type="url"
+                                            defaultValue={
+                                                event?.registrationUrl ?? ''
+                                            }
+                                            maxLength={2048}
+                                            placeholder="https://… of mailto:…"
+                                            inputMode="url"
+                                            autoComplete="url"
+                                            required={registrationRequiresUrl}
+                                            aria-invalid={Boolean(
+                                                errors.registration_url,
+                                            )}
+                                            aria-describedby={fieldDescription(
+                                                'registration_url',
+                                                errors.registration_url,
+                                                true,
+                                            )}
+                                        />
+                                    </FormField>
+                                    <div
+                                        data-testid="event-registration-dates"
+                                        className="grid gap-5 @min-[44rem]/fields:grid-cols-2"
+                                    >
+                                        <FormField
+                                            id="registration_opens_at"
+                                            label="Inschrijving opent (optioneel)"
+                                            hint="Laat leeg als inschrijven direct mogelijk is."
+                                            error={errors.registration_opens_at}
+                                            className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
+                                        >
+                                            <DateTimePicker
+                                                id="registration_opens_at"
+                                                name="registration_opens_at"
+                                                label="Inschrijving opent"
+                                                defaultValue={
+                                                    event?.registrationOpensAt ??
+                                                    ''
+                                                }
+                                                showTodayShortcut
+                                                aria-invalid={Boolean(
+                                                    errors.registration_opens_at,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'registration_opens_at',
+                                                    errors.registration_opens_at,
+                                                )}
+                                            />
+                                        </FormField>
+                                        <FormField
+                                            id="registration_deadline_at"
+                                            label="Inschrijfdeadline (optioneel)"
+                                            hint="Op dit tijdstip sluit de inschrijving automatisch."
+                                            error={
+                                                errors.registration_deadline_at
+                                            }
+                                            className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
+                                        >
+                                            <DateTimePicker
+                                                id="registration_deadline_at"
+                                                name="registration_deadline_at"
+                                                label="Inschrijfdeadline"
+                                                defaultValue={
+                                                    event?.registrationDeadlineAt ??
+                                                    ''
+                                                }
+                                                aria-invalid={Boolean(
+                                                    errors.registration_deadline_at,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'registration_deadline_at',
+                                                    errors.registration_deadline_at,
+                                                )}
+                                            />
+                                        </FormField>
+                                    </div>
+                                    <div className="grid gap-3 @min-[44rem]/fields:grid-cols-2">
+                                        <RegistrationSwitch
+                                            id="registration_closed_manually"
+                                            checked={registrationClosedManually}
+                                            description="Noodrem die de automatische planning tijdelijk overstemt."
+                                            error={
+                                                errors.registration_closed_manually
+                                            }
+                                            onCheckedChange={
+                                                setRegistrationClosedManually
+                                            }
+                                            title="Tijdelijk gesloten"
+                                            variant="warning"
+                                        />
+                                        <RegistrationSwitch
+                                            id="registration_full"
+                                            checked={registrationFull}
+                                            description="Markeer de reguliere inschrijving handmatig als vol."
+                                            error={errors.registration_full}
+                                            onCheckedChange={(checked) => {
+                                                setRegistrationFull(checked);
+
+                                                if (!checked) {
+                                                    setRegistrationWaitlistEnabled(
+                                                        false,
+                                                    );
+                                                }
+                                            }}
+                                            title="Event is vol"
+                                        />
+                                    </div>
+                                    {registrationFull ? (
+                                        <RegistrationSwitch
+                                            id="registration_waitlist_enabled"
+                                            checked={
+                                                registrationWaitlistEnabled
+                                            }
+                                            description="Gebruik de inschrijflink voor aanmeldingen op de wachtlijst."
+                                            error={
+                                                errors.registration_waitlist_enabled
+                                            }
+                                            onCheckedChange={
+                                                setRegistrationWaitlistEnabled
+                                            }
+                                            title="Wachtlijst openen"
+                                        />
+                                    ) : (
+                                        <input
+                                            type="hidden"
+                                            name="registration_waitlist_enabled"
+                                            value="0"
+                                        />
+                                    )}
+                                </div>
                             </div>
                         </AdminFormSection>
 
@@ -922,6 +950,98 @@ function FormField({
                     <InputError id={`${id}-error`} message={error} />
                 </div>
             )}
+        </div>
+    );
+}
+
+function RegistrationSwitch({
+    checked,
+    description,
+    error,
+    id,
+    onCheckedChange,
+    title,
+    variant = 'default',
+}: {
+    checked: boolean;
+    description: string;
+    error?: string;
+    id: string;
+    onCheckedChange: (checked: boolean) => void;
+    title: string;
+    variant?: 'default' | 'warning';
+}) {
+    const activeClasses =
+        variant === 'warning'
+            ? 'border-amber-500 bg-amber-50/60 dark:border-amber-400 dark:bg-amber-500/[0.08]'
+            : 'border-flight-500 bg-flight-50/55 dark:border-flight-400 dark:bg-flight-500/[0.07]';
+
+    return (
+        <div data-field={id}>
+            <input type="hidden" name={id} value={checked ? '1' : '0'} />
+            <button
+                id={id}
+                type="button"
+                role="switch"
+                aria-checked={checked}
+                aria-controls={
+                    id === 'registration_enabled'
+                        ? 'event-registration-fields'
+                        : undefined
+                }
+                aria-describedby={`${id}-description${error ? ` ${id}-error` : ''}`}
+                aria-expanded={
+                    id === 'registration_enabled' ? checked : undefined
+                }
+                aria-invalid={Boolean(error)}
+                onClick={() => onCheckedChange(!checked)}
+                className={`grid min-h-18 w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-l-[3px] px-3 py-3.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal-500/50 focus-visible:ring-inset sm:px-4 ${
+                    checked
+                        ? activeClasses
+                        : 'border-transparent bg-neutral-50/60 hover:bg-neutral-100/70 dark:bg-neutral-900/30 dark:hover:bg-neutral-900/60'
+                }`}
+            >
+                <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-neutral-950 dark:text-white">
+                        {title}
+                    </span>
+                    <span
+                        id={`${id}-description`}
+                        className="mt-1 block text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+                    >
+                        {description}
+                    </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3">
+                    <span
+                        aria-hidden="true"
+                        className="hidden text-xs font-medium text-neutral-500 @min-[30rem]/fields:inline dark:text-neutral-400"
+                    >
+                        {checked ? 'Aan' : 'Uit'}
+                    </span>
+                    <span
+                        aria-hidden="true"
+                        className={`block h-6 w-11 rounded-full shadow-inner ring-1 transition-colors ring-inset ${
+                            checked
+                                ? variant === 'warning'
+                                    ? 'bg-amber-500 ring-amber-700/15'
+                                    : 'bg-flight-500 ring-flight-700/15'
+                                : 'bg-neutral-400 ring-neutral-500/25 dark:bg-neutral-600 dark:ring-neutral-500/40'
+                        }`}
+                    >
+                        <span
+                            className={`block size-5 translate-y-0.5 rounded-full bg-white shadow-sm transition-transform motion-reduce:transition-none ${
+                                checked ? 'translate-x-5.5' : 'translate-x-0.5'
+                            }`}
+                        />
+                    </span>
+                </span>
+            </button>
+            <InputError
+                id={`${id}-error`}
+                message={error}
+                className="px-3 py-2 sm:px-4"
+            />
         </div>
     );
 }

@@ -46,7 +46,9 @@ test('admins can review events with operational status and actions', function ()
     $event = Event::factory()->published()->training()->inSeason()->create([
         'title' => 'Vrijdagtraining',
         'slug' => 'vrijdagtraining',
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
+        'registration_opens_at' => now()->subDay(),
+        'registration_deadline_at' => now()->addDay(),
     ]);
 
     $this->actingAs($admin)
@@ -92,7 +94,9 @@ test('admins can open event forms with complete options and editable values', fu
         'title' => 'Finalerace',
         'slug' => 'finalerace',
         'price_cents' => 1234,
-        'registration_status' => EventRegistrationStatus::Waitlist,
+        'registration_enabled' => true,
+        'registration_full' => true,
+        'registration_waitlist_enabled' => true,
         'registration_url' => 'https://example.com/wachtlijst',
     ]);
     $eventWithoutOptionalValues = Event::factory()->create([
@@ -115,8 +119,7 @@ test('admins can open event forms with complete options and editable values', fu
             ->where('options.locations.1.label', 'Zulu Hal')
             ->has('options.seasons', 1)
             ->where('options.seasons.0.label', 'Wintercompetitie')
-            ->has('options.types', 5)
-            ->has('options.registrationStatuses', 4),
+            ->has('options.types', 5),
         );
 
     $this->get(route('admin.events.edit', $event))
@@ -128,7 +131,10 @@ test('admins can open event forms with complete options and editable values', fu
             ->where('event.locationId', $firstLocation->id)
             ->where('event.seasonId', $season->id)
             ->where('event.priceEuros', '12.34')
-            ->where('event.registrationStatus', EventRegistrationStatus::Waitlist->value)
+            ->where('event.registrationEnabled', true)
+            ->where('event.registrationClosedManually', false)
+            ->where('event.registrationFull', true)
+            ->where('event.registrationWaitlistEnabled', true)
             ->where('event.registrationUrl', 'https://example.com/wachtlijst')
             ->where('event.capabilities.delete', true)
             ->where('event.capabilities.duplicate', true)
@@ -247,32 +253,29 @@ test('situation filters show only matching upcoming events', function () {
         'season_id' => $season->id,
         'title' => 'Komende gesloten race',
         'starts_at' => now()->addDays(2),
-        'registration_status' => EventRegistrationStatus::Closed,
     ]);
     Event::factory()->published()->withCoverImage()->create([
         'season_id' => $season->id,
         'title' => 'Komende open race',
         'starts_at' => now()->addDays(3),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     Event::factory()->withCoverImage()->create([
         'season_id' => $season->id,
         'title' => 'Gesloten conceptrace',
         'starts_at' => now()->addDays(4),
-        'registration_status' => EventRegistrationStatus::Closed,
     ]);
     Event::factory()->published()->withCoverImage()->create([
         'season_id' => $season->id,
         'title' => 'Gesloten race in het verleden',
         'starts_at' => now()->subDay(),
-        'registration_status' => EventRegistrationStatus::Closed,
     ]);
     $withoutSeason = Event::factory()->published()->withCoverImage()->create([
         'season_id' => null,
         'title' => 'Komende race zonder seizoen',
         'starts_at' => now()->addDays(5),
         'registration_deadline_at' => now()->addDays(4),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     Event::factory()->cancelled()->create([
         'season_id' => null,
@@ -285,35 +288,28 @@ test('situation filters show only matching upcoming events', function () {
         'content' => null,
         'starts_at' => now()->addDays(7),
         'registration_deadline_at' => now()->addDays(6),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     $withoutCover = Event::factory()->published()->create([
         'season_id' => $season->id,
         'title' => 'Komende race zonder omslagafbeelding',
         'starts_at' => now()->addDays(8),
         'registration_deadline_at' => now()->addDays(7),
-        'registration_status' => EventRegistrationStatus::Open,
-    ]);
-    $expiredRegistration = Event::factory()->published()->withCoverImage()->create([
-        'season_id' => $season->id,
-        'title' => 'Komende race met verlopen inschrijfdeadline',
-        'starts_at' => now()->addDays(9),
-        'registration_deadline_at' => now()->subHour(),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     Event::factory()->published()->withCoverImage()->create([
         'season_id' => $season->id,
         'title' => 'Komende race op de inschrijfdeadline',
         'starts_at' => $referenceTime->addDays(10),
         'registration_deadline_at' => $referenceTime,
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
     Event::factory()->published()->withCoverImage()->create([
         'season_id' => $season->id,
         'title' => 'Afgelopen race met verlopen inschrijfdeadline',
         'starts_at' => $referenceTime->subSecond(),
         'registration_deadline_at' => $referenceTime->subDay(),
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
     ]);
 
     $this->actingAs($admin);
@@ -325,8 +321,7 @@ test('situation filters show only matching upcoming events', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->where('filters.situation', ['closed_registration'])
             ->where('situationOptions', [
-                ['value' => 'closed_registration', 'label' => 'Registratie gesloten'],
-                ['value' => 'expired_registration', 'label' => 'Inschrijfdeadline verlopen'],
+                ['value' => 'closed_registration', 'label' => 'Inschrijving niet actief'],
                 ['value' => 'without_content', 'label' => 'Zonder inhoud'],
                 ['value' => 'without_cover', 'label' => 'Zonder omslagafbeelding'],
                 ['value' => 'without_season', 'label' => 'Zonder seizoen'],
@@ -336,7 +331,6 @@ test('situation filters show only matching upcoming events', function () {
         );
 
     foreach ([
-        'expired_registration' => $expiredRegistration,
         'without_content' => $withoutContent,
         'without_cover' => $withoutCover,
         'without_season' => $withoutSeason,
@@ -415,7 +409,10 @@ test('admins can create events with normalized prices and date-based generated s
         ->updated_by->toBe($admin->id)
         ->status->toBe(EventStatus::Draft)
         ->type->toBe(EventType::Training)
-        ->registration_status->toBe(EventRegistrationStatus::Open);
+        ->registration_enabled->toBeTrue()
+        ->registration_closed_manually->toBeFalse()
+        ->registration_full->toBeFalse()
+        ->registration_waitlist_enabled->toBeFalse();
 });
 
 test('generated event slugs receive a sequence when title and start date match', function () {
@@ -501,7 +498,7 @@ test('editors can duplicate events as uniquely named drafts', function () {
     $sourceEvent = Event::factory()->published()->training()->inSeason()->withCoverImage()->create([
         'title' => 'Vrijdagtraining',
         'slug' => 'vrijdagtraining',
-        'registration_status' => EventRegistrationStatus::Open,
+        'registration_enabled' => true,
         'registration_url' => 'https://example.com/vrijdagtraining',
     ]);
 
@@ -528,7 +525,10 @@ test('editors can duplicate events as uniquely named drafts', function () {
         ->capacity->toBe($sourceEvent->capacity)
         ->registration_opens_at->toEqual($sourceEvent->registration_opens_at)
         ->registration_deadline_at->toEqual($sourceEvent->registration_deadline_at)
-        ->registration_status->toBe($sourceEvent->registration_status)
+        ->registration_enabled->toBe($sourceEvent->registration_enabled)
+        ->registration_closed_manually->toBe($sourceEvent->registration_closed_manually)
+        ->registration_full->toBe($sourceEvent->registration_full)
+        ->registration_waitlist_enabled->toBe($sourceEvent->registration_waitlist_enabled)
         ->registration_url->toBe($sourceEvent->registration_url)
         ->status->toBe(EventStatus::Draft)
         ->published_at->toBeNull()
@@ -677,6 +677,28 @@ test('event registration links accept mailto urls', function () {
         ->toBe('MAILTO:inschrijven@dutchdronesquad.nl?subject=Trainingavond');
 });
 
+test('enabled registration requires a link and waitlists require a full event', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'registration_url' => null,
+        ]))
+        ->assertSessionHasErrors('registration_url');
+
+    $this->post(route('admin.events.store'), validEventPayload($location, [
+        'registration_full' => false,
+        'registration_waitlist_enabled' => true,
+    ]))
+        ->assertSessionHasErrors([
+            'registration_waitlist_enabled' => 'De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.',
+        ]);
+
+    expect(Event::query()->count())->toBe(0);
+});
+
 test('event registration links reject encoded control characters', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
@@ -765,9 +787,12 @@ function validEventPayload(Location $location, array $overrides = []): array
         'type' => EventType::Training->value,
         'price_euros' => '10.00',
         'capacity' => 16,
+        'registration_enabled' => true,
+        'registration_closed_manually' => false,
+        'registration_full' => false,
+        'registration_waitlist_enabled' => false,
         'registration_opens_at' => '2026-09-15T10:00',
         'registration_deadline_at' => '2026-10-14T23:59',
-        'registration_status' => EventRegistrationStatus::Open->value,
         'registration_url' => 'https://example.com/inschrijven',
         ...$overrides,
     ];

@@ -483,7 +483,14 @@ final class DevelopmentEventSeeder extends Seeder
 
         foreach ($fixtures as $fixture) {
             $factory = $fixture['factory'];
-            unset($fixture['factory']);
+            $legacyRegistrationStatus = $fixture['registration_status'];
+            unset($fixture['factory'], $fixture['registration_status']);
+
+            $registrationConfiguration = $this->registrationConfiguration($legacyRegistrationStatus);
+            $fixture['registration_enabled'] = $registrationConfiguration['enabled'];
+            $fixture['registration_closed_manually'] = false;
+            $fixture['registration_full'] = $registrationConfiguration['full'];
+            $fixture['registration_waitlist_enabled'] = $registrationConfiguration['waitlist'];
 
             if ($fixture['season_id'] === $season->id) {
                 $fixture['price_cents'] = 1500;
@@ -503,16 +510,8 @@ final class DevelopmentEventSeeder extends Seeder
                 && $fixture['registration_opens_at'] instanceof CarbonImmutable
                 && $fixture['registration_deadline_at'] instanceof CarbonImmutable
             ) {
-                $registrationIsOpen = $referenceDate->betweenIncluded(
-                    $fixture['registration_opens_at'],
-                    $fixture['registration_deadline_at'],
-                );
-                $fixture['registration_status'] = $registrationIsOpen
-                    ? EventRegistrationStatus::Open
-                    : EventRegistrationStatus::Closed;
-                $fixture['registration_url'] = $registrationIsOpen
-                    ? $registrationUrl
-                    : null;
+                $fixture['registration_enabled'] = true;
+                $fixture['registration_url'] = $registrationUrl;
             }
 
             $attributes = $factory->make([
@@ -585,6 +584,16 @@ final class DevelopmentEventSeeder extends Seeder
         int $minute = 0,
     ): CarbonImmutable {
         return $firstSunday->addWeeks($weeks)->setTime($hour, $minute)->utc();
+    }
+
+    /** @return array{enabled: bool, full: bool, waitlist: bool} */
+    private function registrationConfiguration(EventRegistrationStatus $status): array
+    {
+        return [
+            'enabled' => $status !== EventRegistrationStatus::Closed,
+            'full' => in_array($status, [EventRegistrationStatus::Full, EventRegistrationStatus::Waitlist], true),
+            'waitlist' => $status === EventRegistrationStatus::Waitlist,
+        ];
     }
 
     private function registrationOpensAt(CarbonImmutable $startsAt): CarbonImmutable

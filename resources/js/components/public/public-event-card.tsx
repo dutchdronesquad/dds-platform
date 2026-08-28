@@ -388,7 +388,11 @@ export function PublicEventRegistrationStatus({
     className?: string;
     event: Pick<
         PublicEventSummary,
-        'registrationDeadlineAt' | 'registrationOpensAt' | 'registrationStatus'
+        | 'registrationDeadlineAt'
+        | 'registrationEnabled'
+        | 'registrationIsUpcoming'
+        | 'registrationOpensAt'
+        | 'registrationStatus'
     > & { status: EventStatus };
     label?: string;
 }) {

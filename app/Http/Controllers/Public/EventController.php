@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\EventRegistrationStatus;
+use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
@@ -42,9 +44,12 @@ final class EventController extends Controller
                 'type',
                 'price_cents',
                 'capacity',
+                'registration_enabled',
+                'registration_closed_manually',
+                'registration_full',
+                'registration_waitlist_enabled',
                 'registration_opens_at',
                 'registration_deadline_at',
-                'registration_status',
             ])
             ->publiclyVisible()
             ->upcoming()
@@ -138,7 +143,11 @@ final class EventController extends Controller
                     'postalCode' => $event->location->postal_code,
                     ...$this->locationData->googleMapsUrls($event->location),
                 ],
-                'registrationUrl' => $event->registration_url,
+                'registrationUrl' => $event->status !== EventStatus::Cancelled
+                    && in_array($event->currentRegistrationStatus(), [
+                        EventRegistrationStatus::Open,
+                        EventRegistrationStatus::Waitlist,
+                    ], true) ? $event->registration_url : null,
                 'seasonContext' => $seasonContext,
             ],
             'seo' => $seoMetadata->forPage('event', [

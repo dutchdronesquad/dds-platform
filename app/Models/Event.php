@@ -7,6 +7,7 @@ use App\Enums\EventRegistrationStatus;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,7 +33,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $capacity
  * @property CarbonImmutable|null $registration_opens_at
  * @property CarbonImmutable|null $registration_deadline_at
- * @property EventRegistrationStatus $registration_status
+ * @property bool $registration_enabled
+ * @property bool $registration_closed_manually
+ * @property bool $registration_full
+ * @property bool $registration_waitlist_enabled
  * @property string|null $registration_url
  */
 final class Event extends Model
@@ -57,9 +61,12 @@ final class Event extends Model
         'type',
         'price_cents',
         'capacity',
+        'registration_enabled',
+        'registration_closed_manually',
+        'registration_full',
+        'registration_waitlist_enabled',
         'registration_opens_at',
         'registration_deadline_at',
-        'registration_status',
         'registration_url',
     ];
 
@@ -67,7 +74,10 @@ final class Event extends Model
     protected $attributes = [
         'status' => EventStatus::Draft->value,
         'type' => EventType::Other->value,
-        'registration_status' => EventRegistrationStatus::Closed->value,
+        'registration_enabled' => false,
+        'registration_closed_manually' => false,
+        'registration_full' => false,
+        'registration_waitlist_enabled' => false,
     ];
 
     /** @return BelongsTo<Location, $this> */
@@ -117,6 +127,40 @@ final class Event extends Model
             && $this->published_at?->lte(now()) === true;
     }
 
+    public function currentRegistrationStatus(?CarbonInterface $at = null): EventRegistrationStatus
+    {
+        $at ??= now();
+
+        if (! $this->registration_enabled || $this->registration_closed_manually) {
+            return EventRegistrationStatus::Closed;
+        }
+
+        if ($this->registration_opens_at?->greaterThan($at) === true) {
+            return EventRegistrationStatus::Closed;
+        }
+
+        if ($this->registration_deadline_at?->lessThanOrEqualTo($at) === true) {
+            return EventRegistrationStatus::Closed;
+        }
+
+        if ($this->registration_full) {
+            return $this->registration_waitlist_enabled
+                ? EventRegistrationStatus::Waitlist
+                : EventRegistrationStatus::Full;
+        }
+
+        return EventRegistrationStatus::Open;
+    }
+
+    public function registrationIsUpcoming(?CarbonInterface $at = null): bool
+    {
+        $at ??= now();
+
+        return $this->registration_enabled
+            && ! $this->registration_closed_manually
+            && $this->registration_opens_at?->greaterThan($at) === true;
+    }
+
     /**
      * @return array<string, string>
      */
@@ -130,9 +174,12 @@ final class Event extends Model
             'type' => EventType::class,
             'price_cents' => 'integer',
             'capacity' => 'integer',
+            'registration_enabled' => 'boolean',
+            'registration_closed_manually' => 'boolean',
+            'registration_full' => 'boolean',
+            'registration_waitlist_enabled' => 'boolean',
             'registration_opens_at' => 'immutable_datetime',
             'registration_deadline_at' => 'immutable_datetime',
-            'registration_status' => EventRegistrationStatus::class,
         ];
     }
 }

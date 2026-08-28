@@ -339,7 +339,8 @@ function RegistrationPanel({
                                 : `${event.capacity} plekken totaal`
                         }
                     />
-                    {event.registrationOpensAt !== null &&
+                    {event.registrationEnabled &&
+                        event.registrationOpensAt !== null &&
                         !registrationIsUpcoming && (
                             <RegistrationDetail
                                 label="Aanmelden vanaf"

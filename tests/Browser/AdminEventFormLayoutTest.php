@@ -57,6 +57,7 @@ test('event forms use one main surface with flat sections and a context sidebar'
         ->assertScript(
             "(() => { const sections = Array.from(document.querySelectorAll('[data-testid=\"admin-form-section\"]')); const actions = document.querySelector('[data-testid=\"admin-form-actions\"]'); const layout = document.querySelector('[data-testid=\"admin-form-layout\"]'); const content = document.querySelector('[data-testid=\"admin-form-content\"]'); const aside = document.querySelector('[data-testid=\"admin-form-aside\"]'); const capacityGrid = document.querySelector('[data-testid=\"event-capacity-fields\"]'); const currentOutlineItem = document.querySelector('[aria-current=\"location\"]'); const price = document.querySelector('[data-field=\"price_euros\"]'); const capacity = document.querySelector('[data-field=\"capacity\"]'); if (sections.length !== 5 || actions === null || layout === null || content === null || aside === null || capacityGrid === null || price === null || capacity === null) return false; const columns = getComputedStyle(layout).gridTemplateColumns.split(' ').filter(Boolean); const contentStyle = getComputedStyle(content); const actionsStyle = getComputedStyle(actions); const capacityGridBounds = capacityGrid.getBoundingClientRect(); const priceBounds = price.getBoundingClientRect(); const capacityBounds = capacity.getBoundingClientRect(); const actionsBounds = actions.getBoundingClientRect(); const layoutBounds = layout.getBoundingClientRect(); return contentStyle.borderRadius !== '0px' && contentStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && contentStyle.boxShadow !== 'none' && contentStyle.overflow === 'clip' && actionsStyle.borderTopLeftRadius === '0px' && Math.abs(actionsBounds.bottom - layoutBounds.top) < 1 && Math.abs(actionsBounds.width - layoutBounds.width) < 1 && sections.every((section) => { const style = getComputedStyle(section); return style.borderRadius === '0px' && style.boxShadow === 'none' && style.borderLeftWidth === '0px' && style.borderRightWidth === '0px'; }) && currentOutlineItem?.getAttribute('href') === '#event-basics' && getComputedStyle(aside).position === 'sticky' && Math.abs(priceBounds.left - capacityGridBounds.left) < 1 && Math.abs(capacityBounds.right - capacityGridBounds.right) < 1 && Math.abs(priceBounds.width - capacityBounds.width) < 1 && Math.abs(priceBounds.height - capacityBounds.height) < 1 && columns.length === 2 && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
+        ->click('#registration_enabled')
         ->assertScript(
             "(() => { const start = document.querySelector('[data-field=\"starts_at\"]'); const end = document.querySelector('[data-field=\"ends_at\"]'); const registrationOpen = document.querySelector('[data-field=\"registration_opens_at\"]'); const registrationDeadline = document.querySelector('[data-field=\"registration_deadline_at\"]'); const picker = document.querySelector('[data-slot=\"date-time-picker\"]'); const date = document.querySelector('#starts_at'); const time = document.querySelector('#starts_at_time'); const clear = document.querySelector('button[aria-label=\"Start wissen\"]'); const hidden = document.querySelector('input[name=\"starts_at\"]'); if (start === null || end === null || registrationOpen === null || registrationDeadline === null || picker === null || date === null || time === null || clear === null || hidden === null) return false; const pickerStyle = getComputedStyle(picker); const pickerHeight = picker.getBoundingClientRect().height; const segmentHeights = [date, time, clear].map((segment) => segment.getBoundingClientRect().height); return start.getBoundingClientRect().top < end.getBoundingClientRect().top && registrationOpen.getBoundingClientRect().top < registrationDeadline.getBoundingClientRect().top && Math.abs(time.getBoundingClientRect().width - 88) < 1 && time.textContent?.trim() === '--:--' && time.getAttribute('aria-label') === 'Tijd kiezen voor Start, nog niet ingesteld' && hidden.value === '' && pickerStyle.borderRadius !== '0px' && pickerStyle.borderWidth === '1px' && ['normal', '0px'].includes(pickerStyle.columnGap) && getComputedStyle(date).borderWidth === '0px' && getComputedStyle(time).borderLeftWidth === '1px' && getComputedStyle(clear).borderLeftWidth === '1px' && segmentHeights.every((height) => Math.abs(height - pickerHeight) < 1); })()",
         )
@@ -65,7 +66,7 @@ test('event forms use one main surface with flat sections and a context sidebar'
             "(() => { const page = document.querySelector('[data-testid=\"admin-resource-page\"]'); const headerContent = document.querySelector('[data-testid=\"admin-resource-header-content\"]'); const resourceContent = document.querySelector('[data-testid=\"admin-resource-content\"]'); const actions = document.querySelector('[data-testid=\"admin-form-actions\"]'); const layout = document.querySelector('[data-testid=\"admin-form-layout\"]'); const formContent = document.querySelector('[data-testid=\"admin-form-content\"]'); const aside = document.querySelector('[data-testid=\"admin-form-aside\"]'); if (page === null || headerContent === null || resourceContent === null || actions === null || layout === null || formContent === null || aside === null) return false; return getComputedStyle(headerContent).maxWidth === '1600px' && getComputedStyle(resourceContent).maxWidth === 'none' && getComputedStyle(layout).maxWidth === '1648px' && Math.abs(actions.getBoundingClientRect().width - page.getBoundingClientRect().width) < 1 && Math.abs(formContent.getBoundingClientRect().left - headerContent.getBoundingClientRect().left) < 1 && Math.abs(aside.getBoundingClientRect().right - headerContent.getBoundingClientRect().right) < 1 && Math.abs(aside.getBoundingClientRect().width - 344) < 1; })()",
         )
         ->assertScript(
-            "(() => { const start = document.querySelector('[data-field=\"starts_at\"]'); const end = document.querySelector('[data-field=\"ends_at\"]'); const registrationOpen = document.querySelector('[data-field=\"registration_opens_at\"]'); const registrationDeadline = document.querySelector('[data-field=\"registration_deadline_at\"]'); if (start === null || end === null || registrationOpen === null || registrationDeadline === null) return false; const fields = [start, end, registrationOpen, registrationDeadline]; const widths = fields.map((field) => field.getBoundingClientRect().width); return Math.abs(start.getBoundingClientRect().top - end.getBoundingClientRect().top) < 1 && Math.abs(registrationOpen.getBoundingClientRect().top - registrationDeadline.getBoundingClientRect().top) < 1 && Math.max(...widths) - Math.min(...widths) < 1 && widths.every((width) => width > 400); })()",
+            "(() => { const start = document.querySelector('[data-field=\"starts_at\"]'); const end = document.querySelector('[data-field=\"ends_at\"]'); const registrationOpen = document.querySelector('[data-field=\"registration_opens_at\"]'); const registrationDeadline = document.querySelector('[data-field=\"registration_deadline_at\"]'); if (start === null || end === null || registrationOpen === null || registrationDeadline === null) return false; const widths = [start, end, registrationOpen, registrationDeadline].map((field) => field.getBoundingClientRect().width); return Math.abs(start.getBoundingClientRect().top - end.getBoundingClientRect().top) < 1 && Math.abs(registrationOpen.getBoundingClientRect().top - registrationDeadline.getBoundingClientRect().top) < 1 && Math.abs(widths[0] - widths[1]) < 1 && Math.abs(widths[2] - widths[3]) < 1 && widths.every((width) => width > 400); })()",
         )
         ->assertScript(
             "(() => { const ids = ['price_euros', 'capacity', 'starts_at', 'ends_at']; const fields = ids.map((id) => document.querySelector('[data-field=\"' + id + '\"]')); if (fields.some((field) => field === null)) return false; const widths = fields.map((field) => field.getBoundingClientRect().width); return Math.max(...widths) - Math.min(...widths) < 1; })()",
@@ -106,6 +107,7 @@ test('choosing an event date defaults its time to midnight', function () {
 
     visit('/dashboard/events/create')
         ->on()->desktop()
+        ->click('#registration_enabled')
         ->click('#registration_opens_at')
         ->click('internal:role=button[name="Vandaag"s]')
         ->assertAriaAttribute(
@@ -135,7 +137,7 @@ test('event create responds to the available form width instead of the viewport'
             "(() => { const names = ['starts_at', 'ends_at', 'registration_opens_at', 'registration_deadline_at']; return document.querySelectorAll('input[type=\"datetime-local\"]').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name) !== null && document.querySelector('#' + name + '_time') !== null); })()",
         )
         ->assertScript(
-            "(() => { const names = ['type', 'location_id', 'season_id', 'registration_status']; return document.querySelectorAll('select:not([aria-hidden=\"true\"])').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name)?.dataset.slot === 'select-trigger'); })()",
+            "(() => { const names = ['type', 'location_id', 'season_id']; return document.querySelectorAll('select:not([aria-hidden=\"true\"])').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name)?.dataset.slot === 'select-trigger'); })()",
         )
         // The five sections appear in a deliberate narrative order: identity, timing,
         // practical limits, registration, then public copy — verify that order holds.
@@ -153,6 +155,7 @@ test('event create responds to the available form width instead of the viewport'
             "document.querySelector('#content-preview h2')?.textContent === 'Programma' && document.querySelector('#content-preview li')?.textContent === 'Briefing'",
         )
         ->click('button[aria-controls="content-editor"]')
+        ->click('#registration_enabled')
         ->click('#registration_opens_at')
         ->click('internal:role=button[name="Vandaag"s]')
         ->assertScript(
@@ -214,7 +217,7 @@ test('event create responds to the available form width instead of the viewport'
         ->assertNoJavaScriptErrors();
 });
 
-test('event registration section reacts visibly to the chosen registration status', function () {
+test('event registration section reveals automatic planning and manual overrides', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     Location::factory()->create();
@@ -226,19 +229,24 @@ test('event registration section reacts visibly to the chosen registration statu
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
         ->wait(1)
-        // Closed by default: the link is presented as optional, no emphasis.
-        ->assertSee('optioneel')
-        ->assertDontSee('Verplicht bij een open inschrijving of wachtlijst.')
-        ->click('#registration_status')
-        ->click('internal:role=option[name="Open"s]')
         ->assertScript(
-            "document.querySelector('input[name=\"registration_status\"]')?.value === 'open'",
+            "document.querySelector('input[name=\"registration_enabled\"]')?.value === '0' && document.querySelector('#event-registration-fields')?.hidden === true",
+        )
+        ->click('#registration_enabled')
+        ->assertScript(
+            "document.querySelector('input[name=\"registration_enabled\"]')?.value === '1' && document.querySelector('#event-registration-fields')?.hidden === false",
         )
         ->assertScript(
             "document.querySelector('input[name=\"registration_url\"]')?.required === true",
         )
         ->assertSee('Verplicht')
-        ->assertSee('Verplicht bij een open inschrijving of wachtlijst.')
+        ->assertSee('Deze link wordt pas publiek zodra de inschrijving automatisch opent.')
+        ->click('#registration_full')
+        ->assertSee('Wachtlijst openen')
+        ->click('#registration_waitlist_enabled')
+        ->assertScript(
+            "document.querySelector('input[name=\"registration_waitlist_enabled\"]')?.value === '1'",
+        )
         ->assertNoJavaScriptErrors();
 });
 
@@ -267,7 +275,7 @@ test('event edit only places the publication panel beside a sufficiently wide fo
             "(() => { const names = ['starts_at', 'ends_at', 'registration_opens_at', 'registration_deadline_at']; return document.querySelectorAll('input[type=\"datetime-local\"]').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name) !== null && document.querySelector('#' + name + '_time') !== null); })()",
         )
         ->assertScript(
-            "(() => { const names = ['type', 'location_id', 'season_id', 'registration_status']; return document.querySelectorAll('select:not([aria-hidden=\"true\"])').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name)?.dataset.slot === 'select-trigger'); })()",
+            "(() => { const names = ['type', 'location_id', 'season_id']; return document.querySelectorAll('select:not([aria-hidden=\"true\"])').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name)?.dataset.slot === 'select-trigger'); })()",
         )
         ->assertScript(
             "(() => { const layout = document.querySelector('[data-testid=\"admin-form-layout\"]'); if (layout === null) return false; const columns = getComputedStyle(layout).gridTemplateColumns.split(' ').filter(Boolean).map(Number.parseFloat); return columns.length === 2 && columns[0] >= 720 && columns[1] >= 280 && document.documentElement.scrollWidth <= window.innerWidth; })()",
