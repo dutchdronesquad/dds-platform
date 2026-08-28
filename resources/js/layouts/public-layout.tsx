@@ -632,7 +632,10 @@ export default function PublicLayout({ children }: Props) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-8 lg:contents">
+                    <div
+                        data-testid="footer-navigation"
+                        className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 lg:contents"
+                    >
                         <FooterLinks
                             title="Ontdek"
                             items={footerExploreItems}
