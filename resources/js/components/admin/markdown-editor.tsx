@@ -18,6 +18,7 @@ type MarkdownEditorProps = {
     maxLength: number;
     name: string;
     placeholder?: string;
+    required?: boolean;
     rows?: number;
 };
 
@@ -29,6 +30,7 @@ export function MarkdownEditor({
     maxLength,
     name,
     placeholder,
+    required = false,
     rows = 8,
 }: MarkdownEditorProps) {
     const [mode, setMode] = useState<'edit' | 'preview'>('edit');
@@ -76,7 +78,10 @@ export function MarkdownEditor({
                     size="sm"
                     aria-controls={previewId}
                     aria-pressed={mode === 'preview'}
-                    disabled={preview.processing}
+                    disabled={
+                        preview.processing ||
+                        (required && preview.data.markdown.trim() === '')
+                    }
                     onClick={showPreview}
                     className={cn(
                         'h-8',
@@ -104,6 +109,7 @@ export function MarkdownEditor({
                     }
                     rows={rows}
                     maxLength={maxLength}
+                    required={required}
                     placeholder={placeholder}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedBy}

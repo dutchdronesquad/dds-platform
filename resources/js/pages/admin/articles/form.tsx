@@ -25,6 +25,7 @@ import {
     AdminFormOutline,
     AdminFormSection,
 } from '@/components/admin/admin-form';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -292,7 +293,7 @@ export function ArticleForm({
                                 error={errors.content}
                                 hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                             >
-                                <textarea
+                                <MarkdownEditor
                                     id="content"
                                     name="content"
                                     defaultValue={article?.content ?? ''}
@@ -306,7 +307,6 @@ export function ArticleForm({
                                         errors.content,
                                         true,
                                     )}
-                                    className="min-h-64 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                 />
                             </FormField>
                         </AdminFormSection>
@@ -367,6 +367,7 @@ export function ArticleForm({
                                         defaultValue={
                                             article?.publishedAt ?? ''
                                         }
+                                        showNowShortcut
                                         aria-invalid={Boolean(
                                             errors.published_at,
                                         )}

@@ -19,6 +19,7 @@ type DateTimePickerProps = {
     id: string;
     label: string;
     name: string;
+    showNowShortcut?: boolean;
     showTodayShortcut?: boolean;
 };
 
@@ -54,6 +55,7 @@ function DateTimePicker({
     id,
     label,
     name,
+    showNowShortcut = false,
     showTodayShortcut = false,
 }: DateTimePickerProps) {
     const initialValue = parseDateTime(defaultValue);
@@ -117,23 +119,42 @@ function DateTimePicker({
                         }}
                         autoFocus
                     />
-                    {showTodayShortcut && (
-                        <div className="border-t border-border p-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="w-full"
-                                onClick={() => {
-                                    setDate(new Date());
-                                    setTime((currentTime) =>
-                                        currentTime || '00:00',
-                                    );
-                                    setOpen(false);
-                                }}
-                            >
-                                Vandaag
-                            </Button>
+                    {(showNowShortcut || showTodayShortcut) && (
+                        <div className="flex gap-1 border-t border-border p-2">
+                            {showNowShortcut && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        const now = new Date();
+
+                                        setDate(now);
+                                        setTime(format(now, 'HH:mm'));
+                                        setOpen(false);
+                                    }}
+                                >
+                                    Nu
+                                </Button>
+                            )}
+                            {showTodayShortcut && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        setDate(new Date());
+                                        setTime((currentTime) =>
+                                            currentTime || '00:00',
+                                        );
+                                        setOpen(false);
+                                    }}
+                                >
+                                    Vandaag
+                                </Button>
+                            )}
                         </div>
                     )}
                 </PopoverContent>
