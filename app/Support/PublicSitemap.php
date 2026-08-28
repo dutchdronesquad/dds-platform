@@ -79,6 +79,7 @@ final class PublicSitemap
             ->select(['id', 'slug', 'updated_at'])
             ->whereIn('id', Event::query()
                 ->select('season_id')
+                ->distinct()
                 ->whereNotNull('season_id')
                 ->publiclyVisible())
             ->oldest('id')
