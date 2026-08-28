@@ -56,7 +56,7 @@ test('the article publication date can be set to the current time', function () 
         ->click('#published_at')
         ->click('internal:role=button[name="Nu"s]')
         ->assertScript(
-            "(() => { const value = document.querySelector('input[name=\"published_at\"]')?.value; if (!value) return false; return Math.abs(new Date(value).getTime() - Date.now()) < 120000; })()",
+            "(() => { const value = document.querySelector('input[name=\"published_at\"]')?.value; if (!value) return false; return /(?:Z|[+-]\\d{2}:\\d{2})$/.test(value) && Math.abs(new Date(value).getTime() - Date.now()) < 120000; })()",
         )
         ->assertNoJavaScriptErrors();
 });

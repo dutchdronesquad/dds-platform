@@ -175,8 +175,8 @@ final class SeasonController extends Controller
                 ? null
                 : number_format($ticket->price_cents / 100, 2, '.', ''),
             'ticketCapacity' => $ticket?->capacity,
-            'ticketSalesOpensAt' => $ticket?->sales_opens_at?->format('Y-m-d\TH:i'),
-            'ticketSalesClosesAt' => $ticket?->sales_closes_at?->format('Y-m-d\TH:i'),
+            'ticketSalesOpensAt' => $ticket?->sales_opens_at?->toIso8601String(),
+            'ticketSalesClosesAt' => $ticket?->sales_closes_at?->toIso8601String(),
             'ticketRegistrationUrl' => $ticket?->registration_url,
             'ticketCopy' => $ticket?->copy,
             'activity' => [

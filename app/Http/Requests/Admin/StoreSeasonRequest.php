@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\SeasonTicketSalesState;
 use App\Models\Season;
 use App\Rules\RegistrationUrl;
+use App\Support\UtcDateTime;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -96,6 +97,14 @@ class StoreSeasonRequest extends FormRequest
             'ticket_registration_url' => 'ticketlink',
             'ticket_copy' => 'ticketomschrijving',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(UtcDateTime::valuesForStorage([
+            'ticket_sales_opens_at' => $this->input('ticket_sales_opens_at'),
+            'ticket_sales_closes_at' => $this->input('ticket_sales_closes_at'),
+        ]));
     }
 
     protected function season(): ?Season

@@ -114,7 +114,7 @@ test('choosing an event date defaults its time to midnight', function () {
             'Tijd kiezen voor Inschrijving opent, 00:00',
         )
         ->assertScript(
-            "document.querySelector('input[name=\"registration_opens_at\"]')?.value.endsWith('T00:00')",
+            "(() => { const value = document.querySelector('input[name=\"registration_opens_at\"]')?.value; if (!value || !/(?:Z|[+-]\\d{2}:\\d{2})$/.test(value)) return false; const date = new Date(value); return date.getHours() === 0 && date.getMinutes() === 0; })()",
         )
         ->assertNoJavaScriptErrors();
 });
@@ -209,7 +209,7 @@ test('event create responds to the available form width instead of the viewport'
         ->click('internal:role=option[name="30"s]')
         ->click('Gereed')
         ->assertScript(
-            'document.querySelector(\'input[name="starts_at"]\')?.value.endsWith(\'T09:30\')',
+            '(() => { const value = document.querySelector(\'input[name="starts_at"]\')?.value; if (!value || !/(?:Z|[+-]\\d{2}:\\d{2})$/.test(value)) return false; const date = new Date(value); return date.getHours() === 9 && date.getMinutes() === 30; })()',
         )
         ->assertNoJavaScriptErrors();
 });
