@@ -692,7 +692,9 @@ test('enabled registration requires a link and waitlists require a full event', 
         'registration_full' => false,
         'registration_waitlist_enabled' => true,
     ]))
-        ->assertSessionHasErrors('registration_waitlist_enabled');
+        ->assertSessionHasErrors([
+            'registration_waitlist_enabled' => 'De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.',
+        ]);
 
     expect(Event::query()->count())->toBe(0);
 });

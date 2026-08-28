@@ -142,6 +142,14 @@ class StoreEventRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'registration_waitlist_enabled.prohibited' => 'De wachtlijst kan alleen worden geopend als de reguliere inschrijving vol is.',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $startsAt = $this->input('starts_at');

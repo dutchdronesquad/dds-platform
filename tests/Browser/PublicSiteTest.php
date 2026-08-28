@@ -694,6 +694,28 @@ test('event details render long content, dates, registration, and safe links on 
         ->assertNoJavaScriptErrors();
 });
 
+test('events without loose registration hide stale registration planning', function () {
+    $event = Event::factory()->published()->training()->create([
+        'title' => 'Training zonder losse inschrijving',
+        'slug' => 'training-zonder-losse-inschrijving',
+        'starts_at' => '2026-10-15 17:00:00',
+        'registration_enabled' => false,
+        'registration_opens_at' => '2026-07-01 10:00:00',
+        'registration_deadline_at' => '2026-08-01 23:59:00',
+        'registration_url' => 'https://example.com/old-registration',
+    ]);
+
+    visit("/events/{$event->slug}")
+        ->on()->iPhone14Pro()
+        ->withTimezone('Europe/Amsterdam')
+        ->assertSee('Voor dit event wordt geen losse inschrijving aangeboden')
+        ->assertSee('Niet aangeboden')
+        ->assertDontSee('Aanmelden vanaf')
+        ->assertDontSee('Inschrijfdeadline verstreken')
+        ->assertDontSee('Gesloten sinds')
+        ->assertNoJavaScriptErrors();
+});
+
 test('season context without a ticket offer stays informative without sales controls', function () {
     $season = Season::factory()->create([
         'name' => 'Vrij trainingsseizoen 2027',

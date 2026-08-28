@@ -243,6 +243,14 @@ export function getEventRegistrationDetail(
         };
     }
 
+    if (!event.registrationEnabled) {
+        return {
+            label: 'Status',
+            note: 'Voor dit event wordt geen losse inschrijving aangeboden',
+            value: 'Niet aangeboden',
+        };
+    }
+
     if (
         event.registrationDeadlineAt !== null &&
         new Date(event.registrationDeadlineAt) <= now
@@ -253,14 +261,6 @@ export function getEventRegistrationDetail(
             label: 'Gesloten sinds',
             note: `Inschrijfdeadline verstreken · gesloten sinds ${deadline}`,
             value: deadline,
-        };
-    }
-
-    if (!event.registrationEnabled) {
-        return {
-            label: 'Status',
-            note: 'Voor dit event wordt geen losse inschrijving aangeboden',
-            value: 'Niet aangeboden',
         };
     }
 
