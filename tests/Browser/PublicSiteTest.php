@@ -159,6 +159,29 @@ test('mobile navigation opens, reflows, and follows public links', function () {
         ->assertNoSmoke();
 });
 
+test('public footer uses at most two navigation columns before desktop', function () {
+    visit('/')
+        ->on()->iPhone14Pro()
+        ->assertScript(
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).gridTemplateColumns.split(" ").filter(Boolean).length === 2; })()',
+        )
+        ->assertNoJavaScriptErrors();
+
+    visit('/')
+        ->resize(768, 1024)
+        ->assertScript(
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).gridTemplateColumns.split(" ").filter(Boolean).length === 2; })()',
+        )
+        ->assertNoJavaScriptErrors();
+
+    visit('/')
+        ->on()->desktop()
+        ->assertScript(
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).display === "contents"; })()',
+        )
+        ->assertNoJavaScriptErrors();
+});
+
 test('desktop navigation groups DDS pages in the information submenu', function () {
     $page = visit('/projects')->on()->desktop();
 
