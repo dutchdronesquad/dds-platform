@@ -20,6 +20,8 @@ use Illuminate\Validation\Rule;
 
 class StoreEventRequest extends FormRequest
 {
+    private ?string $startsAtDateForSlug = null;
+
     public function authorize(): bool
     {
         return $this->user()?->can('create', Event::class) === true;
@@ -99,7 +101,8 @@ class StoreEventRequest extends FormRequest
             ? $event->slug
             : $this->uniqueSlug(
                 $validated['title'],
-                CarbonImmutable::parse($validated['starts_at']),
+                $this->startsAtDateForSlug
+                    ?? CarbonImmutable::parse($validated['starts_at'])->format('Y-m-d'),
             );
 
         return [
@@ -132,8 +135,14 @@ class StoreEventRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $startsAt = $this->input('starts_at');
+
+        if (is_string($startsAt) && preg_match('/^(\d{4}-\d{2}-\d{2})T/', $startsAt, $matches) === 1) {
+            $this->startsAtDateForSlug = $matches[1];
+        }
+
         $this->merge(UtcDateTime::valuesForStorage([
-            'starts_at' => $this->input('starts_at'),
+            'starts_at' => $startsAt,
             'ends_at' => $this->input('ends_at'),
             'registration_opens_at' => $this->input('registration_opens_at'),
             'registration_deadline_at' => $this->input('registration_deadline_at'),
@@ -147,10 +156,10 @@ class StoreEventRequest extends FormRequest
         return $event instanceof Event ? $event : null;
     }
 
-    private function uniqueSlug(string $title, CarbonImmutable $startsAt): string
+    private function uniqueSlug(string $title, string $startsAtDate): string
     {
         $titleSlug = Str::slug($title) ?: 'event';
-        $dateSuffix = '-'.$startsAt->format('Y-m-d');
+        $dateSuffix = '-'.$startsAtDate;
         $sequence = 1;
 
         do {

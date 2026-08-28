@@ -471,8 +471,8 @@ test('event dates preserve offset-defined moments in UTC', function () {
 
     $this->actingAs($admin)
         ->post(route('admin.events.store'), validEventPayload($location, [
-            'starts_at' => '2026-10-15T18:00:00+02:00',
-            'ends_at' => '2026-10-15T22:00:00+02:00',
+            'starts_at' => '2026-10-15T00:30:00+02:00',
+            'ends_at' => '2026-10-15T04:00:00+02:00',
             'registration_opens_at' => '2026-09-15T10:00:00+02:00',
             'registration_deadline_at' => '2026-10-14T23:59:00+02:00',
         ]))
@@ -480,16 +480,16 @@ test('event dates preserve offset-defined moments in UTC', function () {
 
     $event = Event::query()->where('slug', 'trainingavond-2026-10-15')->firstOrFail();
 
-    expect($event->starts_at->toIso8601String())->toBe('2026-10-15T16:00:00+00:00')
-        ->and($event->ends_at?->toIso8601String())->toBe('2026-10-15T20:00:00+00:00')
+    expect($event->starts_at->toIso8601String())->toBe('2026-10-14T22:30:00+00:00')
+        ->and($event->ends_at?->toIso8601String())->toBe('2026-10-15T02:00:00+00:00')
         ->and($event->registration_opens_at?->toIso8601String())->toBe('2026-09-15T08:00:00+00:00')
         ->and($event->registration_deadline_at?->toIso8601String())->toBe('2026-10-14T21:59:00+00:00');
 
     $this->get(route('admin.events.edit', $event))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('event.startsAt', '2026-10-15T16:00:00+00:00')
-            ->where('event.endsAt', '2026-10-15T20:00:00+00:00')
+            ->where('event.startsAt', '2026-10-14T22:30:00+00:00')
+            ->where('event.endsAt', '2026-10-15T02:00:00+00:00')
             ->where('event.registrationOpensAt', '2026-09-15T08:00:00+00:00')
             ->where('event.registrationDeadlineAt', '2026-10-14T21:59:00+00:00'),
         );

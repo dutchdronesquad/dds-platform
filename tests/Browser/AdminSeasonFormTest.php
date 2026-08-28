@@ -186,7 +186,7 @@ test('season ticket fields use a balanced layout and combined date time controls
         )
         ->assertVisible('button[aria-label="Verkoop opent wissen"]')
         ->assertScript(
-            "(() => { const value = document.querySelector('input[name=\"ticket_sales_opens_at\"]')?.value; return value?.endsWith('Z') === true && new Date(value).toISOString() === '2027-02-03T18:45:00.000Z'; })()",
+            "(() => { const value = document.querySelector('input[name=\"ticket_sales_opens_at\"]')?.value; return typeof value === 'string' && /(?:Z|[+-]\\d{2}:\\d{2})$/.test(value) && new Date(value).toISOString() === '2027-02-03T18:45:00.000Z'; })()",
         )
         ->assertScript(
             "(() => { const trigger = document.querySelector('#ticket_sales_opens_at_time'); const date = document.querySelector('#ticket_sales_opens_at'); return trigger !== null && date !== null && trigger.getBoundingClientRect().height === date.getBoundingClientRect().height; })()",

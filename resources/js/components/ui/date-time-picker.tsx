@@ -52,7 +52,7 @@ function formatDateTime(date: Date | undefined, time: string): string {
 
     dateTime.setHours(Number(hours), Number(minutes), 0, 0);
 
-    return dateTime.toISOString();
+    return format(dateTime, "yyyy-MM-dd'T'HH:mm:ssXXX");
 }
 
 function DateTimePicker({
