@@ -163,21 +163,21 @@ test('public footer uses at most two navigation columns before desktop', functio
     visit('/')
         ->on()->iPhone14Pro()
         ->assertScript(
-            'getComputedStyle(document.querySelector("[data-testid=footer-navigation]")).gridTemplateColumns.split(" ").length === 2',
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).gridTemplateColumns.split(" ").filter(Boolean).length === 2; })()',
         )
         ->assertNoJavaScriptErrors();
 
     visit('/')
         ->resize(768, 1024)
         ->assertScript(
-            'getComputedStyle(document.querySelector("[data-testid=footer-navigation]")).gridTemplateColumns.split(" ").length === 2',
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).gridTemplateColumns.split(" ").filter(Boolean).length === 2; })()',
         )
         ->assertNoJavaScriptErrors();
 
     visit('/')
         ->on()->desktop()
         ->assertScript(
-            'getComputedStyle(document.querySelector("[data-testid=footer-navigation]")).display === "contents"',
+            '(() => { const footerNavigation = document.querySelector("[data-testid=footer-navigation]"); return footerNavigation !== null && getComputedStyle(footerNavigation).display === "contents"; })()',
         )
         ->assertNoJavaScriptErrors();
 });
