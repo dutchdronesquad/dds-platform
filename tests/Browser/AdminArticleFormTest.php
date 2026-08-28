@@ -29,6 +29,38 @@ test('the article form clearly distinguishes a concept from publication', functi
         ->assertNoJavaScriptErrors();
 });
 
+test('the article form previews markdown while editing', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/articles/create')
+        ->on()->desktop()
+        ->fill('#content', "## Wedstrijdverslag\n\nEen **spannende** finale.")
+        ->click('button[aria-controls="content-preview"]')
+        ->assertScript(
+            "document.querySelector('#content-preview h2')?.textContent === 'Wedstrijdverslag' && document.querySelector('#content-preview strong')?.textContent === 'spannende'",
+        )
+        ->assertNoJavaScriptErrors();
+});
+
+test('the article publication date can be set to the current time', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin);
+
+    visit('/dashboard/articles/create')
+        ->on()->desktop()
+        ->click('#published_at')
+        ->click('internal:role=button[name="Nu"s]')
+        ->assertScript(
+            "(() => { const value = document.querySelector('input[name=\"published_at\"]')?.value; if (!value) return false; return Math.abs(new Date(value).getTime() - Date.now()) < 120000; })()",
+        )
+        ->assertNoJavaScriptErrors();
+});
+
 test('a saved draft article has a protected preview in a new tab', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);

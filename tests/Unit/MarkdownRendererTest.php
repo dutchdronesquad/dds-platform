@@ -8,6 +8,10 @@ test('it renders github flavored markdown as html', function () {
 
 - Neem **accu's** mee
 - Lees de [huisregels](https://example.com/huisregels)
+
+| Onderdeel | Tijd |
+| :--- | ---: |
+| Briefing | 09:00 |
 MARKDOWN;
 
     $html = (new MarkdownRenderer)->toHtml($markdown);
@@ -16,7 +20,10 @@ MARKDOWN;
         ->toContain('<h2>Briefing</h2>')
         ->toContain("<strong>accu's</strong>")
         ->toContain('<ul>')
-        ->toContain('<a href="https://example.com/huisregels">huisregels</a>');
+        ->toContain('<a href="https://example.com/huisregels">huisregels</a>')
+        ->toContain('<table>')
+        ->toContain('<th align="left">Onderdeel</th>')
+        ->toContain('<td align="right">09:00</td>');
 });
 
 test('it strips raw html and blocks unsafe links', function () {
