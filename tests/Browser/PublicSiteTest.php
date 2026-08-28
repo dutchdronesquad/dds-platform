@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EventType;
+use App\Models\Article;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
@@ -98,6 +99,17 @@ test('desktop visitors can use the public shell and safe external links', functi
             "(() => { const element = document.activeElement; const style = getComputedStyle(element); return element.matches(':focus-visible') && (style.outlineStyle !== 'none' || style.boxShadow !== 'none'); })()",
         )
         ->assertNoSmoke();
+});
+
+test('homepage news images use widescreen frames', function () {
+    Article::factory()->published()->count(3)->create();
+
+    visit('/')
+        ->on()->desktop()
+        ->assertScript(
+            '(() => { const frames = [...document.querySelectorAll("#latest-news img")].map((image) => image.getBoundingClientRect()); return frames.length === 3 && frames.every((frame) => Math.abs(frame.width / frame.height - 16 / 9) < 0.01); })()',
+        )
+        ->assertNoJavaScriptErrors();
 });
 
 test('mobile navigation opens, reflows, and follows public links', function () {
