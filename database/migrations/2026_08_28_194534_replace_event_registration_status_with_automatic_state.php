@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -19,21 +20,29 @@ return new class extends Migration
             $table->boolean('registration_waitlist_enabled')->default(false)->after('registration_full');
         });
 
+        $referenceTime = now();
+
         DB::table('events')
             ->select([
                 'id',
+                'registration_opens_at',
                 'registration_status',
+                'registration_url',
             ])
             ->orderBy('id')
-            ->eachById(function (object $event): void {
+            ->eachById(function (object $event) use ($referenceTime): void {
                 $wasOpen = $event->registration_status === 'open';
                 $wasWaitlist = $event->registration_status === 'waitlist';
                 $wasFull = $event->registration_status === 'full';
+                $wasScheduled = $event->registration_status === 'closed'
+                    && $event->registration_url !== null
+                    && $event->registration_opens_at !== null
+                    && Carbon::parse($event->registration_opens_at)->greaterThan($referenceTime);
 
                 DB::table('events')
                     ->where('id', $event->id)
                     ->update([
-                        'registration_enabled' => $wasOpen || $wasWaitlist || $wasFull,
+                        'registration_enabled' => $wasOpen || $wasWaitlist || $wasFull || $wasScheduled,
                         'registration_full' => $wasWaitlist || $wasFull,
                         'registration_waitlist_enabled' => $wasWaitlist,
                     ]);
