@@ -1,17 +1,20 @@
-import { CalendarDays, UserRound } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowRight, CalendarDays, UserRound } from 'lucide-react';
 import { CtaBand, PublicHero } from '@/components/public/public-patterns';
 import MarkdownContent from '@/components/public/markdown-content';
 import PublicSeoHead from '@/components/public/public-seo-head';
-import { index as newsIndex } from '@/routes/news';
+import { index as newsIndex, show as articleShow } from '@/routes/news';
 import type {
     ArticleCategory,
     PublicArticleDetail,
+    PublicArticleSummary,
     SeoMetadata,
 } from '@/types';
 
 type Props = {
     article: PublicArticleDetail;
     isPreview?: boolean;
+    relatedArticles: PublicArticleSummary[];
     seo: SeoMetadata;
 };
 
@@ -30,6 +33,7 @@ const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
 export default function ArticleShow({
     article,
     isPreview = false,
+    relatedArticles,
     seo,
 }: Props) {
     return (
@@ -91,15 +95,102 @@ export default function ArticleShow({
                     </div>
                 </section>
 
-                <section
-                    aria-labelledby="article-heading"
-                    className="mx-auto w-full max-w-3xl px-public-gutter py-16 sm:py-20 lg:py-28"
-                >
-                    <h2 id="article-heading" className="sr-only">
-                        Artikel
-                    </h2>
-                    <MarkdownContent html={article.contentHtml} />
-                </section>
+                <div className="mx-auto grid w-full max-w-7xl gap-12 px-public-gutter py-16 sm:py-20 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-16 lg:py-28">
+                    <section
+                        aria-labelledby="article-heading"
+                        className="min-w-0"
+                    >
+                        <h2 id="article-heading" className="sr-only">
+                            Artikel
+                        </h2>
+                        <MarkdownContent
+                            className="max-w-3xl"
+                            html={article.contentHtml}
+                        />
+                    </section>
+
+                    <aside
+                        aria-label="Meer nieuws"
+                        className="min-w-0 lg:sticky lg:top-28"
+                        data-testid="article-sidebar"
+                    >
+                        <section className="relative overflow-hidden rounded-sm border border-paddock-rule bg-white shadow-sm dark:border-white/12 dark:bg-night-900">
+                            <span
+                                aria-hidden="true"
+                                className="absolute top-0 right-0 h-1.5 w-1/3 bg-dds-orange"
+                            />
+                            <div className="p-6 sm:p-8 lg:p-6">
+                                <p className="font-mono text-[0.66rem] font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan">
+                                    Verder lezen
+                                </p>
+                                <h2 className="mt-3 font-public-display text-3xl leading-[1.05] font-semibold tracking-[-0.045em]">
+                                    Meer uit de paddock.
+                                </h2>
+
+                                {relatedArticles.length > 0 ? (
+                                    <ul className="mt-6 divide-y divide-paddock-rule dark:divide-white/12">
+                                        {relatedArticles.map(
+                                            (relatedArticle) => (
+                                                <li key={relatedArticle.id}>
+                                                    <Link
+                                                        href={articleShow(
+                                                            relatedArticle.slug,
+                                                        )}
+                                                        prefetch
+                                                        className="group grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 first:pt-0 focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none"
+                                                    >
+                                                        <img
+                                                            src={
+                                                                relatedArticle
+                                                                    .image.src
+                                                            }
+                                                            alt=""
+                                                            loading="lazy"
+                                                            className="aspect-[4/3] w-full rounded-sm object-cover"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="font-mono text-[0.62rem] font-semibold tracking-[0.08em] text-dds-blue uppercase dark:text-dds-cyan">
+                                                                {
+                                                                    categoryLabels[
+                                                                        relatedArticle
+                                                                            .category
+                                                                    ]
+                                                                }
+                                                            </p>
+                                                            <h3 className="mt-1.5 line-clamp-3 text-sm leading-5 font-semibold text-deep-signal transition-colors group-hover:text-dds-blue dark:text-white dark:group-hover:text-dds-cyan">
+                                                                {
+                                                                    relatedArticle.title
+                                                                }
+                                                            </h3>
+                                                        </div>
+                                                    </Link>
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <p className="mt-5 text-sm leading-6 text-signal-muted dark:text-night-400">
+                                        Dit is momenteel ons enige gepubliceerde
+                                        artikel. Binnenkort verschijnt hier meer
+                                        nieuws.
+                                    </p>
+                                )}
+
+                                <Link
+                                    href={newsIndex()}
+                                    prefetch
+                                    className="group mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                                >
+                                    Alle nieuwsartikelen
+                                    <ArrowRight
+                                        aria-hidden="true"
+                                        className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                                    />
+                                </Link>
+                            </div>
+                        </section>
+                    </aside>
+                </div>
             </div>
 
             <CtaBand

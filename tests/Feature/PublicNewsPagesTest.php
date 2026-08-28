@@ -113,7 +113,47 @@ test('an article detail exposes content, category and author', function () {
             ->where('article.author.name', 'Jane Pilot')
             ->where('article.image.src', $coverImage->url())
             ->where('article.image.alt', 'Pilots preparing for the new season')
+            ->where('relatedArticles', [])
             ->where('seo.title', 'Nieuw seizoen van start'),
+        );
+});
+
+test('an article detail exposes the latest other published articles for the sidebar', function () {
+    $article = Article::factory()->published()->create([
+        'slug' => 'huidig-artikel',
+        'published_at' => now(),
+    ]);
+    $newest = Article::factory()->published()->create([
+        'title' => 'Laatste nieuws',
+        'published_at' => now()->subDay(),
+    ]);
+    $second = Article::factory()->published()->create([
+        'title' => 'Tweede nieuwsitem',
+        'published_at' => now()->subDays(2),
+    ]);
+    $third = Article::factory()->published()->create([
+        'title' => 'Derde nieuwsitem',
+        'published_at' => now()->subDays(3),
+    ]);
+    Article::factory()->published()->create([
+        'title' => 'Te oud voor de sidebar',
+        'published_at' => now()->subDays(4),
+    ]);
+    Article::factory()->create(['title' => 'Conceptartikel']);
+    Article::factory()->published()->create([
+        'title' => 'Nog niet zichtbaar',
+        'published_at' => now()->addDay(),
+    ]);
+
+    $this->get(route('news.show', ['article' => $article->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('relatedArticles', 3)
+            ->where('relatedArticles.0.id', $newest->id)
+            ->where('relatedArticles.0.title', 'Laatste nieuws')
+            ->where('relatedArticles.1.id', $second->id)
+            ->where('relatedArticles.2.id', $third->id)
+            ->missing('relatedArticles.3'),
         );
 });
 

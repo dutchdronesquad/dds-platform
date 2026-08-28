@@ -99,6 +99,31 @@ final class ArticleController extends Controller
             ->limit(155)
             ->toString();
 
+        $relatedArticles = Article::query()
+            ->select([
+                'id',
+                'author_id',
+                'cover_image_id',
+                'title',
+                'slug',
+                'content',
+                'published_at',
+                'status',
+                'category',
+            ])
+            ->publiclyVisible()
+            ->whereKeyNot($article)
+            ->with([
+                'author:id,name',
+                'coverImage:id,alt_text',
+                'coverImage.media',
+            ])
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get()
+            ->map(fn (Article $relatedArticle): array => $this->articleData->summary($relatedArticle))
+            ->values();
+
         return Inertia::render('public/article-show', [
             'article' => [
                 ...$this->articleData->summary($article),
@@ -113,6 +138,7 @@ final class ArticleController extends Controller
                 ...($isPreview ? ['robots' => 'noindex, nofollow'] : []),
             ]),
             'isPreview' => $isPreview,
+            'relatedArticles' => $relatedArticles,
         ]);
     }
 }
