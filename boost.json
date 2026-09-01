@@ -4,13 +4,15 @@
         "codex",
         "copilot"
     ],
-    "cloud": false,
+    "cloud": true,
     "guidelines": true,
     "mcp": true,
-    "nightwatch": false,
+    "nightwatch": true,
     "packages": [
         "pestphp/pest-plugin-agent",
-        "spatie/laravel-permission"
+        "spatie/laravel-permission",
+        "spatie/laravel-backup",
+        "spatie/laravel-medialibrary"
     ],
     "sail": false,
     "skills": [
@@ -22,7 +24,10 @@
         "wayfinder-development",
         "inertia-react-development",
         "tailwindcss-development",
+        "laravel-backup",
+        "medialibrary-development",
         "laravel-permission-development",
-        "pest-plugin-agent"
+        "pest-plugin-agent",
+        "deploying-laravel-cloud"
     ]
 }
