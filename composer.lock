@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.394.3",
+            "version": "3.394.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d015718cd1becf0be9f75a1e72a7401453de4f3c"
+                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d015718cd1becf0be9f75a1e72a7401453de4f3c",
-                "reference": "d015718cd1becf0be9f75a1e72a7401453de4f3c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/12c80170a12c9e9e5d9057bff4d197979631624f",
+                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.5"
             },
-            "time": "2026-08-28T18:18:55+00:00"
+            "time": "2026-08-31T22:10:11+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -1628,16 +1628,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.29.0",
+            "version": "v13.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "6e2c363716964d8238cee7097b258119a984f0cf"
+                "reference": "9c008e7c9a64a8ea6d6e4f1683bd569acc10bf9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/6e2c363716964d8238cee7097b258119a984f0cf",
-                "reference": "6e2c363716964d8238cee7097b258119a984f0cf",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/9c008e7c9a64a8ea6d6e4f1683bd569acc10bf9e",
+                "reference": "9c008e7c9a64a8ea6d6e4f1683bd569acc10bf9e",
                 "shasum": ""
             },
             "require": {
@@ -1851,7 +1851,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-08-25T20:57:16+00:00"
+            "time": "2026-09-01T13:19:00+00:00"
         },
         {
             "name": "laravel/nightwatch",
@@ -5022,16 +5022,16 @@
         },
         {
             "name": "spatie/laravel-medialibrary",
-            "version": "11.23.5",
+            "version": "11.23.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-medialibrary.git",
-                "reference": "8ca16954d607de1853c9609e88eb91eab43d67b9"
+                "reference": "5319032c4197354fe21889e6808b388f6fb257d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/8ca16954d607de1853c9609e88eb91eab43d67b9",
-                "reference": "8ca16954d607de1853c9609e88eb91eab43d67b9",
+                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/5319032c4197354fe21889e6808b388f6fb257d9",
+                "reference": "5319032c4197354fe21889e6808b388f6fb257d9",
                 "shasum": ""
             },
             "require": {
@@ -5116,7 +5116,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-medialibrary/issues",
-                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.5"
+                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.6"
             },
             "funding": [
                 {
@@ -5128,7 +5128,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-10T08:15:27+00:00"
+            "time": "2026-09-01T09:46:42+00:00"
         },
         {
             "name": "spatie/laravel-package-tools",
@@ -12817,11 +12817,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.10",
+            "version": "2.2.12",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/36d1509c998b0602811824143526b4a9ee2774e7",
-                "reference": "36d1509c998b0602811824143526b4a9ee2774e7",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/174b0d88710f00a42598886504dd7a146f91ace5",
+                "reference": "174b0d88710f00a42598886504dd7a146f91ace5",
                 "shasum": ""
             },
             "require": {
@@ -12877,7 +12877,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-30T12:46:16+00:00"
+            "time": "2026-08-31T19:09:43+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
