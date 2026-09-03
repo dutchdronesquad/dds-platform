@@ -26,7 +26,7 @@ class LocationFactory extends Factory
             'cover_image_id' => null,
             'name' => $name,
             'slug' => Str::slug($name).'-'.fake()->unique()->numerify('###'),
-            'description' => ['en' => fake()->paragraph()],
+            'description' => ['nl' => fake()->paragraph()],
             'street' => fake()->streetName(),
             'house_number' => fake()->buildingNumber(),
             'postal_code' => fake()->postcode(),
