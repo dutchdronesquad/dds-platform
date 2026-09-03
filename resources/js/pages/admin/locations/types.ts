@@ -46,7 +46,7 @@ export type EditableLocation = {
     coverImage: MediaPickerAsset | null;
     coverImageId: number | null;
     description: {
-        en: string;
+        en?: string;
         nl?: string;
     };
     environment: AdminLocationEnvironment;

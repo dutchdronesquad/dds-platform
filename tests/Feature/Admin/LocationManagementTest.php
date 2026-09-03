@@ -146,6 +146,7 @@ test('admins can create locations with normalized coordinates and generated slug
 
     expect($location)
         ->name->toBe('Sportpaleis Alkmaar')
+        ->description->toBe(['nl' => 'Een binnenlocatie voor FPV-droneraces.'])
         ->environment->toBe(LocationEnvironment::Indoor)
         ->latitude->toBe('52.6317600')
         ->longitude->toBe('4.7336300');
@@ -160,13 +161,27 @@ test('location requests reject invalid coordinates and website urls', function (
             'latitude' => '95',
             'longitude' => '-190',
             'website_url' => 'javascript:alert(1)',
-            'description' => ['nl' => 'Alleen Nederlands'],
         ]))
         ->assertSessionHasErrors([
             'latitude',
             'longitude',
             'website_url',
-            'description.en',
+        ]);
+});
+
+test('location requests require a Dutch description', function () {
+    $admin = User::factory()->create(['locale' => 'en']);
+    $admin->assignRole(Role::Admin->value);
+    $expectedMessage = trans('validation.required', [
+        'attribute' => 'omschrijving',
+    ], 'en');
+
+    $this->actingAs($admin)
+        ->post(route('admin.locations.store'), validLocationPayload([
+            'description' => ['en' => 'Only English copy.'],
+        ]))
+        ->assertSessionHasErrors([
+            'description.nl' => $expectedMessage,
         ]);
 });
 
@@ -213,7 +228,6 @@ function validLocationPayload(array $overrides = []): array
         'name' => 'Sportpaleis Alkmaar',
         'slug' => 'sportpaleis-alkmaar',
         'description' => [
-            'en' => 'An indoor venue for FPV drone racing.',
             'nl' => 'Een binnenlocatie voor FPV-droneraces.',
         ],
         'street' => 'Terborchlaan',

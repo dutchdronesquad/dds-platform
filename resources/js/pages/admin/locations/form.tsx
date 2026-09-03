@@ -28,6 +28,7 @@ import {
 } from '@/components/admin/admin-form';
 import { LocationAddressSearch } from '@/components/admin/location-address-search';
 import type { ResolvedAddress } from '@/components/admin/location-address-search';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -317,45 +318,21 @@ export function LocationForm({
                                 </div>
                                 <div className="grid gap-5">
                                     <FormField
-                                        id="description_en"
-                                        label="Omschrijving (Engels)"
-                                        error={errors['description.en']}
-                                        hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
-                                    >
-                                        <textarea
-                                            id="description_en"
-                                            name="description[en]"
-                                            defaultValue={
-                                                location?.description.en ?? ''
-                                            }
-                                            required
-                                            rows={4}
-                                            maxLength={5000}
-                                            placeholder="An indoor venue for FPV drone racing."
-                                            aria-invalid={Boolean(
-                                                errors['description.en'],
-                                            )}
-                                            aria-describedby={fieldDescription(
-                                                'description_en',
-                                                errors['description.en'],
-                                                true,
-                                            )}
-                                            className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
-                                        />
-                                    </FormField>
-                                    <FormField
                                         id="description_nl"
-                                        label="Omschrijving (Nederlands, optioneel)"
+                                        label="Omschrijving"
                                         error={errors['description.nl']}
                                         hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
                                     >
-                                        <textarea
+                                        <MarkdownEditor
                                             id="description_nl"
                                             name="description[nl]"
                                             defaultValue={
-                                                location?.description.nl ?? ''
+                                                location?.description.nl ??
+                                                location?.description.en ??
+                                                ''
                                             }
-                                            rows={4}
+                                            required
+                                            rows={8}
                                             maxLength={5000}
                                             placeholder="Een binnenlocatie voor FPV-droneraces."
                                             aria-invalid={Boolean(
@@ -366,7 +343,6 @@ export function LocationForm({
                                                 errors['description.nl'],
                                                 true,
                                             )}
-                                            className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
                                         />
                                     </FormField>
                                 </div>
