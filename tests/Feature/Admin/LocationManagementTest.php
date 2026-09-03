@@ -170,15 +170,18 @@ test('location requests reject invalid coordinates and website urls', function (
 });
 
 test('location requests require a Dutch description', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->create(['locale' => 'en']);
     $admin->assignRole(Role::Admin->value);
+    $expectedMessage = trans('validation.required', [
+        'attribute' => 'omschrijving',
+    ], 'en');
 
     $this->actingAs($admin)
         ->post(route('admin.locations.store'), validLocationPayload([
             'description' => ['en' => 'Only English copy.'],
         ]))
         ->assertSessionHasErrors([
-            'description.nl' => 'The omschrijving field is required.',
+            'description.nl' => $expectedMessage,
         ]);
 });
 
