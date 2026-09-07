@@ -12,7 +12,7 @@ class LocationFacilities
         return [
             'parking' => ['label' => 'Parkeren', 'group' => 'Bereikbaarheid', 'options' => ['none' => 'Niet aanwezig', 'free' => 'Gratis parkeren', 'paid' => 'Betaald parkeren']],
             'catering' => ['label' => 'Catering', 'group' => 'Comfort', 'options' => ['none' => 'Niet aanwezig', 'on_site' => 'Catering op locatie', 'vending' => 'Eten/drinken uit automaat', 'nearby' => 'Catering in de buurt']],
-            'wifi' => ['label' => 'Wifi', 'group' => 'Vliegen en laden', 'options' => ['none' => 'Niet aanwezig', 'public' => 'Publieke wifi', 'private' => 'Privéwifi']],
+            'wifi' => ['label' => 'Wifi', 'group' => 'Vliegen en laden', 'options' => ['none' => 'Niet aanwezig', 'public' => 'Publieke wifi', 'private' => 'Privé wifi']],
             'power' => ['label' => 'Stroom / opladen', 'group' => 'Vliegen en laden', 'options' => []],
             'tables_and_chairs' => ['label' => 'Tafels en stoelen', 'group' => 'Vliegen en laden', 'options' => []],
             'toilets' => ['label' => 'Toiletten', 'group' => 'Comfort', 'options' => []],

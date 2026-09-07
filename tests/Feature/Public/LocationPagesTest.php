@@ -166,9 +166,9 @@ test('a location without upcoming events keeps a useful empty result contract', 
 });
 
 test('public facilities show Dutch details and omit unavailable facilities', function () {
-    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'catering' => 'on_site', 'wifi' => 'public', 'power' => false, 'spectator_area' => true, 'legacy' => ['Eigen pitruimte']]]);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'catering' => 'on_site', 'wifi' => 'private', 'power' => false, 'spectator_area' => true, 'legacy' => ['Eigen pitruimte']]]);
 
     $this->get(route('locations.show', $location))->assertInertia(fn (Assert $page) => $page
-        ->where('location.facilities', ['Gratis parkeren', 'Catering op locatie', 'Publieke wifi', 'Ruimte voor publiek', 'Eigen pitruimte'])
+        ->where('location.facilities', ['Gratis parkeren', 'Catering op locatie', 'Privé wifi', 'Ruimte voor publiek', 'Eigen pitruimte'])
     );
 });
