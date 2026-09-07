@@ -15,7 +15,7 @@ return new class extends Migration
             $facilities = [];
             foreach ($values as $value) {
                 if (in_array($value, ['parking', 'catering', 'wifi'], true)) {
-                    $facilities[$value] = 'available';
+                    $facilities[$value] = $value === 'parking' ? 'free' : 'available';
                 } elseif (in_array($value, ['power', 'toilets', 'tables_and_chairs', 'charging', 'spectator_seating', 'spectator_area', 'wheelchair_accessible', 'first_aid_aed', 'heating', 'ventilation'], true)) {
                     $facilities[$value] = true;
                 } else {

@@ -10,7 +10,7 @@ class LocationFacilities
     public static function catalogue(): array
     {
         return [
-            'parking' => ['label' => 'Parkeren', 'group' => 'Bereikbaarheid', 'options' => ['none' => 'Niet aanwezig', 'available' => 'Parkeren (type onbekend)', 'free' => 'Gratis parkeren', 'paid' => 'Betaald parkeren']],
+            'parking' => ['label' => 'Parkeren', 'group' => 'Bereikbaarheid', 'options' => ['none' => 'Niet aanwezig', 'free' => 'Gratis parkeren', 'paid' => 'Betaald parkeren']],
             'catering' => ['label' => 'Catering', 'group' => 'Comfort', 'options' => ['none' => 'Niet aanwezig', 'available' => 'Catering (type onbekend)', 'on_site' => 'Catering op locatie', 'vending' => 'Eten/drinken uit automaat', 'nearby' => 'Catering in de buurt']],
             'wifi' => ['label' => 'Wifi', 'group' => 'Vliegen en laden', 'options' => ['none' => 'Niet aanwezig', 'available' => 'Wifi (toegang onbekend)', 'public' => 'Publieke wifi', 'staff_only' => 'Wifi alleen voor medewerkers']],
             'power' => ['label' => 'Stroomvoorziening', 'group' => 'Vliegen en laden', 'options' => []],
@@ -49,7 +49,7 @@ class LocationFacilities
             $legacy = [];
             foreach ($values as $key) {
                 if (is_string($key) && isset(self::catalogue()[$key])) {
-                    $converted[$key] = self::catalogue()[$key]['options'] === [] ? true : 'available';
+                    $converted[$key] = self::catalogue()[$key]['options'] === [] ? true : ($key === 'parking' ? 'free' : 'available');
                 } else {
                     $legacy[] = $key;
                 }
@@ -58,6 +58,9 @@ class LocationFacilities
                 $converted['legacy'] = $legacy;
             }
             $values = $converted;
+        }
+        if (($values['parking'] ?? null) === 'available') {
+            $values['parking'] = 'free';
         }
         foreach (self::catalogue() as $key => $facility) {
             $values[$key] = $facility['options'] === [] ? (bool) ($values[$key] ?? false) : ($values[$key] ?? 'none');

@@ -1085,7 +1085,9 @@ function FacilityControl({
     const [type, setType] = useState(
         typeof initialValue === 'string' && initialValue !== 'none'
             ? initialValue
-            : 'available',
+            : facilityKey === 'parking'
+              ? 'free'
+              : 'available',
     );
     const id = `facility-${facilityKey}`;
 

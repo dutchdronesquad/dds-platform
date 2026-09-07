@@ -55,12 +55,13 @@ test('location forms carry legacy English field copy into the Dutch editor', fun
 test('location facilities can be edited and remain selected after saving', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
-    $location = Location::factory()->create(['facilities' => ['parking' => 'available', 'power' => true, 'legacy' => ['Eigen pitruimte']]]);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'power' => true, 'legacy' => ['Eigen pitruimte']]]);
     $this->actingAs($admin);
 
     visit(route('admin.locations.edit', $location, false))
+        ->assertMissing('input[name="facility-type-parking"][value="available"]')
         ->assertChecked('#facility-parking')
-        ->assertChecked('input[name="facility-type-parking"][value="available"]')
+        ->assertChecked('input[name="facility-type-parking"][value="free"]')
         ->assertMissing('#facility-catering-type')
         ->assertSee('Eigen pitruimte')
         ->click('label:has(input[name="facility-type-parking"][value="paid"])')
