@@ -11,16 +11,14 @@ class LocationFacilities
     {
         return [
             'parking' => ['label' => 'Parkeren', 'group' => 'Bereikbaarheid', 'options' => ['none' => 'Niet aanwezig', 'free' => 'Gratis parkeren', 'paid' => 'Betaald parkeren']],
-            'catering' => ['label' => 'Catering', 'group' => 'Comfort', 'options' => ['none' => 'Niet aanwezig', 'available' => 'Catering (type onbekend)', 'on_site' => 'Catering op locatie', 'vending' => 'Eten/drinken uit automaat', 'nearby' => 'Catering in de buurt']],
-            'wifi' => ['label' => 'Wifi', 'group' => 'Vliegen en laden', 'options' => ['none' => 'Niet aanwezig', 'available' => 'Wifi (toegang onbekend)', 'public' => 'Publieke wifi', 'staff_only' => 'Wifi alleen voor medewerkers']],
-            'power' => ['label' => 'Stroomvoorziening', 'group' => 'Vliegen en laden', 'options' => []],
-            'charging' => ['label' => 'Oplaadmogelijkheid', 'group' => 'Vliegen en laden', 'options' => []],
+            'catering' => ['label' => 'Catering', 'group' => 'Comfort', 'options' => ['none' => 'Niet aanwezig', 'on_site' => 'Catering op locatie', 'vending' => 'Eten/drinken uit automaat', 'nearby' => 'Catering in de buurt']],
+            'wifi' => ['label' => 'Wifi', 'group' => 'Vliegen en laden', 'options' => ['none' => 'Niet aanwezig', 'public' => 'Publieke wifi', 'private' => 'Privéwifi']],
+            'power' => ['label' => 'Stroom / opladen', 'group' => 'Vliegen en laden', 'options' => []],
             'tables_and_chairs' => ['label' => 'Tafels en stoelen', 'group' => 'Vliegen en laden', 'options' => []],
             'toilets' => ['label' => 'Toiletten', 'group' => 'Comfort', 'options' => []],
             'heating' => ['label' => 'Verwarming', 'group' => 'Comfort', 'options' => []],
             'ventilation' => ['label' => 'Ventilatie', 'group' => 'Comfort', 'options' => []],
-            'spectator_seating' => ['label' => 'Tribune / zitplaatsen voor publiek', 'group' => 'Publiek en veiligheid', 'options' => []],
-            'spectator_area' => ['label' => 'Publieksruimte', 'group' => 'Publiek en veiligheid', 'options' => []],
+            'spectator_area' => ['label' => 'Ruimte voor publiek', 'group' => 'Publiek en veiligheid', 'options' => []],
             'wheelchair_accessible' => ['label' => 'Rolstoeltoegankelijk', 'group' => 'Bereikbaarheid', 'options' => []],
             'first_aid_aed' => ['label' => 'EHBO / AED beschikbaar', 'group' => 'Publiek en veiligheid', 'options' => []],
         ];
@@ -48,6 +46,11 @@ class LocationFacilities
             $converted = [];
             $legacy = [];
             foreach ($values as $key) {
+                if ($key === 'charging') {
+                    $key = 'power';
+                } elseif ($key === 'spectator_seating') {
+                    $key = 'spectator_area';
+                }
                 if (is_string($key) && isset(self::catalogue()[$key])) {
                     $converted[$key] = self::catalogue()[$key]['options'] === [] ? true : ($key === 'parking' ? 'free' : 'available');
                 } else {
@@ -59,6 +62,15 @@ class LocationFacilities
             }
             $values = $converted;
         }
+        if (($values['catering'] ?? null) === 'available') {
+            $values['catering'] = 'nearby';
+        }
+        if (in_array($values['wifi'] ?? null, ['available', 'staff_only'], true)) {
+            $values['wifi'] = 'private';
+        }
+        $values['spectator_area'] = (bool) ($values['spectator_area'] ?? false) || (bool) ($values['spectator_seating'] ?? false);
+        $values['power'] = (bool) ($values['power'] ?? false) || (bool) ($values['charging'] ?? false);
+        unset($values['charging'], $values['spectator_seating']);
         if (($values['parking'] ?? null) === 'available') {
             $values['parking'] = 'free';
         }

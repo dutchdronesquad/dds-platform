@@ -1087,25 +1087,24 @@ function FacilityControl({
             ? initialValue
             : facilityKey === 'parking'
               ? 'free'
-              : 'available',
+              : facilityKey === 'wifi'
+                ? 'private'
+                : 'nearby',
     );
     const id = `facility-${facilityKey}`;
 
     const typeLabels: Record<string, string> = {
         free: 'Gratis',
         paid: 'Betaald',
-        available: 'Onbekend',
         on_site: 'Op locatie',
         vending: 'Automaat',
         nearby: 'In de buurt',
         public: 'Publiek',
-        staff_only: 'Medewerkers',
+        private: 'Privé',
     };
-    const typeOptions = Object.entries(facility.options)
-        .filter(([value]) => value !== 'none')
-        .sort(
-            ([a], [b]) => Number(a === 'available') - Number(b === 'available'),
-        );
+    const typeOptions = Object.entries(facility.options).filter(
+        ([value]) => value !== 'none',
+    );
 
     return (
         <div className="min-w-0">

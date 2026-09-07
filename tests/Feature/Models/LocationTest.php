@@ -112,3 +112,39 @@ test('legacy facilities migrate with free parking and preserve other details', f
     $migration->down();
     expect($location->refresh()->facilities)->toMatchArray(['parking' => 'free', 'legacy' => ['Eigen pitruimte']]);
 });
+
+test('power and charging migrate to a single facility without losing availability', function (bool $power, bool $charging, bool $expected) {
+    $location = Location::factory()->create();
+    DB::table('locations')->where('id', $location->id)->update(['facilities' => json_encode(['power' => $power, 'charging' => $charging, 'legacy' => ['Eigen pitruimte']])]);
+    $migration = require database_path('migrations/2026_09_07_220912_simplify_location_facilities.php');
+
+    $migration->up();
+
+    expect($location->refresh()->facilities)
+        ->toMatchArray(['power' => $expected, 'legacy' => ['Eigen pitruimte']])
+        ->not->toHaveKey('charging');
+})->with([
+    'neither' => [false, false, false],
+    'power only' => [true, false, true],
+    'charging only' => [false, true, true],
+    'both' => [true, true, true],
+]);
+
+test('facility simplification migrates legacy choices and preserves explicit choices', function (array $before, array $after) {
+    $location = Location::factory()->create();
+    DB::table('locations')->where('id', $location->id)->update(['facilities' => json_encode($before)]);
+    $migration = require database_path('migrations/2026_09_07_220912_simplify_location_facilities.php');
+
+    $migration->up();
+    $migration->up();
+
+    expect($location->refresh()->facilities)->toMatchArray($after)->not->toHaveKey('spectator_seating');
+})->with([
+    'unknown types' => [['wifi' => 'available', 'catering' => 'available'], ['wifi' => 'private', 'catering' => 'nearby']],
+    'staff wifi' => [['wifi' => 'staff_only'], ['wifi' => 'private']],
+    'public wifi and catering on site' => [['wifi' => 'public', 'catering' => 'on_site'], ['wifi' => 'public', 'catering' => 'on_site']],
+    'absent facilities' => [['wifi' => 'none', 'catering' => 'none', 'spectator_area' => false, 'spectator_seating' => false], ['wifi' => 'none', 'catering' => 'none', 'spectator_area' => false]],
+    'seating only' => [['spectator_seating' => true, 'spectator_area' => false], ['spectator_area' => true]],
+    'area only' => [['spectator_seating' => false, 'spectator_area' => true], ['spectator_area' => true]],
+    'seating and area' => [['spectator_seating' => true, 'spectator_area' => true], ['spectator_area' => true]],
+]);

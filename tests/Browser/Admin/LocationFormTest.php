@@ -67,24 +67,30 @@ test('location facilities can be edited and remain selected after saving', funct
         ->click('label:has(input[name="facility-type-parking"][value="paid"])')
         ->uncheck('#facility-power')
         ->check('#facility-catering')
+        ->assertChecked('input[name="facility-type-catering"][value="nearby"]')
         ->click('label:has(input[name="facility-type-catering"][value="on_site"])')
         ->check('#facility-wifi')
+        ->assertChecked('input[name="facility-type-wifi"][value="private"]')
         ->click('label:has(input[name="facility-type-wifi"][value="public"])')
-        ->check('#facility-charging')
+        ->assertMissing('#facility-charging')
+        ->assertMissing('#facility-spectator_seating')
+        ->check('#facility-spectator_area')
+        ->assertMissing('input[name="facility-type-wifi"][value="available"]')
+        ->assertMissing('input[name="facility-type-catering"][value="available"]')
         ->click('Wijzigingen opslaan')
         ->assertSee('Opgeslagen')
         ->assertChecked('input[name="facility-type-parking"][value="paid"]')
         ->assertNotChecked('#facility-power')
         ->assertNoJavaScriptErrors();
 
-    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'catering' => 'on_site', 'wifi' => 'public', 'charging' => true, 'legacy' => ['Eigen pitruimte']]);
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'catering' => 'on_site', 'wifi' => 'public', 'spectator_area' => true, 'legacy' => ['Eigen pitruimte']]);
 
     visit(route('locations.show', $location, false))
         ->assertSee('Betaald parkeren')
         ->assertSee('Catering op locatie')
         ->assertSee('Publieke wifi')
-        ->assertSee('Oplaadmogelijkheid')
-        ->assertDontSee('Stroomvoorziening')
+        ->assertSee('Ruimte voor publiek')
+        ->assertDontSee('Stroom / opladen')
         ->assertNoJavaScriptErrors();
 });
 

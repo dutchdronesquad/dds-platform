@@ -252,10 +252,10 @@ test('location facility changes persist typed values and clear previous availabi
     $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'power' => true]]);
 
     $this->actingAs($admin)->put(route('admin.locations.update', $location), validLocationPayload([
-        'facilities' => ['parking' => 'paid', 'power' => false, 'wifi' => 'staff_only', 'catering' => 'vending', 'spectator_area' => true],
+        'facilities' => ['parking' => 'paid', 'power' => false, 'wifi' => 'private', 'catering' => 'vending', 'spectator_area' => true],
     ]))->assertSessionHasNoErrors()->assertRedirect();
 
-    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'wifi' => 'staff_only', 'catering' => 'vending', 'spectator_area' => true]);
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'wifi' => 'private', 'catering' => 'vending', 'spectator_area' => true]);
 
     $this->put(route('admin.locations.update', $location), validLocationPayload(['facilities' => []]))->assertSessionHasNoErrors();
     expect($location->refresh()->facilities)->toMatchArray(['parking' => 'none', 'power' => false, 'spectator_area' => false]);
@@ -273,6 +273,11 @@ test('location requests reject invalid facility values without creating a locati
     'old list' => [['parking'], 'facilities'],
     'parking boolean' => [['parking' => true], 'facilities.parking'],
     'invalid catering' => [['catering' => 'free'], 'facilities.catering'],
+    'unknown wifi' => [['wifi' => 'available'], 'facilities.wifi'],
+    'old private wifi' => [['wifi' => 'staff_only'], 'facilities.wifi'],
+    'unknown catering' => [['catering' => 'available'], 'facilities.catering'],
+    'removed charging' => [['charging' => true], 'facilities'],
+    'removed seating' => [['spectator_seating' => true], 'facilities'],
     'invalid wifi' => [['wifi' => 'free'], 'facilities.wifi'],
     'invalid boolean' => [['power' => 'yes'], 'facilities.power'],
 ]);
