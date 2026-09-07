@@ -59,17 +59,21 @@ test('location facilities can be edited and remain selected after saving', funct
     $this->actingAs($admin);
 
     visit(route('admin.locations.edit', $location, false))
-        ->assertValue('#facility-parking', 'available')
+        ->assertChecked('#facility-parking')
+        ->assertChecked('input[name="facility-type-parking"][value="available"]')
+        ->assertMissing('#facility-catering-type')
         ->assertSee('Eigen pitruimte')
-        ->select('#facility-parking', 'paid')
-        ->select('#facility-power', 'false')
-        ->select('#facility-catering', 'on_site')
-        ->select('#facility-wifi', 'public')
-        ->select('#facility-charging', 'true')
+        ->click('label:has(input[name="facility-type-parking"][value="paid"])')
+        ->uncheck('#facility-power')
+        ->check('#facility-catering')
+        ->click('label:has(input[name="facility-type-catering"][value="on_site"])')
+        ->check('#facility-wifi')
+        ->click('label:has(input[name="facility-type-wifi"][value="public"])')
+        ->check('#facility-charging')
         ->click('Wijzigingen opslaan')
         ->assertSee('Opgeslagen')
-        ->assertValue('#facility-parking', 'paid')
-        ->assertValue('#facility-power', 'false')
+        ->assertChecked('input[name="facility-type-parking"][value="paid"]')
+        ->assertNotChecked('#facility-power')
         ->assertNoJavaScriptErrors();
 
     expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'catering' => 'on_site', 'wifi' => 'public', 'charging' => true, 'legacy' => ['Eigen pitruimte']]);
@@ -81,4 +85,25 @@ test('location facilities can be edited and remain selected after saving', funct
         ->assertSee('Oplaadmogelijkheid')
         ->assertDontSee('Stroomvoorziening')
         ->assertNoJavaScriptErrors();
+});
+
+test('typed facilities can be unchecked on mobile and saved as unavailable', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'paid']]);
+    $this->actingAs($admin);
+
+    visit(route('admin.locations.edit', $location, false))
+        ->on()->mobile()
+        ->uncheck('#facility-parking')
+        ->assertMissing('#facility-parking-type')
+        ->check('#facility-parking')
+        ->assertChecked('input[name="facility-type-parking"][value="paid"]')
+        ->uncheck('#facility-parking')
+        ->click('button[type=submit]')
+        ->assertSee('Opgeslagen')
+        ->assertNotChecked('#facility-parking')
+        ->assertNoJavaScriptErrors();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'none']);
 });

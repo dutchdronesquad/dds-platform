@@ -649,113 +649,75 @@ export function LocationForm({
                                         />
                                     </FormField>
                                 </div>
-                                <fieldset className="grid gap-3">
+                                <fieldset
+                                    id="location-facilities"
+                                    className="grid gap-5"
+                                >
                                     <legend className="text-sm font-medium text-neutral-950 dark:text-white">
                                         Faciliteiten
                                     </legend>
-                                    {Array.from(
-                                        new Set(
-                                            Object.values(
-                                                options.facilities,
-                                            ).map((facility) => facility.group),
-                                        ),
-                                    ).map((group) => (
-                                        <fieldset
-                                            key={group}
-                                            className="grid gap-3"
-                                        >
-                                            <legend className="mb-2 text-sm font-medium">
-                                                {group}
-                                            </legend>
-                                            <div className="grid gap-3 sm:grid-cols-2">
-                                                {Object.entries(
+                                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                        Vink aan wat bezoekers op deze locatie
+                                        kunnen gebruiken.
+                                    </p>
+                                    <div className="grid items-start gap-x-8 gap-y-6 @min-[30rem]/fields:grid-cols-2">
+                                        {Array.from(
+                                            new Set(
+                                                Object.values(
                                                     options.facilities,
-                                                )
-                                                    .filter(
-                                                        ([, facility]) =>
-                                                            facility.group ===
-                                                            group,
+                                                ).map(
+                                                    (facility) =>
+                                                        facility.group,
+                                                ),
+                                            ),
+                                        ).map((group) => (
+                                            <fieldset
+                                                key={group}
+                                                className="min-w-0"
+                                            >
+                                                <legend className="mb-2 w-full border-b border-neutral-200 pb-2 text-xs font-semibold tracking-wide text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+                                                    {group}
+                                                </legend>
+                                                <div className="grid gap-0.5">
+                                                    {Object.entries(
+                                                        options.facilities,
                                                     )
-                                                    .map(([key, facility]) => (
-                                                        <FormField
-                                                            key={key}
-                                                            id={`facility-${key}`}
-                                                            label={
-                                                                facility.label
-                                                            }
-                                                            error={
-                                                                errors[
-                                                                    `facilities.${key}`
-                                                                ]
-                                                            }
-                                                        >
-                                                            <select
-                                                                id={`facility-${key}`}
-                                                                name={`facilities[${key}]`}
-                                                                defaultValue={String(
-                                                                    location
-                                                                        ?.facilities[
+                                                        .filter(
+                                                            ([, facility]) =>
+                                                                facility.group ===
+                                                                group,
+                                                        )
+                                                        .map(
+                                                            ([
+                                                                key,
+                                                                facility,
+                                                            ]) => (
+                                                                <FacilityControl
+                                                                    key={key}
+                                                                    facilityKey={
                                                                         key
-                                                                    ] ??
-                                                                        (Object.keys(
-                                                                            facility.options,
-                                                                        ).length
-                                                                            ? 'none'
-                                                                            : false),
-                                                                )}
-                                                                aria-invalid={Boolean(
-                                                                    errors[
-                                                                        `facilities.${key}`
-                                                                    ],
-                                                                )}
-                                                                aria-describedby={fieldDescription(
-                                                                    `facility-${key}`,
-                                                                    errors[
-                                                                        `facilities.${key}`
-                                                                    ],
-                                                                )}
-                                                                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                                            >
-                                                                {Object.keys(
-                                                                    facility.options,
-                                                                ).length ? (
-                                                                    Object.entries(
-                                                                        facility.options,
-                                                                    ).map(
-                                                                        ([
-                                                                            value,
-                                                                            label,
-                                                                        ]) => (
-                                                                            <option
-                                                                                key={
-                                                                                    value
-                                                                                }
-                                                                                value={
-                                                                                    value
-                                                                                }
-                                                                            >
-                                                                                {
-                                                                                    label
-                                                                                }
-                                                                            </option>
-                                                                        ),
-                                                                    )
-                                                                ) : (
-                                                                    <>
-                                                                        <option value="false">
-                                                                            Nee
-                                                                        </option>
-                                                                        <option value="true">
-                                                                            Ja
-                                                                        </option>
-                                                                    </>
-                                                                )}
-                                                            </select>
-                                                        </FormField>
-                                                    ))}
-                                            </div>
-                                        </fieldset>
-                                    ))}
+                                                                    }
+                                                                    facility={
+                                                                        facility
+                                                                    }
+                                                                    initialValue={
+                                                                        location
+                                                                            ?.facilities[
+                                                                            key
+                                                                        ]
+                                                                    }
+                                                                    error={
+                                                                        errors[
+                                                                            `facilities.${key}`
+                                                                        ]
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
+                                                </div>
+                                            </fieldset>
+                                        ))}
+                                    </div>
                                     {Array.isArray(
                                         location?.facilities.legacy,
                                     ) && (
@@ -1101,5 +1063,100 @@ function FormSelect({
                 </SelectContent>
             </Select>
         </>
+    );
+}
+
+function FacilityControl({
+    facilityKey,
+    facility,
+    initialValue,
+    error,
+}: {
+    facilityKey: string;
+    facility: LocationFormOptions['facilities'][string];
+    initialValue: EditableLocation['facilities'][string] | undefined;
+    error?: string;
+}) {
+    const hasTypes = Object.keys(facility.options).length > 0;
+    const [enabled, setEnabled] = useState(
+        initialValue === true ||
+            (typeof initialValue === 'string' && initialValue !== 'none'),
+    );
+    const [type, setType] = useState(
+        typeof initialValue === 'string' && initialValue !== 'none'
+            ? initialValue
+            : 'available',
+    );
+    const id = `facility-${facilityKey}`;
+
+    const typeLabels: Record<string, string> = {
+        free: 'Gratis',
+        paid: 'Betaald',
+        available: 'Onbekend',
+        on_site: 'Op locatie',
+        vending: 'Automaat',
+        nearby: 'In de buurt',
+        public: 'Publiek',
+        staff_only: 'Medewerkers',
+    };
+    const typeOptions = Object.entries(facility.options)
+        .filter(([value]) => value !== 'none')
+        .sort(
+            ([a], [b]) => Number(a === 'available') - Number(b === 'available'),
+        );
+
+    return (
+        <div className="min-w-0">
+            <input
+                type="hidden"
+                name={`facilities[${facilityKey}]`}
+                value={hasTypes ? (enabled ? type : 'none') : String(enabled)}
+            />
+            <label
+                htmlFor={id}
+                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 has-checked:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900 dark:has-checked:text-white"
+            >
+                <input
+                    id={id}
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={(event) => setEnabled(event.target.checked)}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${id}-error` : undefined}
+                    className="size-4 shrink-0 rounded border-neutral-300 accent-sky-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                />
+                {facility.label}
+            </label>
+            {hasTypes && enabled && (
+                <fieldset
+                    id={`${id}-type`}
+                    className="mb-2 ml-9 flex flex-wrap gap-1.5"
+                >
+                    <legend className="sr-only">{facility.label}: type</legend>
+                    {typeOptions.map(([value, label]) => (
+                        <label
+                            key={value}
+                            className="flex min-h-9 cursor-pointer items-center rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-medium text-neutral-600 transition-colors hover:border-neutral-400 has-checked:border-sky-600 has-checked:bg-sky-50 has-checked:text-sky-800 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-600 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-400 dark:has-checked:border-sky-500 dark:has-checked:bg-sky-950 dark:has-checked:text-sky-200"
+                        >
+                            <input
+                                type="radio"
+                                name={`facility-type-${facilityKey}`}
+                                value={value}
+                                checked={type === value}
+                                onChange={() => setType(value)}
+                                aria-label={label}
+                                className="sr-only"
+                            />
+                            {typeLabels[value] ?? label}
+                        </label>
+                    ))}
+                </fieldset>
+            )}
+            <InputError
+                id={`${id}-error`}
+                message={error}
+                className="px-2 pb-2"
+            />
+        </div>
     );
 }
