@@ -46,7 +46,6 @@ test('events expose their domain casts and relationships', function () {
     expect($event)
         ->title->toBe('Indoor training')
         ->content->toBe('Bring a racequad and goggles.')
-        ->starts_at->toBeInstanceOf(CarbonImmutable::class)
         ->ends_at->toBeInstanceOf(CarbonImmutable::class)
         ->published_at->toBeInstanceOf(CarbonImmutable::class)
         ->registration_opens_at->toBeInstanceOf(CarbonImmutable::class)
@@ -63,6 +62,12 @@ test('events expose their domain casts and relationships', function () {
         ->and($event->season?->id)->toBe($season->id)
         ->and($event->coverImage?->id)->toBe($coverImage->id)
         ->and($event->currentRegistrationStatus(CarbonImmutable::parse('2026-10-01')))->toBe(EventRegistrationStatus::Open);
+
+    $startsAt = $event->starts_at;
+    $laterStart = $startsAt->addHour();
+
+    expect($laterStart->toDateTimeString())->toBe('2026-10-15 18:00:00')
+        ->and($startsAt->toDateTimeString())->toBe('2026-10-15 17:00:00');
 });
 
 test('event enum values are enforced by the database', function (string $column) {
