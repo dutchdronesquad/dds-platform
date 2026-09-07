@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LocationEnvironment;
+use App\Support\LocationFacilities;
 use Database\Factories\LocationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +25,7 @@ use Illuminate\Support\Arr;
  * @property LocationEnvironment $environment
  * @property int|null $floor_size_square_metres
  * @property numeric-string|null $ceiling_height_metres
- * @property list<string>|null $facilities
+ * @property array<string, mixed>|null $facilities
  * @property string|null $website_url
  * @property numeric-string|null $latitude
  * @property numeric-string|null $longitude
@@ -88,6 +89,12 @@ final class Location extends Model
         }
 
         return null;
+    }
+
+    /** @param array<mixed>|null $value */
+    public function setFacilitiesAttribute(?array $value): void
+    {
+        $this->attributes['facilities'] = json_encode(LocationFacilities::normalize($value), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
 
     /**

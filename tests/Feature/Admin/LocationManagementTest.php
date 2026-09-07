@@ -238,10 +238,41 @@ function validLocationPayload(array $overrides = []): array
         'environment' => LocationEnvironment::Indoor->value,
         'floor_size_square_metres' => 1200,
         'ceiling_height_metres' => '8.50',
-        'facilities' => ['parking', 'power'],
+        'facilities' => ['parking' => 'free', 'power' => true],
         'website_url' => 'https://example.com/venue',
         'latitude' => '52.6317600',
         'longitude' => '4.7336300',
         ...$overrides,
     ];
 }
+
+test('location facility changes persist typed values and clear previous availability', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'power' => true]]);
+
+    $this->actingAs($admin)->put(route('admin.locations.update', $location), validLocationPayload([
+        'facilities' => ['parking' => 'paid', 'power' => false, 'wifi' => 'staff_only', 'catering' => 'vending', 'spectator_area' => true],
+    ]))->assertSessionHasNoErrors()->assertRedirect();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'wifi' => 'staff_only', 'catering' => 'vending', 'spectator_area' => true]);
+
+    $this->put(route('admin.locations.update', $location), validLocationPayload(['facilities' => []]))->assertSessionHasNoErrors();
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'none', 'power' => false, 'spectator_area' => false]);
+});
+
+test('location requests reject invalid facility values without creating a location', function (array $facilities, string $error) {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+
+    $this->actingAs($admin)->post(route('admin.locations.store'), validLocationPayload(['facilities' => $facilities]))->assertSessionHasErrors($error);
+
+    $this->assertDatabaseCount('locations', 0);
+})->with([
+    'unknown key' => [['showers' => true], 'facilities'],
+    'old list' => [['parking'], 'facilities'],
+    'parking boolean' => [['parking' => true], 'facilities.parking'],
+    'invalid catering' => [['catering' => 'free'], 'facilities.catering'],
+    'invalid wifi' => [['wifi' => 'free'], 'facilities.wifi'],
+    'invalid boolean' => [['power' => 'yes'], 'facilities.power'],
+]);

@@ -33,6 +33,10 @@ export type LocationIndexProps = {
 
 export type LocationFormOptions = {
     environments: SelectOption[];
+    facilities: Record<
+        string,
+        { label: string; group: string; options: Record<string, string> | [] }
+    >;
 };
 
 export type EditableLocation = {
@@ -51,7 +55,7 @@ export type EditableLocation = {
     };
     environment: AdminLocationEnvironment;
     eventsCount: number;
-    facilities: string[];
+    facilities: Record<string, boolean | string | string[]>;
     floorSizeSquareMetres: number | null;
     houseNumber: string;
     id: number;

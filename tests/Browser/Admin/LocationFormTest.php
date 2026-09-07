@@ -51,3 +51,34 @@ test('location forms carry legacy English field copy into the Dutch editor', fun
             'Nederlandse tekst uit het oude verplichte veld.',
         );
 });
+
+test('location facilities can be edited and remain selected after saving', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'available', 'power' => true, 'legacy' => ['Eigen pitruimte']]]);
+    $this->actingAs($admin);
+
+    visit(route('admin.locations.edit', $location, false))
+        ->assertValue('#facility-parking', 'available')
+        ->assertSee('Eigen pitruimte')
+        ->select('#facility-parking', 'paid')
+        ->select('#facility-power', 'false')
+        ->select('#facility-catering', 'on_site')
+        ->select('#facility-wifi', 'public')
+        ->select('#facility-charging', 'true')
+        ->click('Wijzigingen opslaan')
+        ->assertSee('Opgeslagen')
+        ->assertValue('#facility-parking', 'paid')
+        ->assertValue('#facility-power', 'false')
+        ->assertNoJavaScriptErrors();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'catering' => 'on_site', 'wifi' => 'public', 'charging' => true, 'legacy' => ['Eigen pitruimte']]);
+
+    visit(route('locations.show', $location, false))
+        ->assertSee('Betaald parkeren')
+        ->assertSee('Catering op locatie')
+        ->assertSee('Publieke wifi')
+        ->assertSee('Oplaadmogelijkheid')
+        ->assertDontSee('Stroomvoorziening')
+        ->assertNoJavaScriptErrors();
+});

@@ -32,15 +32,6 @@ const environmentLabels: Record<PublicLocationDetail['environment'], string> = {
     outdoor: 'Outdoor',
 };
 
-const facilityLabels: Record<string, string> = {
-    parking: 'Parkeren',
-    power: 'Stroomvoorziening',
-    toilets: 'Toiletten',
-    tables_and_chairs: 'Tafels en stoelen',
-    catering: 'Catering',
-    wifi: 'Wifi',
-};
-
 export default function LocationShow({ location, seo, upcomingEvents }: Props) {
     return (
         <>
@@ -138,8 +129,7 @@ export default function LocationShow({ location, seo, upcomingEvents }: Props) {
                                             className="flex items-center gap-2 text-sm leading-5 text-signal-muted dark:text-night-400"
                                         >
                                             <CheckCircle2 className="size-4 shrink-0 text-dds-blue dark:text-dds-cyan" />
-                                            {facilityLabels[facility] ??
-                                                facility}
+                                            {facility}
                                         </li>
                                     ))}
                                 </ul>

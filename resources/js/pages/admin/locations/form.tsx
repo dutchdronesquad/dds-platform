@@ -54,15 +54,6 @@ type MutationForm = {
     method: 'post';
 };
 
-const facilityOptions: SelectOption[] = [
-    { value: 'parking', label: 'Parkeren' },
-    { value: 'power', label: 'Stroomvoorziening' },
-    { value: 'toilets', label: 'Toiletten' },
-    { value: 'tables_and_chairs', label: 'Tafels en stoelen' },
-    { value: 'catering', label: 'Catering' },
-    { value: 'wifi', label: 'Wifi' },
-];
-
 const locationFormOutlineItems = [
     {
         description: 'Naam, slug en omgeving',
@@ -105,9 +96,6 @@ export function LocationForm({
         Boolean(location?.slug),
     );
     const [coverImage, setCoverImage] = useState(location?.coverImage ?? null);
-    const [facilities, setFacilities] = useState<string[]>(
-        location?.facilities ?? [],
-    );
     const [street, setStreet] = useState(location?.street ?? '');
     const [houseNumber, setHouseNumber] = useState(location?.houseNumber ?? '');
     const [postalCode, setPostalCode] = useState(location?.postalCode ?? '');
@@ -131,17 +119,27 @@ export function LocationForm({
         setManualAddressEditing(false);
     }
 
-    function toggleFacility(value: string): void {
-        setFacilities((current) =>
-            current.includes(value)
-                ? current.filter((facility) => facility !== value)
-                : [...current, value],
-        );
-    }
-
     return (
         <Form
             {...form}
+            transform={(data) => ({
+                ...data,
+                facilities: Object.fromEntries(
+                    Object.entries(
+                        data.facilities as Record<
+                            string,
+                            string | string[] | boolean
+                        >,
+                    ).map(([key, value]) => [
+                        key,
+                        value === 'true'
+                            ? true
+                            : value === 'false'
+                              ? false
+                              : value,
+                    ]),
+                ),
+            })}
             className="grid gap-0"
             options={{ preserveScroll: true }}
             setDefaultsOnSuccess
@@ -655,30 +653,130 @@ export function LocationForm({
                                     <legend className="text-sm font-medium text-neutral-950 dark:text-white">
                                         Faciliteiten
                                     </legend>
-                                    <div className="grid grid-cols-2 gap-2 @min-[30rem]/fields:grid-cols-3">
-                                        {facilityOptions.map((option) => (
-                                            <label
-                                                key={option.value}
-                                                className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm text-neutral-700 has-checked:border-signal-400 has-checked:bg-signal-50/60 dark:border-neutral-800 dark:text-neutral-300 dark:has-checked:border-signal-500 dark:has-checked:bg-signal-500/10"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    name="facilities[]"
-                                                    value={option.value}
-                                                    checked={facilities.includes(
-                                                        option.value,
-                                                    )}
-                                                    onChange={() =>
-                                                        toggleFacility(
-                                                            option.value,
-                                                        )
-                                                    }
-                                                    className="size-4 rounded border-neutral-300 text-signal-600 focus-visible:ring-2 focus-visible:ring-ring"
-                                                />
-                                                {option.label}
-                                            </label>
-                                        ))}
-                                    </div>
+                                    {Array.from(
+                                        new Set(
+                                            Object.values(
+                                                options.facilities,
+                                            ).map((facility) => facility.group),
+                                        ),
+                                    ).map((group) => (
+                                        <fieldset
+                                            key={group}
+                                            className="grid gap-3"
+                                        >
+                                            <legend className="mb-2 text-sm font-medium">
+                                                {group}
+                                            </legend>
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                {Object.entries(
+                                                    options.facilities,
+                                                )
+                                                    .filter(
+                                                        ([, facility]) =>
+                                                            facility.group ===
+                                                            group,
+                                                    )
+                                                    .map(([key, facility]) => (
+                                                        <FormField
+                                                            key={key}
+                                                            id={`facility-${key}`}
+                                                            label={
+                                                                facility.label
+                                                            }
+                                                            error={
+                                                                errors[
+                                                                    `facilities.${key}`
+                                                                ]
+                                                            }
+                                                        >
+                                                            <select
+                                                                id={`facility-${key}`}
+                                                                name={`facilities[${key}]`}
+                                                                defaultValue={String(
+                                                                    location
+                                                                        ?.facilities[
+                                                                        key
+                                                                    ] ??
+                                                                        (Object.keys(
+                                                                            facility.options,
+                                                                        ).length
+                                                                            ? 'none'
+                                                                            : false),
+                                                                )}
+                                                                aria-invalid={Boolean(
+                                                                    errors[
+                                                                        `facilities.${key}`
+                                                                    ],
+                                                                )}
+                                                                aria-describedby={fieldDescription(
+                                                                    `facility-${key}`,
+                                                                    errors[
+                                                                        `facilities.${key}`
+                                                                    ],
+                                                                )}
+                                                                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                                            >
+                                                                {Object.keys(
+                                                                    facility.options,
+                                                                ).length ? (
+                                                                    Object.entries(
+                                                                        facility.options,
+                                                                    ).map(
+                                                                        ([
+                                                                            value,
+                                                                            label,
+                                                                        ]) => (
+                                                                            <option
+                                                                                key={
+                                                                                    value
+                                                                                }
+                                                                                value={
+                                                                                    value
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    label
+                                                                                }
+                                                                            </option>
+                                                                        ),
+                                                                    )
+                                                                ) : (
+                                                                    <>
+                                                                        <option value="false">
+                                                                            Nee
+                                                                        </option>
+                                                                        <option value="true">
+                                                                            Ja
+                                                                        </option>
+                                                                    </>
+                                                                )}
+                                                            </select>
+                                                        </FormField>
+                                                    ))}
+                                            </div>
+                                        </fieldset>
+                                    ))}
+                                    {Array.isArray(
+                                        location?.facilities.legacy,
+                                    ) && (
+                                        <div className="text-sm">
+                                            <p>
+                                                Eerder vastgelegde voorzieningen
+                                            </p>
+                                            {location.facilities.legacy.map(
+                                                (value, index) => (
+                                                    <div key={index}>
+                                                        {value}
+                                                        <input
+                                                            type="hidden"
+                                                            name="facilities[legacy][]"
+                                                            value={value}
+                                                        />
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    )}
                                     <InputError
                                         id="facilities-error"
                                         message={errors.facilities}
