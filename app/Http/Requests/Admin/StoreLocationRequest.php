@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\LocationEnvironment;
 use App\Models\Location;
 use App\Models\MediaAsset;
+use App\Support\LocationFacilities;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -70,8 +71,7 @@ class StoreLocationRequest extends FormRequest
             'environment' => ['required', Rule::enum(LocationEnvironment::class)],
             'floor_size_square_metres' => ['nullable', 'integer', 'min:1', 'max:65535'],
             'ceiling_height_metres' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999.99'],
-            'facilities' => ['nullable', 'array'],
-            'facilities.*' => ['string', 'max:100'],
+            ...LocationFacilities::rules(),
             'website_url' => ['nullable', 'url:http,https', 'max:2048'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],

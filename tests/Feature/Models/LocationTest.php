@@ -39,7 +39,7 @@ test('locations expose structured venue casts and their cover image relationship
     expect($location)
         ->name->toBe('Sportpaleis Alkmaar')
         ->description->toHaveKeys(['en', 'nl'])
-        ->facilities->toBe(['parking', 'power'])
+        ->facilities->toMatchArray(['parking' => 'free', 'power' => true])
         ->environment->toBe(LocationEnvironment::Indoor)
         ->country_code->toBe('NL')
         ->floor_size_square_metres->toBe(1200)
@@ -98,4 +98,17 @@ test('localized description resolves the current locale, then english, then any 
 
     $empty = Location::factory()->make(['description' => []]);
     expect($empty->localizedDescription())->toBeNull();
+});
+
+test('legacy facilities migrate with free parking and preserve other details', function () {
+    $location = Location::factory()->create();
+    DB::table('locations')->where('id', $location->id)->update(['facilities' => json_encode(['parking', 'wifi', 'catering', 'power', 'Eigen pitruimte'])]);
+    $migration = require database_path('migrations/2026_09_07_212317_structure_location_facilities.php');
+
+    $migration->up();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'free', 'wifi' => 'available', 'catering' => 'available', 'power' => true, 'legacy' => ['Eigen pitruimte']]);
+    $migration->up();
+    $migration->down();
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'free', 'legacy' => ['Eigen pitruimte']]);
 });

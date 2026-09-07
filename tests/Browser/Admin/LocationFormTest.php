@@ -51,3 +51,60 @@ test('location forms carry legacy English field copy into the Dutch editor', fun
             'Nederlandse tekst uit het oude verplichte veld.',
         );
 });
+
+test('location facilities can be edited and remain selected after saving', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'power' => true, 'legacy' => ['Eigen pitruimte']]]);
+    $this->actingAs($admin);
+
+    visit(route('admin.locations.edit', $location, false))
+        ->assertMissing('input[name="facility-type-parking"][value="available"]')
+        ->assertChecked('#facility-parking')
+        ->assertChecked('input[name="facility-type-parking"][value="free"]')
+        ->assertMissing('#facility-catering-type')
+        ->assertSee('Eigen pitruimte')
+        ->click('label:has(input[name="facility-type-parking"][value="paid"])')
+        ->uncheck('#facility-power')
+        ->check('#facility-catering')
+        ->click('label:has(input[name="facility-type-catering"][value="on_site"])')
+        ->check('#facility-wifi')
+        ->click('label:has(input[name="facility-type-wifi"][value="public"])')
+        ->check('#facility-charging')
+        ->click('Wijzigingen opslaan')
+        ->assertSee('Opgeslagen')
+        ->assertChecked('input[name="facility-type-parking"][value="paid"]')
+        ->assertNotChecked('#facility-power')
+        ->assertNoJavaScriptErrors();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'paid', 'power' => false, 'catering' => 'on_site', 'wifi' => 'public', 'charging' => true, 'legacy' => ['Eigen pitruimte']]);
+
+    visit(route('locations.show', $location, false))
+        ->assertSee('Betaald parkeren')
+        ->assertSee('Catering op locatie')
+        ->assertSee('Publieke wifi')
+        ->assertSee('Oplaadmogelijkheid')
+        ->assertDontSee('Stroomvoorziening')
+        ->assertNoJavaScriptErrors();
+});
+
+test('typed facilities can be unchecked on mobile and saved as unavailable', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create(['facilities' => ['parking' => 'paid']]);
+    $this->actingAs($admin);
+
+    visit(route('admin.locations.edit', $location, false))
+        ->on()->mobile()
+        ->uncheck('#facility-parking')
+        ->assertMissing('#facility-parking-type')
+        ->check('#facility-parking')
+        ->assertChecked('input[name="facility-type-parking"][value="paid"]')
+        ->uncheck('#facility-parking')
+        ->click('button[type=submit]')
+        ->assertSee('Opgeslagen')
+        ->assertNotChecked('#facility-parking')
+        ->assertNoJavaScriptErrors();
+
+    expect($location->refresh()->facilities)->toMatchArray(['parking' => 'none']);
+});

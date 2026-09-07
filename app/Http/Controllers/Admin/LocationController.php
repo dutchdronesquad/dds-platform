@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StoreLocationRequest;
 use App\Http\Requests\Admin\UpdateLocationRequest;
 use App\Models\Location;
 use App\Models\User;
+use App\Support\LocationFacilities;
 use App\Support\MediaAssetPickerData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -175,6 +176,7 @@ final class LocationController extends Controller
     {
         return [
             'environments' => $this->environmentOptions(),
+            'facilities' => LocationFacilities::catalogue(),
         ];
     }
 
@@ -196,7 +198,7 @@ final class LocationController extends Controller
             'environment' => $location->environment->value,
             'floorSizeSquareMetres' => $location->floor_size_square_metres,
             'ceilingHeightMetres' => $location->ceiling_height_metres,
-            'facilities' => $location->facilities ?? [],
+            'facilities' => LocationFacilities::normalize($location->facilities),
             'websiteUrl' => $location->website_url,
             'latitude' => $location->latitude,
             'longitude' => $location->longitude,

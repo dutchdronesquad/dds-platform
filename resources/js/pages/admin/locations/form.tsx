@@ -54,15 +54,6 @@ type MutationForm = {
     method: 'post';
 };
 
-const facilityOptions: SelectOption[] = [
-    { value: 'parking', label: 'Parkeren' },
-    { value: 'power', label: 'Stroomvoorziening' },
-    { value: 'toilets', label: 'Toiletten' },
-    { value: 'tables_and_chairs', label: 'Tafels en stoelen' },
-    { value: 'catering', label: 'Catering' },
-    { value: 'wifi', label: 'Wifi' },
-];
-
 const locationFormOutlineItems = [
     {
         description: 'Naam, slug en omgeving',
@@ -105,9 +96,6 @@ export function LocationForm({
         Boolean(location?.slug),
     );
     const [coverImage, setCoverImage] = useState(location?.coverImage ?? null);
-    const [facilities, setFacilities] = useState<string[]>(
-        location?.facilities ?? [],
-    );
     const [street, setStreet] = useState(location?.street ?? '');
     const [houseNumber, setHouseNumber] = useState(location?.houseNumber ?? '');
     const [postalCode, setPostalCode] = useState(location?.postalCode ?? '');
@@ -131,17 +119,27 @@ export function LocationForm({
         setManualAddressEditing(false);
     }
 
-    function toggleFacility(value: string): void {
-        setFacilities((current) =>
-            current.includes(value)
-                ? current.filter((facility) => facility !== value)
-                : [...current, value],
-        );
-    }
-
     return (
         <Form
             {...form}
+            transform={(data) => ({
+                ...data,
+                facilities: Object.fromEntries(
+                    Object.entries(
+                        data.facilities as Record<
+                            string,
+                            string | string[] | boolean
+                        >,
+                    ).map(([key, value]) => [
+                        key,
+                        value === 'true'
+                            ? true
+                            : value === 'false'
+                              ? false
+                              : value,
+                    ]),
+                ),
+            })}
             className="grid gap-0"
             options={{ preserveScroll: true }}
             setDefaultsOnSuccess
@@ -651,34 +649,96 @@ export function LocationForm({
                                         />
                                     </FormField>
                                 </div>
-                                <fieldset className="grid gap-3">
+                                <fieldset
+                                    id="location-facilities"
+                                    className="grid gap-5"
+                                >
                                     <legend className="text-sm font-medium text-neutral-950 dark:text-white">
                                         Faciliteiten
                                     </legend>
-                                    <div className="grid grid-cols-2 gap-2 @min-[30rem]/fields:grid-cols-3">
-                                        {facilityOptions.map((option) => (
-                                            <label
-                                                key={option.value}
-                                                className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm text-neutral-700 has-checked:border-signal-400 has-checked:bg-signal-50/60 dark:border-neutral-800 dark:text-neutral-300 dark:has-checked:border-signal-500 dark:has-checked:bg-signal-500/10"
+                                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                        Vink aan wat bezoekers op deze locatie
+                                        kunnen gebruiken.
+                                    </p>
+                                    <div className="grid items-start gap-x-8 gap-y-6 @min-[30rem]/fields:grid-cols-2">
+                                        {Array.from(
+                                            new Set(
+                                                Object.values(
+                                                    options.facilities,
+                                                ).map(
+                                                    (facility) =>
+                                                        facility.group,
+                                                ),
+                                            ),
+                                        ).map((group) => (
+                                            <fieldset
+                                                key={group}
+                                                className="min-w-0"
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    name="facilities[]"
-                                                    value={option.value}
-                                                    checked={facilities.includes(
-                                                        option.value,
-                                                    )}
-                                                    onChange={() =>
-                                                        toggleFacility(
-                                                            option.value,
+                                                <legend className="mb-2 w-full border-b border-neutral-200 pb-2 text-xs font-semibold tracking-wide text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+                                                    {group}
+                                                </legend>
+                                                <div className="grid gap-0.5">
+                                                    {Object.entries(
+                                                        options.facilities,
+                                                    )
+                                                        .filter(
+                                                            ([, facility]) =>
+                                                                facility.group ===
+                                                                group,
                                                         )
-                                                    }
-                                                    className="size-4 rounded border-neutral-300 text-signal-600 focus-visible:ring-2 focus-visible:ring-ring"
-                                                />
-                                                {option.label}
-                                            </label>
+                                                        .map(
+                                                            ([
+                                                                key,
+                                                                facility,
+                                                            ]) => (
+                                                                <FacilityControl
+                                                                    key={key}
+                                                                    facilityKey={
+                                                                        key
+                                                                    }
+                                                                    facility={
+                                                                        facility
+                                                                    }
+                                                                    initialValue={
+                                                                        location
+                                                                            ?.facilities[
+                                                                            key
+                                                                        ]
+                                                                    }
+                                                                    error={
+                                                                        errors[
+                                                                            `facilities.${key}`
+                                                                        ]
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
+                                                </div>
+                                            </fieldset>
                                         ))}
                                     </div>
+                                    {Array.isArray(
+                                        location?.facilities.legacy,
+                                    ) && (
+                                        <div className="text-sm">
+                                            <p>
+                                                Eerder vastgelegde voorzieningen
+                                            </p>
+                                            {location.facilities.legacy.map(
+                                                (value, index) => (
+                                                    <div key={index}>
+                                                        {value}
+                                                        <input
+                                                            type="hidden"
+                                                            name="facilities[legacy][]"
+                                                            value={value}
+                                                        />
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    )}
                                     <InputError
                                         id="facilities-error"
                                         message={errors.facilities}
@@ -1003,5 +1063,102 @@ function FormSelect({
                 </SelectContent>
             </Select>
         </>
+    );
+}
+
+function FacilityControl({
+    facilityKey,
+    facility,
+    initialValue,
+    error,
+}: {
+    facilityKey: string;
+    facility: LocationFormOptions['facilities'][string];
+    initialValue: EditableLocation['facilities'][string] | undefined;
+    error?: string;
+}) {
+    const hasTypes = Object.keys(facility.options).length > 0;
+    const [enabled, setEnabled] = useState(
+        initialValue === true ||
+            (typeof initialValue === 'string' && initialValue !== 'none'),
+    );
+    const [type, setType] = useState(
+        typeof initialValue === 'string' && initialValue !== 'none'
+            ? initialValue
+            : facilityKey === 'parking'
+              ? 'free'
+              : 'available',
+    );
+    const id = `facility-${facilityKey}`;
+
+    const typeLabels: Record<string, string> = {
+        free: 'Gratis',
+        paid: 'Betaald',
+        available: 'Onbekend',
+        on_site: 'Op locatie',
+        vending: 'Automaat',
+        nearby: 'In de buurt',
+        public: 'Publiek',
+        staff_only: 'Medewerkers',
+    };
+    const typeOptions = Object.entries(facility.options)
+        .filter(([value]) => value !== 'none')
+        .sort(
+            ([a], [b]) => Number(a === 'available') - Number(b === 'available'),
+        );
+
+    return (
+        <div className="min-w-0">
+            <input
+                type="hidden"
+                name={`facilities[${facilityKey}]`}
+                value={hasTypes ? (enabled ? type : 'none') : String(enabled)}
+            />
+            <label
+                htmlFor={id}
+                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 has-checked:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900 dark:has-checked:text-white"
+            >
+                <input
+                    id={id}
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={(event) => setEnabled(event.target.checked)}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${id}-error` : undefined}
+                    className="size-4 shrink-0 rounded border-neutral-300 accent-sky-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                />
+                {facility.label}
+            </label>
+            {hasTypes && enabled && (
+                <fieldset
+                    id={`${id}-type`}
+                    className="mb-2 ml-9 flex flex-wrap gap-1.5"
+                >
+                    <legend className="sr-only">{facility.label}: type</legend>
+                    {typeOptions.map(([value, label]) => (
+                        <label
+                            key={value}
+                            className="flex min-h-9 cursor-pointer items-center rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-medium text-neutral-600 transition-colors hover:border-neutral-400 has-checked:border-sky-600 has-checked:bg-sky-50 has-checked:text-sky-800 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-600 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-400 dark:has-checked:border-sky-500 dark:has-checked:bg-sky-950 dark:has-checked:text-sky-200"
+                        >
+                            <input
+                                type="radio"
+                                name={`facility-type-${facilityKey}`}
+                                value={value}
+                                checked={type === value}
+                                onChange={() => setType(value)}
+                                aria-label={label}
+                                className="sr-only"
+                            />
+                            {typeLabels[value] ?? label}
+                        </label>
+                    ))}
+                </fieldset>
+            )}
+            <InputError
+                id={`${id}-error`}
+                message={error}
+                className="px-2 pb-2"
+            />
+        </div>
     );
 }

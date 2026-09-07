@@ -92,7 +92,7 @@ test('a location detail exposes structured address, facilities and localized des
             ->where('location.environment', LocationEnvironment::Indoor->value)
             ->where('location.floorSizeSquareMetres', 1200)
             ->where('location.ceilingHeightMetres', '8.50')
-            ->where('location.facilities', ['parking', 'power'])
+            ->where('location.facilities', ['Gratis parkeren', 'Stroomvoorziening'])
             ->where('location.websiteUrl', 'https://example.com/venue')
             ->where('location.mapEmbedUrl', 'https://maps.google.com/maps?q=Sportpaleis%20Alkmaar%2C%20Terborchlaan%20200%2C%201816%20LE%20Alkmaar%2C%20NL&z=15&output=embed')
             ->where('location.mapUrl', 'https://www.google.com/maps/search/?api=1&query=Sportpaleis%20Alkmaar%2C%20Terborchlaan%20200%2C%201816%20LE%20Alkmaar%2C%20NL')
@@ -163,4 +163,12 @@ test('a location without upcoming events keeps a useful empty result contract', 
         ->assertInertia(fn (Assert $page) => $page
             ->where('upcomingEvents', []),
         );
+});
+
+test('public facilities show Dutch details and omit unavailable facilities', function () {
+    $location = Location::factory()->create(['facilities' => ['parking' => 'free', 'catering' => 'on_site', 'wifi' => 'public', 'power' => false, 'spectator_area' => true, 'legacy' => ['Eigen pitruimte']]]);
+
+    $this->get(route('locations.show', $location))->assertInertia(fn (Assert $page) => $page
+        ->where('location.facilities', ['Gratis parkeren', 'Catering op locatie', 'Publieke wifi', 'Publieksruimte', 'Eigen pitruimte'])
+    );
 });

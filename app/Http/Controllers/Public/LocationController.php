@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Location;
+use App\Support\LocationFacilities;
 use App\Support\MarkdownRenderer;
 use App\Support\PublicEventData;
 use App\Support\PublicLocationData;
@@ -103,7 +104,7 @@ final class LocationController extends Controller
                 'environment' => $location->environment->value,
                 'floorSizeSquareMetres' => $location->floor_size_square_metres,
                 'ceilingHeightMetres' => $location->ceiling_height_metres,
-                'facilities' => $location->facilities ?? [],
+                'facilities' => LocationFacilities::labels($location->facilities),
                 'websiteUrl' => $location->website_url,
                 'image' => $image,
                 ...$this->locationData->googleMapsUrls($location),
