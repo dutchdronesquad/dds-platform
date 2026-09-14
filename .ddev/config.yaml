@@ -259,9 +259,8 @@ web_extra_exposed_ports:
 
 hooks:
     post-start:
-        - exec-host: ddev mc mb --ignore-existing minio/dds-platform-media
-        - exec-host: ddev mc anonymous set download minio/dds-platform-media
-        - exec-host: ddev mc mb --ignore-existing minio/dds-platform-backups
+        - exec-host: ddev s3-init dds-platform-media
+        - exec-host: ddev aws s3api head-bucket --bucket dds-platform-backups >/dev/null 2>&1 || ddev aws s3api create-bucket --bucket dds-platform-backups
 
 #web_extra_exposed_ports:
 #- name: nodejs
