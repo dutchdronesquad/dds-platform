@@ -107,6 +107,8 @@ test('the event index filters upcoming events by type', function () {
 });
 
 test('registration opens and closes automatically while keeping its link private outside the window', function () {
+    CarbonImmutable::setTestNow('2026-09-15 09:59:59');
+
     $event = Event::factory()->published()->create([
         'starts_at' => '2026-10-15 18:00:00',
         'registration_enabled' => true,
@@ -114,8 +116,6 @@ test('registration opens and closes automatically while keeping its link private
         'registration_deadline_at' => '2026-10-14 23:59:00',
         'registration_url' => 'https://example.com/automatic-registration',
     ]);
-
-    CarbonImmutable::setTestNow('2026-09-15 09:59:59');
 
     $this->get(route('events.show', $event))
         ->assertInertia(fn (Assert $page) => $page
@@ -340,6 +340,8 @@ test('the homepage uses the next three published events instead of placeholder d
 });
 
 test('a published training detail exposes practical and registration information', function () {
+    CarbonImmutable::setTestNow('2026-09-01 12:00:00');
+
     $location = Location::factory()->create([
         'name' => 'Sportpaleis Alkmaar',
         'city' => 'Alkmaar',
