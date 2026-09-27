@@ -39,6 +39,7 @@ test('the media library renders previews and filters without browser errors', fu
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
         ->click('internal:role=button[name="Filter op type"s]')
         ->click('Pdf’s')
+        ->assertNotPresent('[role="menu"]')
         ->assertSee('wedstrijdreglement.pdf')
         ->assertDontSee('community-race.jpg')
         ->assertScript("window.location.search.includes('category=document')")
