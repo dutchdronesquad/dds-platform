@@ -98,6 +98,8 @@ test('an administrator adds multiple named connections through Integrations and 
         ->screenshot(filename: 'integrations-overview')
         ->click('TrackDraw instellen')
         ->press('Koppeling toevoegen')
+        ->assertSee('API-keyinstellingen openen')
+        ->assertAttribute('[role="dialog"] a', 'href', 'https://trackdraw.app/studio?dialog=account&section=api-keys')
         ->type('#new-connection-name', 'DDS')
         ->type('#new-connection-key', 'central-test-key')
         ->press('Koppeling opslaan')
