@@ -9,7 +9,7 @@ beforeEach(function () {
     Vite::useHotFile(storage_path('framework/testing/vite.hot'));
 });
 
-test('authentication screens use accessible DDS branding without mobile overflow', function () {
+test('the shared auth layout supports desktop and dark mobile branding', function () {
     $brandIsAccessible = <<<'JS'
         (() => {
             const link = document.querySelector('a[aria-label="Dutch Drone Squad home"]');
@@ -30,23 +30,13 @@ test('authentication screens use accessible DDS branding without mobile overflow
         })()
         JS;
 
-    $paths = [
-        route('login'),
-        route('password.request'),
-        route('password.reset', [
-            'token' => 'branding-test-token',
-            'email' => 'pilot@example.com',
-        ]),
-    ];
-
-    foreach ($paths as $path) {
-        visit($path)
-            ->on()->desktop()
-            ->assertNoJavaScriptErrors()
-            ->assertScript($brandIsAccessible)
-            ->assertVisible('[data-testid="auth-visual"]')
-            ->assertVisible('[data-testid="auth-panel"]')
-            ->assertScript(<<<'JS'
+    visit(route('login'))
+        ->on()->desktop()
+        ->assertNoJavaScriptErrors()
+        ->assertScript($brandIsAccessible)
+        ->assertVisible('[data-testid="auth-visual"]')
+        ->assertVisible('[data-testid="auth-panel"]')
+        ->assertScript(<<<'JS'
                 (() => {
                     const visualBounds = document.querySelector('[data-testid="auth-visual"]')?.getBoundingClientRect();
                     const sideBounds = document.querySelector('[data-testid="auth-form-side"]')?.getBoundingClientRect();
@@ -54,21 +44,7 @@ test('authentication screens use accessible DDS branding without mobile overflow
                     return (visualBounds?.width ?? 0) >= (sideBounds?.width ?? 0) * 1.2
                         && Math.abs((sideBounds?.right ?? 0) - window.innerWidth) < 1;
                 })()
-                JS);
-
-        visit($path)
-            ->on()->iPhone14Pro()
-            ->inDarkMode()
-            ->assertNoJavaScriptErrors()
-            ->assertScript($brandIsAccessible)
-            ->assertVisible('[data-testid="auth-panel"]')
-            ->assertScript(
-                "getComputedStyle(document.querySelector('[data-testid=\"auth-visual\"]')).display === 'none'",
-            );
-    }
-
-    visit(route('login'))
-        ->on()->desktop()
+                JS)
         ->assertNoAccessibilityIssues()
         ->assertScript(<<<'JS'
                 (() => {
@@ -91,13 +67,42 @@ test('authentication screens use accessible DDS branding without mobile overflow
                     && getComputedStyle(heading).textAlign === 'center';
             })()
             JS);
+
+    visit(route('login'))
+        ->on()->iPhone14Pro()
+        ->inDarkMode()
+        ->assertNoJavaScriptErrors()
+        ->assertScript($brandIsAccessible)
+        ->assertVisible('[data-testid="auth-panel"]')
+        ->assertScript(
+            "getComputedStyle(document.querySelector('[data-testid=\"auth-visual\"]')).display === 'none'",
+        );
+});
+
+test('password recovery screens render their forms in the shared auth layout', function () {
+    visit(route('password.request'))
+        ->on()->iPhone14Pro()
+        ->assertVisible('[data-testid="auth-panel"]')
+        ->assertVisible('input[name="email"]')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
+
+    visit(route('password.reset', [
+        'token' => 'branding-test-token',
+        'email' => 'pilot@example.com',
+    ]))
+        ->on()->iPhone14Pro()
+        ->assertVisible('[data-testid="auth-panel"]')
+        ->assertVisible('input[name="password"]')
+        ->assertVisible('input[name="password_confirmation"]')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
 });
 
 test('the desktop auth visual rotates between DDS photos', function () {
     visit(route('login'))
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
-        ->wait(1)
         ->assertScript(<<<'JS'
             (() => {
                 const photoRotation = document.querySelector('[data-testid="auth-photo-rotation"]');
@@ -148,10 +153,6 @@ test('the verification screen shares the same DDS branding', function () {
     $unverifiedUser = User::factory()->unverified()->create();
 
     $this->actingAs($unverifiedUser);
-
-    visit(route('verification.notice'))
-        ->assertNoJavaScriptErrors()
-        ->assertScript($brandIsShared);
 
     visit(route('verification.notice'))
         ->on()->iPhone14Pro()

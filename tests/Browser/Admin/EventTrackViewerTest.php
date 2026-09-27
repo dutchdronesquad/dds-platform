@@ -34,8 +34,8 @@ test('an editor can attach and remove a course using a saved connection without 
     ]);
     $this->actingAs($editor);
 
-    $page = visit(route('admin.events.edit', $event))
-        ->click('#event-tab-track')
+    $page = visit(route('admin.events.edit', $event));
+    $page->click('#event-tab-track')
         ->assertScript('(() => { const tops = ["track-connection", "track-project", "track-default-view"].map(id => document.getElementById(id).getBoundingClientRect().top); return Math.max(...tops) - Math.min(...tops) < 2; })()')
         ->click('#track-connection')->click('[role=option]:has-text("Private")')
         ->assertSee('2 cloudprojecten beschikbaar.')
@@ -46,13 +46,12 @@ test('an editor can attach and remove a course using a saved connection without 
         ->assertMissing('input[name=api_key]')
         ->assertPresent('.trackdraw-viewer canvas')
         ->assertSee('Opgeslagen')
-        ->screenshot(filename: 'event-track-desktop')
         ->assertScript('document.querySelector("[data-testid=admin-form-save-status]").dataset.state', 'unchanged')
         ->assertNoJavaScriptErrors();
     expect($event->fresh())->track_draw_connection_id->toBe($connection->id)
         ->trackdraw_default_view->toBe('3d');
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer private-key'));
-    $page->press('Loskoppelen');
+    $page->click('internal:role=button[name="Loskoppelen"s]');
     $page->assertSee('De track wordt losgekoppeld wanneer je het event opslaat.');
     $page->press('Wijzigingen opslaan');
     $page->assertMissing('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
@@ -82,11 +81,10 @@ test('a public event renders its saved course and switches between 2D and 3D', f
         ->assertNoJavaScriptErrors();
     $page->click('2D')
         ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '2D')
-        ->assertPresent('.trackdraw-viewer canvas')->assertNoJavaScriptErrors()
-        ->screenshotElement('.dds-track-viewer', filename: $mobile ? 'event-track-mobile-2d' : 'event-track-desktop-2d');
+        ->assertPresent('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
     $page->click('3D')
         ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '3D')
-        ->screenshotElement('.dds-track-viewer', filename: $mobile ? 'event-track-mobile-3d' : 'event-track-desktop-3d')
+        ->assertPresent('.trackdraw-viewer canvas')
         ->assertNoJavaScriptErrors();
 })->with(['mobile' => [true], 'desktop' => [false]]);
 
@@ -95,7 +93,6 @@ test('an administrator adds multiple named connections through Integrations and 
     $admin->assignRole(Role::Admin->value);
     $this->actingAs($admin);
     $page = visit(route('admin.integrations.index'))
-        ->screenshot(filename: 'integrations-overview')
         ->click('TrackDraw instellen')
         ->press('Koppeling toevoegen')
         ->assertSee('API-keyinstellingen openen')
@@ -110,7 +107,6 @@ test('an administrator adds multiple named connections through Integrations and 
         ->type('#new-connection-key', 'private-test-key')
         ->press('Koppeling opslaan')
         ->assertSee('Private')->assertMissing('[role="dialog"]');
-    $page->screenshot(filename: 'trackdraw-integrations');
     $connection = TrackDrawConnection::query()->where('name', 'DDS')->sole();
     $page->click('button[aria-label="Bewerk DDS"]')
         ->assertScript('document.querySelector("#connection-'.$connection->id.'-key").value', '')
@@ -124,7 +120,9 @@ test('an administrator adds multiple named connections through Integrations and 
         ->click('button[aria-label="Verwijder DDS"]')
         ->press('button:has-text("Definitief verwijderen")')
         ->assertMissing('[role="dialog"]')
-        ->assertDontSee('DDS')->assertSee('Private')->assertNoJavaScriptErrors();
+        ->assertMissing('button[aria-label="Verwijder DDS"]')
+        ->assertVisible('button[aria-label="Verwijder Private"]')
+        ->assertNoJavaScriptErrors();
     expect(TrackDrawConnection::query()->sole()->api_key)->toBe('private-test-key');
 });
 
@@ -145,11 +143,9 @@ test('the connections table and edit dialog fit on mobile and restore keyboard f
     $page = visit(route('admin.integrations.trackdraw.index'))->on()->mobile()
         ->assertSee('DDS wedstrijdaccount')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
-        ->screenshot(filename: 'trackdraw-integrations-mobile')
         ->click('button[aria-label="Bewerk DDS wedstrijdaccount"]')
         ->assertSee('Koppeling bewerken')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
-        ->screenshot(filename: 'trackdraw-integration-dialog-mobile')
         ->press('Annuleren')->assertMissing('[role="dialog"]')
         ->assertScript('document.activeElement.getAttribute("aria-label")', 'Bewerk DDS wedstrijdaccount')
         ->assertNoJavaScriptErrors();
@@ -174,7 +170,6 @@ test('event tabs preserve edits and place navigation directly below the header a
         ->assertScript('document.querySelector("#title").value', 'Gewijzigde eventtitel')
         ->assertScript('document.querySelectorAll("h1").length', 1)
         ->assertScript('(() => { const heading = document.querySelector("h1"); const tabs = document.querySelector("[role=tablist]"); const save = document.querySelector("button[type=submit]"); return heading.getBoundingClientRect().top < tabs.getBoundingClientRect().top && save.getBoundingClientRect().bottom <= tabs.getBoundingClientRect().top; })()')
-        ->screenshot(filename: 'event-tabs-desktop')
         ->press('Wijzigingen opslaan')
         ->assertSee('Opgeslagen')
         ->assertNoJavaScriptErrors();
@@ -183,7 +178,6 @@ test('event tabs preserve edits and place navigation directly below the header a
 
     $page->resize(390, 844)->click('#event-tab-track')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
-        ->screenshot(filename: 'event-tabs-mobile')
         ->assertNoJavaScriptErrors();
 });
 

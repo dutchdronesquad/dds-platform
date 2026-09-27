@@ -132,7 +132,6 @@ test('event create responds to the available form width instead of the viewport'
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
-        ->wait(1)
         ->assertScript(
             "(() => { const names = ['starts_at', 'ends_at', 'registration_opens_at', 'registration_deadline_at']; return document.querySelectorAll('input[type=\"datetime-local\"]').length === 0 && names.every((name) => document.querySelector('input[type=\"hidden\"][name=\"' + name + '\"]') !== null && document.querySelector('#' + name) !== null && document.querySelector('#' + name + '_time') !== null); })()",
         )
@@ -228,7 +227,6 @@ test('event registration section reveals automatic planning and manual overrides
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
-        ->wait(1)
         ->assertScript(
             "document.querySelector('input[name=\"registration_enabled\"]')?.value === '0' && document.querySelector('#event-registration-fields')?.hidden === true",
         )
