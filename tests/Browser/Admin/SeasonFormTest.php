@@ -114,7 +114,6 @@ test('a saved season form returns to the saved state', function () {
         )
         ->press('Wijzigingen opslaan')
         ->assertSee('Opgeslagen')
-        ->wait(3)
         ->assertScript(
             "document.querySelector('[data-testid=\"admin-form-save-status\"]')?.dataset.state === 'unchanged'",
         )

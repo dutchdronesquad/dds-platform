@@ -34,7 +34,6 @@ test('admins can select multiple event facets without closing the menu', functio
     visit('/dashboard/events')
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
-        ->wait(1)
         ->click('button[aria-label="Filter op status"]')
         ->assertVisible($draftOption)
         ->assertAriaAttribute($draftOption, 'checked', 'false')
