@@ -142,7 +142,7 @@ export function EventTrackForm({
                 title="Track"
                 description="Kies een cloudproject uit TrackDraw. Je keuze wordt samen met de overige eventinstellingen opgeslagen."
             >
-                <div className="grid gap-5 @min-[40rem]/event-main:grid-cols-2">
+                <div className="grid gap-5 @min-[48rem]/event-main:grid-cols-[1fr_1fr_0.7fr]">
                     <div className="grid content-start gap-2">
                         <Label htmlFor="track-connection">
                             TrackDraw-koppeling
@@ -291,44 +291,46 @@ export function EventTrackForm({
                             </Button>
                         )}
                     </div>
-                </div>
-                <div className="grid max-w-sm gap-2">
-                    <Label htmlFor="track-default-view">
-                        Standaardweergave
-                    </Label>
-                    <Select
-                        name="trackdraw_default_view"
-                        defaultValue={event.track.defaultView}
-                        disabled={processing}
-                    >
-                        <SelectTrigger
-                            id="track-default-view"
-                            className="w-full"
-                            aria-describedby="track-default-view-hint track-default-view-error"
-                            aria-invalid={Boolean(
-                                errors.trackdraw_default_view,
-                            )}
+                    <div className="grid content-start gap-2">
+                        <Label htmlFor="track-default-view">
+                            Standaardweergave
+                        </Label>
+                        <Select
+                            name="trackdraw_default_view"
+                            defaultValue={event.track.defaultView}
+                            disabled={processing}
                         >
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="2d">
-                                2D — bovenaanzicht
-                            </SelectItem>
-                            <SelectItem value="3d">3D — perspectief</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <p
-                        id="track-default-view-hint"
-                        className="text-sm text-muted-foreground"
-                    >
-                        Hiermee opent de track voor bezoekers. Ze kunnen zelf
-                        wisselen tussen 2D en 3D.
-                    </p>
-                    <InputError
-                        id="track-default-view-error"
-                        message={errors.trackdraw_default_view}
-                    />
+                            <SelectTrigger
+                                id="track-default-view"
+                                className="w-full"
+                                aria-describedby="track-default-view-hint track-default-view-error"
+                                aria-invalid={Boolean(
+                                    errors.trackdraw_default_view,
+                                )}
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="2d">
+                                    2D — bovenaanzicht
+                                </SelectItem>
+                                <SelectItem value="3d">
+                                    3D — perspectief
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p
+                            id="track-default-view-hint"
+                            className="text-sm text-muted-foreground"
+                        >
+                            Hiermee opent de track voor bezoekers. Ze kunnen
+                            zelf wisselen tussen 2D en 3D.
+                        </p>
+                        <InputError
+                            id="track-default-view-error"
+                            message={errors.trackdraw_default_view}
+                        />
+                    </div>
                 </div>
                 {event.track.connections.length === 0 && (
                     <p className="text-sm text-muted-foreground">

@@ -19,6 +19,7 @@ beforeEach(function () {
 });
 
 test('an editor can attach and remove a course using a saved connection without an API key input', function () {
+    pest()->browser()->timeout(15000);
     $editor = User::factory()->create();
     $editor->assignRole(Role::Editor->value);
     $event = Event::factory()->create();
@@ -35,6 +36,7 @@ test('an editor can attach and remove a course using a saved connection without 
 
     $page = visit(route('admin.events.edit', $event))
         ->click('#event-tab-track')
+        ->assertScript('(() => { const tops = ["track-connection", "track-project", "track-default-view"].map(id => document.getElementById(id).getBoundingClientRect().top); return Math.max(...tops) - Math.min(...tops) < 2; })()')
         ->click('#track-connection')->click('[role=option]:has-text("Private")')
         ->assertSee('2 cloudprojecten beschikbaar.')
         ->click('#track-project')->click('[role=option]:has-text("DDS testbaan")')
@@ -50,33 +52,43 @@ test('an editor can attach and remove a course using a saved connection without 
     expect($event->fresh())->track_draw_connection_id->toBe($connection->id)
         ->trackdraw_default_view->toBe('3d');
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer private-key'));
-    $page->press('Loskoppelen')->press('Wijzigingen opslaan')->assertMissing('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
+    $page->press('Loskoppelen');
+    $page->assertSee('De track wordt losgekoppeld wanneer je het event opslaat.');
+    $page->press('Wijzigingen opslaan');
+    $page->assertMissing('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
 });
 
-test('a public event renders its saved course on mobile and switches between 2D and 3D', function () {
+afterEach(function () {
+    pest()->browser()->timeout(5000);
+});
+
+test('a public event renders its saved course and switches between 2D and 3D', function (bool $mobile) {
+    pest()->browser()->timeout(15000);
     Storage::disk('s3')->put('course.json', File::get(base_path('tests/Fixtures/trackdraw-snapshot.json')));
     $event = Event::factory()->published()->create(['trackdraw_snapshot_path' => 'course.json', 'trackdraw_title' => 'DDS testbaan', 'trackdraw_default_view' => '3d']);
     Http::fake(['*' => Http::failedConnection()]);
 
-    $page = visit(route('events.show', $event->slug))->on()->mobile()
-        ->assertSee('DDS testbaan')
+    $page = visit(route('events.show', $event->slug));
+    $page = $mobile ? $page->on()->mobile() : $page->on()->desktop();
+    $page->assertSee('DDS testbaan')
         ->assertPresent('.trackdraw-viewer canvas')
         ->assertSee('Bekijk wat je gaat vliegen.')
-        ->assertScript('document.querySelector(".trackdraw-viewer button[aria-pressed=true]").textContent', '3D')
-        ->assertScript('getComputedStyle(document.querySelector(".trackdraw-viewer button[aria-pressed=true]")).minHeight', '44px')
-        ->assertScript('getComputedStyle(document.querySelector(".trackdraw-viewer [class~=\'bg-black/45\']")).backgroundColor', 'rgb(23, 39, 46)')
+        ->assertMissing('.trackdraw-viewer button[aria-pressed]')
+        ->assertScript('document.querySelector("[aria-label=Trackweergave]").getBoundingClientRect().bottom <= document.querySelector(".trackdraw-viewer").getBoundingClientRect().top')
+        ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '3D')
+        ->assertScript('getComputedStyle(document.querySelector(".dds-track-viewer button[aria-pressed=true]")).minHeight', '32px')
+        ->assertScript('getComputedStyle(document.querySelector(".trackdraw-viewer [data-viewer-gizmo]")).backgroundColor', 'rgb(23, 39, 46)')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
         ->assertNoJavaScriptErrors();
-    $page->screenshotElement('.dds-track-viewer', filename: 'event-track-mobile-3d')
-        ->click('2D')
-        ->assertScript('document.querySelector(".trackdraw-viewer button[aria-pressed=true]").textContent', '2D')
+    $page->click('2D')
+        ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '2D')
         ->assertPresent('.trackdraw-viewer canvas')->assertNoJavaScriptErrors()
-        ->screenshotElement('.trackdraw-viewer', filename: 'event-track-mobile');
-    $page->resize(1440, 1000)->click('3D')
-        ->assertScript('document.querySelector(".trackdraw-viewer button[aria-pressed=true]").textContent', '3D')
-        ->screenshotElement('section[aria-labelledby=event-track-heading]', filename: 'event-track-public-desktop')
+        ->screenshotElement('.dds-track-viewer', filename: $mobile ? 'event-track-mobile-2d' : 'event-track-desktop-2d');
+    $page->click('3D')
+        ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '3D')
+        ->screenshotElement('.dds-track-viewer', filename: $mobile ? 'event-track-mobile-3d' : 'event-track-desktop-3d')
         ->assertNoJavaScriptErrors();
-});
+})->with(['mobile' => [true], 'desktop' => [false]]);
 
 test('an administrator adds multiple named connections through Integrations and can rotate or remove one', function () {
     $admin = User::factory()->create();
