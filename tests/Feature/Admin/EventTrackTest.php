@@ -35,8 +35,8 @@ test('an editor stores the snapshot in object storage using the selected connect
     $path = $event->trackdraw_snapshot_path;
     expect($event->trackdraw_title)->toBe('DDS testbaan')
         ->and($path)->toStartWith('event-tracks/')->toEndWith('.json')
-        ->and($event->toArray())->not->toHaveKey('trackdraw_snapshot_path');
-    expect(json_decode(Storage::disk('s3')->get($path), true))->toBe(json_decode(File::get(base_path('tests/Fixtures/trackdraw-snapshot.json')), true))
+        ->and($event->toArray())->not->toHaveKey('trackdraw_snapshot_path')
+        ->and(json_decode(Storage::disk('s3')->get($path), true))->toBe(json_decode(File::get(base_path('tests/Fixtures/trackdraw-snapshot.json')), true))
         ->and(Storage::disk('s3')->getVisibility($path))->toBe('private');
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer test-trackdraw-key'));
     $this->get(route('admin.events.edit', $event))->assertInertia(fn (Assert $page) => $page
@@ -156,4 +156,25 @@ test('an event fetches with the selected account and remembers the connection wi
     $this->get(route('admin.events.edit', $event))->assertInertia(fn (Assert $page) => $page
         ->where('event.track.connectionId', $private->id)->has('event.track.connections', 2)
         ->missing('event.track.connections.0.api_key')->missing('event.track.connections.1.api_key'));
+});
+
+test('the configured TrackDraw environment serves both imports and the API key setup link', function () {
+    config(['services.trackdraw.url' => 'https://dev.trackdraw.app']);
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $connection = TrackDrawConnection::factory()->create(['api_key' => 'development-key']);
+    $event = Event::factory()->create();
+    Http::preventStrayRequests();
+    Http::fake(['https://dev.trackdraw.app/api/v1/projects/dev-course/viewer-snapshot' => Http::response([
+        'data' => json_decode(File::get(base_path('tests/Fixtures/trackdraw-snapshot.json')), true),
+    ])]);
+
+    $this->actingAs($admin)->get(route('admin.integrations.trackdraw.index'))->assertInertia(fn (Assert $page) => $page
+        ->where('apiKeysUrl', 'https://dev.trackdraw.app/dashboard/api-keys'));
+    $this->put(route('admin.events.track.update', $event), ['connection_id' => $connection->id, 'project_id' => 'dev-course'])
+        ->assertSessionHasNoErrors();
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://dev.trackdraw.app/api/v1/projects/dev-course/viewer-snapshot'
+        && $request->hasHeader('Authorization', 'Bearer development-key'));
+    Storage::disk('s3')->assertExists($event->fresh()->trackdraw_snapshot_path);
 });

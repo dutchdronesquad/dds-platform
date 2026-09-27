@@ -10,11 +10,11 @@ import {
     update,
 } from '@/actions/App/Http/Controllers/Admin/TrackDrawConnectionController';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
-import {
-    AdminDataTable,
+import { AdminDataTable } from '@/components/admin/admin-data-table';
+import type {
     adminTableFeatures,
+    ServerPagination,
 } from '@/components/admin/admin-data-table';
-import type { ServerPagination } from '@/components/admin/admin-data-table';
 import { AdminResourcePage } from '@/components/admin/admin-resource-page';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,13 @@ type Connection = {
     updated_at: string;
 };
 
-function ConnectionDialog({ connection }: { connection?: Connection }) {
+function ConnectionDialog({
+    connection,
+    apiKeysUrl,
+}: {
+    connection?: Connection;
+    apiKeysUrl?: string;
+}) {
     const [open, setOpen] = useState(false);
     const prefix = connection
         ? `connection-${connection.id}`
@@ -136,7 +142,7 @@ function ConnectionDialog({ connection }: { connection?: Connection }) {
                             </div>
                             {!connection && (
                                 <a
-                                    href="https://trackdraw.app/dashboard/api-keys"
+                                    href={apiKeysUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-sm font-medium text-signal-700 underline-offset-4 hover:underline dark:text-signal-300"
@@ -173,8 +179,10 @@ function ConnectionDialog({ connection }: { connection?: Connection }) {
 
 export default function TrackDrawSettings({
     connections,
+    apiKeysUrl,
 }: {
     connections: ServerPagination<Connection>;
+    apiKeysUrl: string;
 }) {
     return (
         <>
@@ -183,7 +191,7 @@ export default function TrackDrawSettings({
                 eyebrow="Integraties"
                 title="TrackDraw"
                 description="Beheer de accounts waarvan je banen wilt tonen. Kies bij een event de koppeling en het project."
-                actions={<ConnectionDialog />}
+                actions={<ConnectionDialog apiKeysUrl={apiKeysUrl} />}
             >
                 <AdminDataTable
                     caption="TrackDraw-koppelingen"

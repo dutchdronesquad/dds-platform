@@ -28,7 +28,7 @@ test('an editor can attach and remove a course using a saved connection without 
     $this->actingAs($editor);
 
     $page = visit(route('admin.events.edit', $event))
-        ->select('connection_id', (string) $connection->id)
+        ->click('#track-connection')->click('[role=option]:has-text("Private")')
         ->type('project_id', 'course-1')
         ->press('Baan koppelen')
         ->assertSee('DDS testbaan')

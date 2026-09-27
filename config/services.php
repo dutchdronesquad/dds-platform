@@ -3,7 +3,7 @@
 return [
 
     'trackdraw' => [
-        'url' => 'https://trackdraw.app',
+        'url' => rtrim((string) env('TRACKDRAW_URL', 'https://trackdraw.app'), '/'),
     ],
 
     /*

@@ -5,6 +5,9 @@ use App\Models\Event;
 use App\Models\TrackDrawConnection;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -68,4 +71,21 @@ test('removing one connection preserves its saved courses and other accounts', f
     expect(TrackDrawConnection::query()->sole()->id)->toBe($other->id)
         ->and($event->fresh()->track_draw_connection_id)->toBeNull();
     $this->get(route('events.track', $event->slug))->assertOk()->assertStreamedContent('saved-course');
+});
+
+test('the connection migration is reversible without losing event data or enum constraints', function () {
+    $event = Event::factory()->create();
+    $migration = require database_path('migrations/2026_09_27_104921_create_track_draw_connections_table.php');
+    $migrateDown = [$migration, 'down'];
+    $migrateUp = [$migration, 'up'];
+    if (! is_callable($migrateDown) || ! is_callable($migrateUp)) {
+        throw new RuntimeException('The connection migration must be reversible.');
+    }
+
+    $migrateDown();
+    expect(Schema::hasColumn('events', 'track_draw_connection_id'))->toBeFalse()
+        ->and(Event::query()->find($event->id)?->title)->toBe($event->title);
+    $migrateUp();
+    expect(Schema::hasColumn('events', 'track_draw_connection_id'))->toBeTrue()
+        ->and(fn () => DB::table('events')->where('id', $event->id)->update(['status' => 'unsupported']))->toThrow(QueryException::class);
 });

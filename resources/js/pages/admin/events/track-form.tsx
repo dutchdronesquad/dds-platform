@@ -9,6 +9,13 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import type { EditableEvent } from './types';
 
 export function EventTrackForm({ event }: { event: EditableEvent }) {
@@ -50,32 +57,37 @@ export function EventTrackForm({ event }: { event: EditableEvent }) {
                             <Label htmlFor="track-connection">
                                 TrackDraw-koppeling
                             </Label>
-                            <select
-                                id="track-connection"
+                            <Select
                                 name="connection_id"
-                                defaultValue={
+                                defaultValue={String(
                                     event.track.connectionId ??
-                                    (event.track.connections.length === 1
-                                        ? event.track.connections[0].id
-                                        : '')
-                                }
+                                        (event.track.connections.length === 1
+                                            ? event.track.connections[0].id
+                                            : ''),
+                                )}
                                 required
-                                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                aria-invalid={Boolean(errors.connection_id)}
-                                aria-describedby="track-connection-error"
                             >
-                                <option value="" disabled>
-                                    Kies een koppeling
-                                </option>
-                                {event.track.connections.map((connection) => (
-                                    <option
-                                        key={connection.id}
-                                        value={connection.id}
-                                    >
-                                        {connection.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger
+                                    id="track-connection"
+                                    className="w-full"
+                                    aria-invalid={Boolean(errors.connection_id)}
+                                    aria-describedby="track-connection-error"
+                                >
+                                    <SelectValue placeholder="Kies een koppeling" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {event.track.connections.map(
+                                        (connection) => (
+                                            <SelectItem
+                                                key={connection.id}
+                                                value={String(connection.id)}
+                                            >
+                                                {connection.name}
+                                            </SelectItem>
+                                        ),
+                                    )}
+                                </SelectContent>
+                            </Select>
                             <InputError
                                 id="track-connection-error"
                                 message={errors.connection_id}
