@@ -17,7 +17,7 @@ final class TrackDrawConnectionController extends Controller
         Gate::authorize('manage', TrackDrawConnection::class);
 
         return Inertia::render('admin/trackdraw', [
-            'studioUrl' => config()->string('services.trackdraw.url').'/studio',
+            'studioUrl' => config()->string('services.trackdraw.url').'/studio?dialog=account&section=api-keys',
             'connections' => TrackDrawConnection::query()->select(['id', 'name', 'updated_at'])->withCount('events')->orderBy('name')->orderBy('id')->paginate(15)->withQueryString(),
         ]);
     }

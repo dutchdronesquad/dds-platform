@@ -133,7 +133,7 @@ function ConnectionDialog({
                                 >
                                     {connection
                                         ? 'Laat leeg om de huidige sleutel te behouden.'
-                                        : 'Open TrackDraw Studio en maak via je profielvenster een API-key aan. Je sleutel wordt versleuteld opgeslagen en nooit teruggetoond.'}
+                                        : 'Open je API-keyinstellingen in TrackDraw en maak een API-key aan. Je sleutel wordt versleuteld opgeslagen en nooit teruggetoond.'}
                                 </p>
                                 <InputError
                                     id={`${prefix}-key-error`}
@@ -147,7 +147,7 @@ function ConnectionDialog({
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-sm font-medium text-signal-700 underline-offset-4 hover:underline dark:text-signal-300"
                                 >
-                                    TrackDraw Studio openen
+                                    API-keyinstellingen openen
                                     <ArrowUpRight className="size-4" />
                                 </a>
                             )}

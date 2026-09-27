@@ -171,7 +171,7 @@ test('the configured TrackDraw environment serves both imports and the API key s
     ])]);
 
     $this->actingAs($admin)->get(route('admin.integrations.trackdraw.index'))->assertInertia(fn (Assert $page) => $page
-        ->where('studioUrl', 'https://dev.trackdraw.app/studio'));
+        ->where('studioUrl', 'https://dev.trackdraw.app/studio?dialog=account&section=api-keys'));
     $this->put(route('admin.events.track.update', $event), ['connection_id' => $connection->id, 'project_id' => 'dev-course'])
         ->assertSessionHasNoErrors();
 
