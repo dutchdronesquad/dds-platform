@@ -34,6 +34,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import IntegrationController from '@/actions/App/Http/Controllers/Admin/IntegrationController';
 import { dashboard, home } from '@/routes';
 import { index as redirectsIndex } from '@/routes/redirects';
 import type { NavItem } from '@/types';
@@ -118,6 +119,15 @@ export function AppSidebar() {
             : []),
     ];
     const systemItems: NavItem[] = [
+        ...(management?.integrations.canManage
+            ? [
+                  {
+                      title: 'Integraties',
+                      href: IntegrationController(),
+                      icon: RouteIcon,
+                  },
+              ]
+            : []),
         ...(management?.users.canView
             ? [
                   {

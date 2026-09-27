@@ -75,6 +75,14 @@ export type EventFormOptions = {
 };
 
 export type EditableEvent = {
+    track: {
+        projectId: string | null;
+        title: string | null;
+        syncedAt: string | null;
+        connectionId: number | null;
+        connections: { id: number; name: string }[];
+        canManageConnection: boolean;
+    };
     activity: AdminActivity;
     capabilities: {
         cancel: boolean;

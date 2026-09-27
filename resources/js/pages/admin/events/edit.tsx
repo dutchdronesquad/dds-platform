@@ -6,6 +6,7 @@ import {
 import { AdminResourcePage } from '@/components/admin/admin-resource-page';
 import { dashboard } from '@/routes';
 import { EventForm } from './form';
+import { EventTrackForm } from './track-form';
 import type { EditableEvent, EventFormOptions } from './types';
 
 export default function EditEvent({
@@ -33,6 +34,7 @@ export default function EditEvent({
                     form={update.form(event.id)}
                     options={options}
                 />
+                <EventTrackForm event={event} />
             </AdminResourcePage>
         </>
     );

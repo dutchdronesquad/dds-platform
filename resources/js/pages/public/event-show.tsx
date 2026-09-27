@@ -1,3 +1,4 @@
+import EventTrackViewer from '@/components/public/event-track-viewer';
 import { Link } from '@inertiajs/react';
 import {
     ArrowUpRight,
@@ -153,6 +154,15 @@ export default function EventShow({ event, isPreview = false, seo }: Props) {
                         />
                     </div>
                 </section>
+
+                {event.trackTitle && (
+                    <div className="mx-auto w-full max-w-7xl px-public-gutter pb-16">
+                        <EventTrackViewer
+                            slug={event.slug}
+                            title={event.trackTitle}
+                        />
+                    </div>
+                )}
 
                 <section className="border-t border-paddock-rule bg-paddock dark:border-white/12 dark:bg-night-900">
                     <div className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-14 lg:grid-cols-[minmax(16rem,0.62fr)_minmax(0,1.38fr)] lg:items-stretch lg:gap-14 lg:py-20">

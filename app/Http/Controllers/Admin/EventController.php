@@ -11,8 +11,10 @@ use App\Http\Requests\Admin\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
+use App\Models\TrackDrawConnection;
 use App\Models\User;
 use App\Support\MediaAssetPickerData;
+use App\Support\TrackDrawSnapshot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -107,11 +109,12 @@ final class EventController extends Controller
         return to_route('admin.events.edit', $duplicate);
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event, TrackDrawSnapshot $snapshots): RedirectResponse
     {
         Gate::authorize('delete', $event);
 
         $event->delete();
+        $snapshots->deleteUnused($event->trackdraw_snapshot_path);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event verwijderd.']);
 
@@ -384,6 +387,14 @@ final class EventController extends Controller
             'title' => $event->title,
             'slug' => $event->slug,
             'content' => $event->content,
+            'track' => [
+                'projectId' => $event->trackdraw_project_id,
+                'title' => $event->trackdraw_title,
+                'syncedAt' => $event->trackdraw_synced_at?->toIso8601String(),
+                'connectionId' => $event->track_draw_connection_id,
+                'connections' => TrackDrawConnection::query()->orderBy('name')->get(['id', 'name']),
+                'canManageConnection' => $user->can('manage', TrackDrawConnection::class),
+            ],
             'locationId' => $event->location_id,
             'seasonId' => $event->season_id,
             'coverImageId' => $event->cover_image_id,
