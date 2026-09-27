@@ -1,11 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "timezone": "Europe/Amsterdam",
-  "schedule": ["before 6am every weekday"],
-  "rebaseWhen": "behind-base-branch",
-  "dependencyDashboard": true,
-  "labels": ["dependencies"],
-  "commitMessagePrefix": "⬆️",
+  "extends": ["github>dutchdronesquad/.github:renovate-base"],
+  "lockFileMaintenance": {
+    "enabled": false
+  },
   "packageRules": [
     {
       "matchManagers": ["composer"],
@@ -28,21 +26,15 @@
       "automerge": false
     },
     {
-      "matchManagers": ["github-actions"],
-      "addLabels": ["github_actions"],
-      "rangeStrategy": "pin"
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "GitHub Actions",
-      "automerge": true
-    },
-    {
       "matchManagers": ["docker-compose"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "Docker Compose dependencies",
       "automerge": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions"
     }
   ]
 }
