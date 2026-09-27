@@ -60,7 +60,7 @@ final class TrackDrawSnapshot
 
         $snapshot = Arr::only($data, ['schema', 'snapshot_id', 'required_viewer', 'design', 'assets']);
         $path = 'event-tracks/'.Str::uuid().'.json';
-        if (! Storage::disk('s3')->put($path, json_encode($snapshot, JSON_THROW_ON_ERROR), ['visibility' => 'private', 'ContentType' => 'application/json'])) {
+        if (! Storage::disk(config()->string('services.trackdraw.disk'))->put($path, json_encode($snapshot, JSON_THROW_ON_ERROR), ['visibility' => 'private', 'ContentType' => 'application/json'])) {
             throw new RuntimeException('Could not store TrackDraw snapshot.');
         }
 
@@ -70,7 +70,7 @@ final class TrackDrawSnapshot
     public function deleteUnused(?string $path): void
     {
         if ($path !== null && ! Event::query()->where('trackdraw_snapshot_path', $path)->exists()) {
-            Storage::disk('s3')->delete($path);
+            Storage::disk(config()->string('services.trackdraw.disk'))->delete($path);
         }
     }
 }

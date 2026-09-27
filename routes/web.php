@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
 use App\Http\Controllers\Admin\EventTrackController;
+use App\Http\Controllers\Admin\EventTrackProjectController;
 use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\LocationAddressLookupController;
 use App\Http\Controllers\Admin\LocationAddressSuggestController;
@@ -113,6 +114,7 @@ Route::middleware([
             ->name('events.duplicate');
         Route::get('events/{event}/preview', [EventController::class, 'preview'])
             ->name('events.preview');
+        Route::get('events/{event}/track/projects', EventTrackProjectController::class)->middleware('throttle:60,1')->name('events.track.projects');
         Route::put('events/{event}/track', [EventTrackController::class, 'update'])->middleware('throttle:10,1')->name('events.track.update');
         Route::delete('events/{event}/track', [EventTrackController::class, 'destroy'])->name('events.track.destroy');
         Route::resource('events', AdminEventController::class)->except('show');

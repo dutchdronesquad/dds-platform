@@ -14,9 +14,9 @@ final class EventTrackController extends Controller
     {
         abort_unless($event->isPubliclyVisible() || $request->user()?->can('view', $event), 404);
         abort_if($event->trackdraw_snapshot_path === null, 404);
-        abort_unless(Storage::disk('s3')->exists($event->trackdraw_snapshot_path), 404);
+        abort_unless(Storage::disk(config()->string('services.trackdraw.disk'))->exists($event->trackdraw_snapshot_path), 404);
 
-        return Storage::disk('s3')->download($event->trackdraw_snapshot_path, 'track.json', [
+        return Storage::disk(config()->string('services.trackdraw.disk'))->download($event->trackdraw_snapshot_path, 'track.json', [
             'Content-Type' => 'application/json',
             'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',

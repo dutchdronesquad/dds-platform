@@ -25,12 +25,14 @@ import { cn } from '@/lib/utils';
 export function AdminFormLayout({
     aside,
     asideFirstOnSmallScreens = true,
+    asideClassName,
     asideLayoutClassName,
     children,
     className,
     contentClassName,
 }: {
     aside?: ReactNode;
+    asideClassName?: string;
     asideFirstOnSmallScreens?: boolean;
     asideLayoutClassName?: string;
     children: ReactNode;
@@ -67,6 +69,7 @@ export function AdminFormLayout({
                         'min-w-0 self-start @min-[56rem]/admin-page:sticky @min-[56rem]/admin-page:top-32',
                         asideFirstOnSmallScreens &&
                             'order-1 @min-[56rem]/admin-page:order-none',
+                        asideClassName,
                     )}
                 >
                     {aside}
@@ -181,6 +184,9 @@ export function AdminFormSection({
 
 export function AdminFormActions({
     children,
+    heading = false,
+    eyebrow,
+    navigation,
     context,
     destructiveActions,
     isDirty,
@@ -189,6 +195,9 @@ export function AdminFormActions({
     recentlySuccessful,
 }: {
     children: ReactNode;
+    heading?: boolean;
+    eyebrow?: string;
+    navigation?: ReactNode;
     context: string;
     destructiveActions?: ReactNode;
     isDirty: boolean;
@@ -238,6 +247,7 @@ export function AdminFormActions({
         },
     }[state];
     const StatusIcon = status.icon;
+    const ContextTag = heading ? 'h1' : 'p';
 
     return (
         <div
@@ -246,35 +256,64 @@ export function AdminFormActions({
             aria-label="Formulieracties"
             className="sticky top-14 z-30 border-y border-neutral-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/95"
         >
-            <div className="mx-auto grid w-full max-w-[103rem] gap-2.5 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6">
+            <div
+                className={cn(
+                    'mx-auto grid w-full max-w-[103rem] gap-2.5 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6',
+                    heading && 'pt-5 pb-4 sm:pt-6 sm:pb-5',
+                )}
+            >
                 <div className="flex min-w-0 items-center gap-3">
-                    <span
-                        aria-hidden="true"
-                        className={cn(
-                            'flex size-9 shrink-0 items-center justify-center rounded-lg',
-                            status.tone,
-                        )}
-                    >
-                        <StatusIcon
+                    {!heading && (
+                        <span
+                            aria-hidden="true"
                             className={cn(
-                                'size-4',
-                                state === 'processing' && 'animate-spin',
+                                'flex size-9 shrink-0 items-center justify-center rounded-lg',
+                                status.tone,
                             )}
-                        />
-                    </span>
+                        >
+                            <StatusIcon
+                                className={cn(
+                                    'size-4',
+                                    state === 'processing' && 'animate-spin',
+                                )}
+                            />
+                        </span>
+                    )}
                     <div className="min-w-0">
-                        <p
+                        {heading && eyebrow && (
+                            <p className="mb-1.5 text-xs font-semibold tracking-widest text-signal-700 uppercase dark:text-signal-300">
+                                {eyebrow}
+                            </p>
+                        )}
+                        <ContextTag
                             data-testid="admin-form-context"
-                            className="truncate text-sm font-semibold text-neutral-950 dark:text-white"
+                            className={cn(
+                                'truncate text-sm font-semibold text-neutral-950 dark:text-white',
+                                heading &&
+                                    'text-2xl tracking-tight whitespace-normal sm:text-3xl',
+                            )}
                         >
                             {context}
-                        </p>
+                        </ContextTag>
                         <div
                             data-testid="admin-form-save-status"
                             data-state={state}
                             aria-live="polite"
                             className="mt-0.5 flex min-h-4 min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
                         >
+                            {heading && (
+                                <StatusIcon
+                                    aria-hidden="true"
+                                    className={cn(
+                                        'size-3.5',
+                                        state === 'dirty'
+                                            ? 'text-amber-600'
+                                            : 'text-emerald-600',
+                                        state === 'processing' &&
+                                            'animate-spin',
+                                    )}
+                                />
+                            )}
                             <span className="font-medium text-neutral-700 dark:text-neutral-300">
                                 {status.label}
                             </span>
@@ -295,6 +334,7 @@ export function AdminFormActions({
                     {children}
                 </div>
             </div>
+            {navigation}
         </div>
     );
 }

@@ -323,6 +323,7 @@ test('long admin forms use the document as their only vertical scroll container'
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     $event = Event::factory()->create([
+        'registration_enabled' => false,
         'content' => str_repeat('Uitgebreide eventinformatie. ', 200),
     ]);
 
@@ -331,6 +332,8 @@ test('long admin forms use the document as their only vertical scroll container'
     $page = visit("/dashboard/events/{$event->id}/edit")
         ->on()->desktop()
         ->resize(1440, 900)
+        ->click('#event-tab-registration')
+        ->click('#registration_enabled')
         ->assertNoJavaScriptErrors()
         ->assertScript(
             "(() => { const inset = document.querySelector('[data-slot=\"sidebar-inset\"]'); const resourcePage = document.querySelector('[data-testid=\"admin-resource-page\"]'); const header = inset?.querySelector(':scope > header'); if (inset === null || resourcePage === null || header === null) return false; const insetStyle = getComputedStyle(inset); const resourceStyle = getComputedStyle(resourcePage); const headerStyle = getComputedStyle(header); return insetStyle.overflowY === 'clip' && insetStyle.borderTopLeftRadius !== '0px' && resourceStyle.overflowY === 'visible' && document.scrollingElement === document.documentElement && document.documentElement.scrollHeight > document.documentElement.clientHeight && headerStyle.position === 'sticky' && headerStyle.backgroundColor !== 'rgba(0, 0, 0, 0)'; })()",
@@ -339,6 +342,6 @@ test('long admin forms use the document as their only vertical scroll container'
     $page->script('window.scrollTo(0, 600)');
 
     $page->assertScript(
-        "(() => { const inset = document.querySelector('[data-slot=\"sidebar-inset\"]'); const resourcePage = document.querySelector('[data-testid=\"admin-resource-page\"]'); const header = document.querySelector('[data-slot=\"sidebar-inset\"] > header'); const actions = document.querySelector('[data-testid=\"admin-form-actions\"]'); const aside = document.querySelector('[data-testid=\"admin-form-aside\"]'); if (inset === null || resourcePage === null || header === null || actions === null || aside === null) return false; const asideStyle = getComputedStyle(aside); const headerBounds = header.getBoundingClientRect(); const topEdgeSamples = [headerBounds.left + 2, headerBounds.left + (headerBounds.width / 2), headerBounds.right - 2]; const headerCoversTopEdge = topEdgeSamples.every((x) => header.contains(document.elementFromPoint(x, 2))); return headerBounds.top === 0 && headerCoversTopEdge && Math.abs(actions.getBoundingClientRect().top - headerBounds.bottom) <= 1 && Math.abs(aside.getBoundingClientRect().top - 128) <= 1 && asideStyle.position === 'sticky' && asideStyle.top === '128px' && inset.scrollTop === 0 && resourcePage.scrollTop === 0 && window.scrollY >= 500; })()",
+        "(() => { const inset = document.querySelector('[data-slot=\"sidebar-inset\"]'); const resourcePage = document.querySelector('[data-testid=\"admin-resource-page\"]'); const header = document.querySelector('[data-slot=\"sidebar-inset\"] > header'); const actions = document.querySelector('[data-testid=\"admin-form-actions\"]'); const aside = document.querySelector('[data-testid=\"admin-form-aside\"]'); if (inset === null || resourcePage === null || header === null || actions === null || aside === null) return false; const asideStyle = getComputedStyle(aside); const headerBounds = header.getBoundingClientRect(); const topEdgeSamples = [headerBounds.left + 2, headerBounds.left + (headerBounds.width / 2), headerBounds.right - 2]; const headerCoversTopEdge = topEdgeSamples.every((x) => header.contains(document.elementFromPoint(x, 2))); return headerBounds.top === 0 && headerCoversTopEdge && Math.abs(actions.getBoundingClientRect().top - headerBounds.bottom) <= 1 && Math.abs(aside.getBoundingClientRect().top - 240) <= 1 && asideStyle.position === 'sticky' && asideStyle.top === '240px' && inset.scrollTop === 0 && resourcePage.scrollTop === 0 && window.scrollY > 0; })()",
     );
 });

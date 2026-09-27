@@ -25,20 +25,30 @@ test('an editor can attach and remove a course using a saved connection without 
     TrackDrawConnection::factory()->create(['name' => 'DDS']);
     $connection = TrackDrawConnection::factory()->create(['name' => 'Private', 'api_key' => 'private-key']);
     $bytes = File::get(base_path('tests/Fixtures/trackdraw-snapshot.json'));
-    Http::fake(['https://trackdraw.app/api/v1/projects/course-1/viewer-snapshot' => Http::response(['data' => json_decode($bytes, true)])]);
+    Http::fake([
+        'https://trackdraw.app/api/v1/projects/course-1/viewer-snapshot' => Http::response(['data' => json_decode($bytes, true)]),
+        'https://trackdraw.app/api/v1/projects?*' => Http::sequence()
+            ->push(['data' => [['id' => 'other', 'title' => 'Andere baan']], 'pagination' => ['has_more' => true, 'next_cursor' => 'page-two']])
+            ->push(['data' => [['id' => 'course-1', 'title' => 'DDS testbaan']], 'pagination' => ['has_more' => false, 'next_cursor' => null]]),
+    ]);
     $this->actingAs($editor);
 
     $page = visit(route('admin.events.edit', $event))
+        ->click('#event-tab-track')
         ->click('#track-connection')->click('[role=option]:has-text("Private")')
-        ->type('project_id', 'course-1')
-        ->press('Baan koppelen')
+        ->assertSee('2 cloudprojecten beschikbaar.')
+        ->click('#track-project')->click('[role=option]:has-text("DDS testbaan")')
+        ->assertSee('Nog niet opgeslagen')->press('Wijzigingen opslaan')
         ->assertSee('DDS testbaan')
         ->assertMissing('input[name=api_key]')
         ->assertPresent('.trackdraw-viewer canvas')
+        ->assertSee('Opgeslagen')
+        ->screenshot(filename: 'event-track-desktop')
+        ->assertScript('document.querySelector("[data-testid=admin-form-save-status]").dataset.state', 'unchanged')
         ->assertNoJavaScriptErrors();
     expect($event->fresh()->track_draw_connection_id)->toBe($connection->id);
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer private-key'));
-    $page->press('Baan loskoppelen')->assertDontSee('DDS testbaan')->assertNoJavaScriptErrors();
+    $page->press('Loskoppelen')->press('Wijzigingen opslaan')->assertMissing('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
 });
 
 test('a public event renders its saved course on mobile and switches between 2D and 3D', function () {
@@ -116,5 +126,82 @@ test('the connections table and edit dialog fit on mobile and restore keyboard f
         ->screenshot(filename: 'trackdraw-integration-dialog-mobile')
         ->press('Annuleren')->assertMissing('[role="dialog"]')
         ->assertScript('document.activeElement.getAttribute("aria-label")', 'Bewerk DDS wedstrijdaccount')
+        ->assertNoJavaScriptErrors();
+});
+
+test('event tabs preserve edits and place navigation directly below the header actions', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Admin->value);
+    $event = Event::factory()->create(['registration_enabled' => false]);
+    $this->actingAs($editor);
+
+    $page = visit(route('admin.events.edit', $event))->on()->desktop()
+        ->fill('#title', 'Gewijzigde eventtitel')
+        ->click('#event-tab-registration')
+        ->fill('#capacity', '24')
+        ->click('#event-tab-page')
+        ->fill('#content', 'Nieuwe praktische informatie')
+        ->click('#event-tab-track')
+        ->assertSee('Opgeslagen track')
+        ->assertSee('Nog niet opgeslagen')
+        ->click('#event-tab-general')
+        ->assertScript('document.querySelector("#title").value', 'Gewijzigde eventtitel')
+        ->assertScript('document.querySelectorAll("h1").length', 1)
+        ->assertScript('(() => { const heading = document.querySelector("h1"); const tabs = document.querySelector("[role=tablist]"); const save = document.querySelector("button[type=submit]"); return heading.getBoundingClientRect().top < tabs.getBoundingClientRect().top && save.getBoundingClientRect().bottom <= tabs.getBoundingClientRect().top; })()')
+        ->screenshot(filename: 'event-tabs-desktop')
+        ->press('Wijzigingen opslaan')
+        ->assertSee('Opgeslagen')
+        ->assertNoJavaScriptErrors();
+    expect($event->fresh())->title->toBe('Gewijzigde eventtitel')
+        ->capacity->toBe(24)->content->toBe('Nieuwe praktische informatie');
+
+    $page->resize(390, 844)->click('#event-tab-track')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->screenshot(filename: 'event-tabs-mobile')
+        ->assertNoJavaScriptErrors();
+});
+
+test('switching accounts clears the project and cloud errors can be retried', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $event = Event::factory()->create();
+    TrackDrawConnection::factory()->create(['name' => 'DDS']);
+    TrackDrawConnection::factory()->create(['name' => 'Private']);
+    Http::fake(['https://trackdraw.app/api/v1/projects?*' => Http::sequence()
+        ->push(['data' => [['id' => 'course', 'title' => 'DDS baan']], 'pagination' => ['has_more' => false, 'next_cursor' => null]])
+        ->push([], 401)
+        ->push(['data' => [], 'pagination' => ['has_more' => false, 'next_cursor' => null]])]);
+    $this->actingAs($editor);
+
+    visit(route('admin.events.edit', $event))
+        ->click('#event-tab-track')
+        ->click('#track-connection')->click('[role=option]:has-text("DDS")')
+        ->assertSee('1 cloudproject beschikbaar.')
+        ->click('#track-project')->click('[role=option]:has-text("DDS baan")')
+        ->click('#track-connection')->click('[role=option]:has-text("Private")')
+        ->assertSee('De cloudprojecten konden niet worden opgehaald.')
+        ->assertScript('document.querySelector("#track-project").textContent.includes("DDS baan")', false)
+        ->press('Opnieuw proberen')
+        ->assertSee('Geen cloudprojecten gevonden.')
+        ->assertNoJavaScriptErrors();
+    Http::assertSentCount(3);
+    expect($event->fresh()->trackdraw_project_id)->toBeNull();
+});
+
+test('saving from another event tab reveals an invalid required field without losing edits', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $event = Event::factory()->create(['registration_enabled' => false]);
+    $this->actingAs($admin);
+
+    visit(route('admin.events.edit', $event))
+        ->fill('#title', '')
+        ->click('#event-tab-page')
+        ->fill('#content', 'Bewaar deze invoer')
+        ->press('Wijzigingen opslaan')
+        ->assertAttribute('#event-tab-general', 'aria-selected', 'true')
+        ->assertScript('document.activeElement.id', 'title')
+        ->click('#event-tab-page')
+        ->assertScript('document.querySelector("#content").value', 'Bewaar deze invoer')
         ->assertNoJavaScriptErrors();
 });
