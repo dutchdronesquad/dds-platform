@@ -34,8 +34,8 @@ test('an editor can attach and remove a course using a saved connection without 
     ]);
     $this->actingAs($editor);
 
-    $page = visit(route('admin.events.edit', $event))
-        ->click('#event-tab-track')
+    $page = visit(route('admin.events.edit', $event));
+    $page->click('#event-tab-track')
         ->assertScript('(() => { const tops = ["track-connection", "track-project", "track-default-view"].map(id => document.getElementById(id).getBoundingClientRect().top); return Math.max(...tops) - Math.min(...tops) < 2; })()')
         ->click('#track-connection')->click('[role=option]:has-text("Private")')
         ->assertSee('2 cloudprojecten beschikbaar.')
@@ -51,7 +51,7 @@ test('an editor can attach and remove a course using a saved connection without 
     expect($event->fresh())->track_draw_connection_id->toBe($connection->id)
         ->trackdraw_default_view->toBe('3d');
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer private-key'));
-    $page->page()->getByRole('button', ['name' => 'Loskoppelen', 'exact' => true])->click();
+    $page->click('internal:role=button[name="Loskoppelen"s]');
     $page->assertSee('De track wordt losgekoppeld wanneer je het event opslaat.');
     $page->press('Wijzigingen opslaan');
     $page->assertMissing('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();
