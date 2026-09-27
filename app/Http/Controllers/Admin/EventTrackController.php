@@ -29,7 +29,7 @@ final class EventTrackController extends Controller
             $snapshot = $snapshots->fetch($validated['project_id'], $connection->api_key);
         } catch (Throwable) {
             throw ValidationException::withMessages([
-                'project_id' => 'De baan kon niet worden opgehaald. Controleer het project, de API-key met tracks:read-toegang en de TrackDraw-verbinding. De bestaande baan is behouden.',
+                'project_id' => 'De baan kon niet worden opgehaald. Controleer het project, de API-key en de TrackDraw-verbinding. De bestaande baan is behouden.',
             ]);
         }
 

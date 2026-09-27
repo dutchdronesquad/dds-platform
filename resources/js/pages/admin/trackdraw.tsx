@@ -41,10 +41,10 @@ type Connection = {
 
 function ConnectionDialog({
     connection,
-    apiKeysUrl,
+    studioUrl,
 }: {
     connection?: Connection;
-    apiKeysUrl?: string;
+    studioUrl?: string;
 }) {
     const [open, setOpen] = useState(false);
     const prefix = connection
@@ -133,7 +133,7 @@ function ConnectionDialog({
                                 >
                                     {connection
                                         ? 'Laat leeg om de huidige sleutel te behouden.'
-                                        : 'Maak in TrackDraw een API-key met tracks:read-toegang. Je sleutel wordt versleuteld opgeslagen en nooit teruggetoond.'}
+                                        : 'Open TrackDraw Studio en maak via je profielvenster een API-key aan. Je sleutel wordt versleuteld opgeslagen en nooit teruggetoond.'}
                                 </p>
                                 <InputError
                                     id={`${prefix}-key-error`}
@@ -142,12 +142,12 @@ function ConnectionDialog({
                             </div>
                             {!connection && (
                                 <a
-                                    href={apiKeysUrl}
+                                    href={studioUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-sm font-medium text-signal-700 underline-offset-4 hover:underline dark:text-signal-300"
                                 >
-                                    API-key aanmaken in TrackDraw
+                                    TrackDraw Studio openen
                                     <ArrowUpRight className="size-4" />
                                 </a>
                             )}
@@ -179,10 +179,10 @@ function ConnectionDialog({
 
 export default function TrackDrawSettings({
     connections,
-    apiKeysUrl,
+    studioUrl,
 }: {
     connections: ServerPagination<Connection>;
-    apiKeysUrl: string;
+    studioUrl: string;
 }) {
     return (
         <>
@@ -191,7 +191,7 @@ export default function TrackDrawSettings({
                 eyebrow="Integraties"
                 title="TrackDraw"
                 description="Beheer de accounts waarvan je banen wilt tonen. Kies bij een event de koppeling en het project."
-                actions={<ConnectionDialog apiKeysUrl={apiKeysUrl} />}
+                actions={<ConnectionDialog studioUrl={studioUrl} />}
             >
                 <AdminDataTable
                     caption="TrackDraw-koppelingen"

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Vite;
 
 beforeEach(function () {
+    config(['services.trackdraw.url' => 'https://trackdraw.app']);
     Vite::useHotFile(storage_path('framework/testing/vite.hot'));
     $this->seed(RolesAndPermissionsSeeder::class);
     Http::preventStrayRequests();

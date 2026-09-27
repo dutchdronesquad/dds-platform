@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
+    config(['services.trackdraw.url' => 'https://trackdraw.app']);
     $this->seed(RolesAndPermissionsSeeder::class);
     Storage::fake('s3');
 });
@@ -170,7 +171,7 @@ test('the configured TrackDraw environment serves both imports and the API key s
     ])]);
 
     $this->actingAs($admin)->get(route('admin.integrations.trackdraw.index'))->assertInertia(fn (Assert $page) => $page
-        ->where('apiKeysUrl', 'https://dev.trackdraw.app/dashboard/api-keys'));
+        ->where('studioUrl', 'https://dev.trackdraw.app/studio'));
     $this->put(route('admin.events.track.update', $event), ['connection_id' => $connection->id, 'project_id' => 'dev-course'])
         ->assertSessionHasNoErrors();
 
