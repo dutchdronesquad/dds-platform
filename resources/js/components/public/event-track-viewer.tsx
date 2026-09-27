@@ -68,7 +68,6 @@ function EventTrackViewerContent({
                         signal: controller.signal,
                         credentials: 'same-origin',
                     }),
-                    import('@trackdraw/viewer/static/trackdraw-viewer.css'),
                 ]);
                 if (!response.ok) {
                     throw new Error('Unavailable');

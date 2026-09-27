@@ -2,11 +2,6 @@
 
 return [
 
-    'trackdraw' => [
-        'disk' => env('TRACKDRAW_DISK', env('APP_ENV', 'production') === 'local' ? 'local' : 's3'),
-        'url' => rtrim((string) env('TRACKDRAW_URL', 'https://trackdraw.app'), '/'),
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -38,6 +33,11 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    'trackdraw' => [
+        'disk' => env('TRACKDRAW_DISK', env('APP_ENV', 'production') === 'local' ? 'local' : 's3'),
+        'url' => rtrim((string) env('TRACKDRAW_URL', 'https://trackdraw.app'), '/'),
     ],
 
 ];
