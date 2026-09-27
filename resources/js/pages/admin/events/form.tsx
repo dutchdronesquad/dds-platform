@@ -163,7 +163,8 @@ export function EventForm({
             onError={(errors) => {
                 const field = Object.keys(errors)[0];
                 onTabChange?.(
-                    field?.startsWith('track_')
+                    field?.startsWith('track_') ||
+                        field === 'trackdraw_default_view'
                         ? 'track'
                         : field?.startsWith('registration_') ||
                             ['capacity', 'price_euros'].includes(field)

@@ -292,6 +292,44 @@ export function EventTrackForm({
                         )}
                     </div>
                 </div>
+                <div className="grid max-w-sm gap-2">
+                    <Label htmlFor="track-default-view">
+                        Standaardweergave
+                    </Label>
+                    <Select
+                        name="trackdraw_default_view"
+                        defaultValue={event.track.defaultView}
+                        disabled={processing}
+                    >
+                        <SelectTrigger
+                            id="track-default-view"
+                            className="w-full"
+                            aria-describedby="track-default-view-hint track-default-view-error"
+                            aria-invalid={Boolean(
+                                errors.trackdraw_default_view,
+                            )}
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="2d">
+                                2D — bovenaanzicht
+                            </SelectItem>
+                            <SelectItem value="3d">3D — perspectief</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p
+                        id="track-default-view-hint"
+                        className="text-sm text-muted-foreground"
+                    >
+                        Hiermee opent de track voor bezoekers. Ze kunnen zelf
+                        wisselen tussen 2D en 3D.
+                    </p>
+                    <InputError
+                        id="track-default-view-error"
+                        message={errors.trackdraw_default_view}
+                    />
+                </div>
                 {event.track.connections.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                         Laat een beheerder een TrackDraw-koppeling toevoegen om
@@ -338,6 +376,7 @@ export function EventTrackForm({
                         {active && (
                             <EventTrackViewer
                                 slug={event.slug}
+                                initialView={event.track.defaultView}
                                 title={event.track.title}
                                 revision={event.track.syncedAt ?? undefined}
                             />

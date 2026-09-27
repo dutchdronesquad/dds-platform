@@ -8,6 +8,7 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia;
 
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
@@ -115,4 +116,23 @@ test('local development can store and serve a private track without S3 credentia
     $this->get(route('events.track', $event->slug))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
     auth()->logout();
     $this->get(route('events.track', $event->slug))->assertNotFound();
+});
+
+test('an editor can change the initial viewer mode without downloading the track again', function () {
+    $editor = User::factory()->create();
+    $editor->assignRole(Role::Editor->value);
+    $event = Event::factory()->published()->create(['trackdraw_title' => 'Baan', 'trackdraw_snapshot_path' => 'saved.json']);
+    expect($event->fresh()->trackdraw_default_view)->toBe('2d');
+
+    $this->actingAs($editor)->put(route('admin.events.update', $event), eventWithTrackPayload($event, [
+        'track_action' => 'keep', 'trackdraw_default_view' => '3d',
+    ]))->assertSessionHasNoErrors();
+    expect($event->fresh())->trackdraw_default_view->toBe('3d')->trackdraw_snapshot_path->toBe('saved.json');
+    $this->get(route('admin.events.edit', $event))->assertInertia(fn (AssertableInertia $page) => $page->where('event.track.defaultView', '3d'));
+    $this->get(route('events.show', $event->slug))->assertInertia(fn (AssertableInertia $page) => $page->where('event.trackDefaultView', '3d'));
+    $this->put(route('admin.events.update', $event), eventWithTrackPayload($event, [
+        'trackdraw_default_view' => 'invalid',
+    ]))->assertSessionHasErrors('trackdraw_default_view');
+    expect($event->fresh()->trackdraw_default_view)->toBe('3d');
+    Http::assertNothingSent();
 });

@@ -5,10 +5,12 @@ export default function EventTrackViewer({
     slug,
     title,
     revision,
+    initialView = '2d',
 }: {
     slug: string;
     title: string;
     revision?: string;
+    initialView?: '2d' | '3d';
 }) {
     const container = useRef<HTMLDivElement>(null);
     const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
@@ -57,7 +59,7 @@ export default function EventTrackViewer({
                 const viewer = createTrackDrawViewer(container.current, {
                     design: snapshot.design,
                     theme: 'light',
-                    initialView: '2d',
+                    initialView,
                     labels: {
                         viewerPanZoom:
                             'Sleep om te bewegen, scroll om te zoomen',
@@ -76,25 +78,37 @@ export default function EventTrackViewer({
             controller.abort();
             dispose?.();
         };
-    }, [slug, revision]);
+    }, [slug, revision, initialView]);
 
     return (
-        <section aria-label={`Baan: ${title}`} className="min-w-0 space-y-3">
-            <h2 className="text-2xl font-semibold">{title}</h2>
-            <p className="text-sm text-neutral-500">
-                Verken de baan in 2D of 3D.
-            </p>
-            {status === 'loading' && <p role="status">Baan laden…</p>}
+        <section
+            aria-label={`Track: ${title}`}
+            className="dds-track-viewer min-w-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950"
+        >
+            <div className="border-b border-neutral-200 px-5 py-4 sm:px-6 dark:border-neutral-800">
+                <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">
+                    {title}
+                </h3>
+            </div>
+            {status === 'loading' && (
+                <p role="status" className="px-5 py-4 text-sm text-neutral-500">
+                    Track laden…
+                </p>
+            )}
             {status === 'error' && (
-                <p role="alert">
+                <p role="alert" className="px-5 py-4 text-sm">
                     De baan kan momenteel niet worden weergegeven. Probeer de
                     pagina opnieuw te laden.
                 </p>
             )}
             <div
                 ref={container}
-                className="h-[420px] w-full overflow-hidden rounded-xl border bg-white sm:h-[540px]"
+                className="h-[380px] w-full overflow-hidden bg-white sm:h-[540px]"
             />
+            <p className="border-t border-neutral-200 px-5 py-3 text-xs leading-5 text-neutral-500 sm:px-6 dark:border-neutral-800 dark:text-neutral-400">
+                Sleep om de track te verkennen. Scroll of knijp met twee vingers
+                om te zoomen.
+            </p>
         </section>
     );
 }

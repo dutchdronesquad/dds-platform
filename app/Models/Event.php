@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $trackdraw_project_id
  * @property int|null $track_draw_connection_id
  * @property string|null $trackdraw_snapshot_path
+ * @property string $trackdraw_default_view
  * @property string|null $trackdraw_title
  * @property CarbonImmutable|null $trackdraw_synced_at
  * @property CarbonImmutable $starts_at
@@ -61,6 +62,7 @@ final class Event extends Model
         'title',
         'slug',
         'content',
+        'trackdraw_default_view',
         'starts_at',
         'ends_at',
         'published_at',

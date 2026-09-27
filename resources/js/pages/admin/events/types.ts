@@ -76,6 +76,7 @@ export type EventFormOptions = {
 
 export type EditableEvent = {
     track: {
+        defaultView: '2d' | '3d';
         projectId: string | null;
         title: string | null;
         syncedAt: string | null;

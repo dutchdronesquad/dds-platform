@@ -202,3 +202,43 @@
         color: var(--color-night-950);
     }
 }
+
+/* Keep the embedded viewer controls legible over the canvas. */
+.dds-track-viewer .trackdraw-viewer > div:has(> button[aria-pressed]) {
+    top: 1rem;
+    left: 1rem;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid #d8e1e5;
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 2px 8px #17272e18;
+}
+
+.dds-track-viewer .trackdraw-viewer > div > button[aria-pressed] {
+    min-width: 3rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #34505a;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.dds-track-viewer .trackdraw-viewer > div > button[aria-pressed='true'] {
+    background: #07566a;
+    color: #fff;
+}
+
+.dds-track-viewer .trackdraw-viewer > div > button[aria-pressed]:focus-visible {
+    outline: 2px solid #008fbd;
+    outline-offset: 2px;
+}
+
+.dds-track-viewer .trackdraw-viewer [class~='bg-black/45'] {
+    border: 1px solid #ffffff38;
+    background: #17272e;
+    box-shadow: 0 2px 8px #0003;
+}

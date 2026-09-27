@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('trackdraw_project_id')->nullable();
             $table->string('trackdraw_snapshot_path')->nullable();
             $table->text('trackdraw_title')->nullable();
+            $table->string('trackdraw_default_view', 2)->default('2d');
             $table->timestampTz('trackdraw_synced_at')->nullable();
         });
     }
@@ -25,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->dropColumn(['trackdraw_project_id', 'trackdraw_snapshot_path', 'trackdraw_title', 'trackdraw_synced_at']);
+            $table->dropColumn(['trackdraw_project_id', 'trackdraw_snapshot_path', 'trackdraw_title', 'trackdraw_default_view', 'trackdraw_synced_at']);
         });
     }
 };

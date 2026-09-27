@@ -434,6 +434,7 @@ final class EventController extends Controller
             'slug' => $event->slug,
             'content' => $event->content,
             'track' => [
+                'defaultView' => $event->trackdraw_default_view,
                 'projectId' => $event->trackdraw_project_id,
                 'title' => $event->trackdraw_title,
                 'syncedAt' => $event->trackdraw_synced_at?->toIso8601String(),

@@ -13,6 +13,7 @@ class UpdateEventRequest extends StoreEventRequest
     {
         return [
             ...parent::rules(),
+            'trackdraw_default_view' => ['sometimes', 'required', 'in:2d,3d'],
             'track_action' => ['sometimes', 'required', 'in:keep,replace,remove'],
             'track_connection_id' => ['exclude_unless:track_action,replace', 'required', 'integer', 'exists:track_draw_connections,id'],
             'track_project_id' => ['exclude_unless:track_action,replace', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_-]+$/'],

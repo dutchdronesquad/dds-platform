@@ -136,6 +136,7 @@ final class EventController extends Controller
                 ...$this->eventData->summary($event),
                 'contentHtml' => $this->markdown->toHtml($event->content),
                 'trackTitle' => $event->trackdraw_title,
+                'trackDefaultView' => $event->trackdraw_default_view,
                 'location' => [
                     'name' => $event->location->name,
                     'city' => $event->location->city,
