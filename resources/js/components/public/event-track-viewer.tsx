@@ -1,8 +1,4 @@
-import type {
-    TrackViewerProps,
-    ViewerView,
-    ViewerViewState,
-} from '@trackdraw/viewer';
+import type { ViewerView, ViewerViewState } from '@trackdraw/viewer';
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/routes/events';
 
@@ -85,7 +81,7 @@ function EventTrackViewerContent({
                 if (controller.signal.aborted || !container.current) {
                     return;
                 }
-                const options: TrackViewerProps = {
+                const options: Parameters<typeof createTrackDrawViewer>[1] = {
                     design: snapshot.design,
                     theme: 'light',
                     initialView,
