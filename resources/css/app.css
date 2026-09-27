@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@trackdraw/viewer/static/trackdraw-viewer.css';
 
 @import 'tw-animate-css';
 

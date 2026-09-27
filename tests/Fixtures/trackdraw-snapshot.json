@@ -1,0 +1,77 @@
+{
+  "schema": "trackdraw.viewer-snapshot.v1",
+  "snapshot_id": "sha256:355d341322e5cc2882bff6a2c6e204f8382dc38ff1e174f8f0c7cc47e17236aa",
+  "required_viewer": {
+    "schema": "trackdraw.viewer-snapshot.v1",
+    "min_renderer_version": "0.1.0",
+    "capabilities": [
+      "shape:gate",
+      "shape:tower",
+      "shape:flag",
+      "shape:cone",
+      "shape:label",
+      "shape:polyline",
+      "shape:startfinish",
+      "shape:ladder",
+      "shape:divegate",
+      "shape:barrier",
+      "catalog:trackdraw",
+      "catalog:multigp"
+    ]
+  },
+  "design": {
+    "version": 2,
+    "title": "DDS testbaan",
+    "field": {
+      "width": 30,
+      "height": 20,
+      "origin": "tl",
+      "grid_step": 1,
+      "ppm": 20
+    },
+    "shapes": [
+      {
+        "id": "gate-1",
+        "x": 5,
+        "y": 5,
+        "rotation": 0,
+        "kind": "gate",
+        "width": 3,
+        "height": 2
+      },
+      {
+        "id": "hurdle-1",
+        "kind": "barrier",
+        "variant": "banner",
+        "x": 15,
+        "y": 10,
+        "rotation": 0,
+        "width": 3.048,
+        "height": 1.524,
+        "color": "#1e3a8a",
+        "meta": {
+          "catalog": {
+            "version": 1,
+            "element_id": "multigp-hurdle",
+            "assigned_kind": "barrier",
+            "official": true,
+            "snapshot": {
+              "name": "MultiGP Hurdle",
+              "organization": "MultiGP",
+              "dimensions_label": "10 ft wide, 5 ft tall"
+            }
+          }
+        }
+      }
+    ],
+    "updated_at": "2026-09-27T10:00:00.000Z"
+  },
+  "assets": [
+    {
+      "path": "/assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp",
+      "content_type": "image/webp",
+      "size_bytes": 28334,
+      "sha256": "39d71f74ce744e32ff4a57a70366e9d18f4aa5dc118378399597580726ddbb40"
+    }
+  ]
+}

@@ -11,16 +11,21 @@ use App\Http\Requests\Admin\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\Season;
+use App\Models\TrackDrawConnection;
 use App\Models\User;
 use App\Support\MediaAssetPickerData;
+use App\Support\TrackDrawSnapshot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 final class EventController extends Controller
 {
@@ -87,9 +92,52 @@ final class EventController extends Controller
         ]);
     }
 
-    public function update(UpdateEventRequest $request, Event $event): RedirectResponse
+    public function update(UpdateEventRequest $request, Event $event, TrackDrawSnapshot $snapshots): RedirectResponse
     {
-        $event->update($request->eventData());
+        $action = $request->validated('track_action', 'keep');
+        $snapshot = null;
+        $track = [];
+        if ($action === 'replace') {
+            $connection = TrackDrawConnection::query()->whereKey($request->validated('track_connection_id'))->firstOrFail();
+            try {
+                $snapshot = $snapshots->fetch($request->validated('track_project_id'), $connection->api_key);
+            } catch (Throwable) {
+                throw ValidationException::withMessages([
+                    'track_project_id' => 'De track kon niet worden opgehaald. Controleer het project en de TrackDraw-koppeling. Je wijzigingen zijn nog niet opgeslagen.',
+                ]);
+            }
+            $track = [
+                'track_draw_connection_id' => $connection->id,
+                'trackdraw_project_id' => $request->validated('track_project_id'),
+                'trackdraw_snapshot_path' => $snapshot['path'],
+                'trackdraw_title' => $snapshot['title'],
+                'trackdraw_synced_at' => now(),
+            ];
+        } elseif ($action === 'remove') {
+            $track = [
+                'track_draw_connection_id' => null,
+                'trackdraw_project_id' => null,
+                'trackdraw_snapshot_path' => null,
+                'trackdraw_title' => null,
+                'trackdraw_synced_at' => null,
+            ];
+        }
+
+        try {
+            $previousPath = DB::transaction(function () use ($event, $request, $track): ?string {
+                $current = Event::query()->lockForUpdate()->findOrFail($event->id);
+                $previousPath = $current->trackdraw_snapshot_path;
+                $current->forceFill([...$request->eventData(), ...$track])->saveOrFail();
+
+                return $previousPath;
+            });
+        } catch (Throwable $exception) {
+            $snapshots->deleteUnused($snapshot['path'] ?? null);
+            throw $exception;
+        }
+        if ($action !== 'keep') {
+            $snapshots->deleteUnused($previousPath);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event opgeslagen.']);
 
@@ -107,11 +155,12 @@ final class EventController extends Controller
         return to_route('admin.events.edit', $duplicate);
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event, TrackDrawSnapshot $snapshots): RedirectResponse
     {
         Gate::authorize('delete', $event);
 
         $event->delete();
+        $snapshots->deleteUnused($event->trackdraw_snapshot_path);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event verwijderd.']);
 
@@ -384,6 +433,15 @@ final class EventController extends Controller
             'title' => $event->title,
             'slug' => $event->slug,
             'content' => $event->content,
+            'track' => [
+                'defaultView' => $event->trackdraw_default_view,
+                'projectId' => $event->trackdraw_project_id,
+                'title' => $event->trackdraw_title,
+                'syncedAt' => $event->trackdraw_synced_at?->toIso8601String(),
+                'connectionId' => $event->track_draw_connection_id,
+                'connections' => TrackDrawConnection::query()->orderBy('name')->get(['id', 'name']),
+                'canManageConnection' => $user->can('manage', TrackDrawConnection::class),
+            ],
             'locationId' => $event->location_id,
             'seasonId' => $event->season_id,
             'coverImageId' => $event->cover_image_id,

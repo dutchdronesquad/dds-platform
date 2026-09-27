@@ -15,6 +15,7 @@ declare module '@inertiajs/core' {
             locale: LocaleProps;
             auth: Auth;
             management: {
+                integrations: { canManage: boolean };
                 articles: { canView: boolean; count: number };
                 contact: { canView: boolean; followUpCount: number };
                 events: { canView: boolean; count: number };

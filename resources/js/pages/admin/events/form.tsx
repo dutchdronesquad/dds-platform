@@ -16,6 +16,7 @@ import {
     TriangleAlert,
     Trash2,
 } from 'lucide-react';
+import { flushSync } from 'react-dom';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
@@ -56,6 +57,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { show as publicEventShow } from '@/routes/events';
+import { EventTabPanel, EventTabs } from './event-tabs';
+import type { EventTab } from './event-tabs';
+import { EventTrackForm } from './track-form';
 import type { EditableEvent, EventFormOptions, SelectOption } from './types';
 
 type MutationForm = {
@@ -97,16 +101,21 @@ const eventFormOutlineItems = [
 ];
 
 export function EventForm({
+    activeTab,
+    onTabChange,
     canManageSeasons,
     event,
     form,
     options,
 }: {
+    activeTab?: EventTab;
+    onTabChange?: (tab: EventTab) => void;
     canManageSeasons: boolean;
     event?: EditableEvent;
     form: MutationForm;
     options: EventFormOptions;
 }) {
+    const [saveVersion, setSaveVersion] = useState(0);
     const [title, setTitle] = useState(event?.title ?? '');
     const [registrationEnabled, setRegistrationEnabled] = useState(
         event?.registrationEnabled ?? false,
@@ -135,14 +144,59 @@ export function EventForm({
     return (
         <Form
             {...form}
-            className="grid gap-0"
+            className={activeTab ? 'contents' : 'grid gap-0'}
+            onInvalidCapture={(event) => {
+                const field = event.target as HTMLElement;
+                const tab = field.closest<HTMLElement>('[data-event-tab]')
+                    ?.dataset.eventTab as EventTab | undefined;
+                if (
+                    tab &&
+                    tab !== activeTab &&
+                    onTabChange &&
+                    event.currentTarget.querySelector(
+                        'input:invalid, select:invalid, textarea:invalid',
+                    ) === field
+                ) {
+                    flushSync(() => onTabChange(tab));
+                }
+            }}
+            onError={(errors) => {
+                const field = Object.keys(errors)[0];
+                onTabChange?.(
+                    field?.startsWith('track_') ||
+                        field === 'trackdraw_default_view'
+                        ? 'track'
+                        : field?.startsWith('registration_') ||
+                            ['capacity', 'price_euros'].includes(field)
+                          ? 'registration'
+                          : ['content', 'cover_image_id'].includes(field)
+                            ? 'page'
+                            : 'general',
+                );
+            }}
             options={{ preserveScroll: true }}
+            onSuccess={() => {
+                flushSync(() => setSaveVersion((value) => value + 1));
+                return new Promise<void>((resolve) =>
+                    requestAnimationFrame(() => resolve()),
+                );
+            }}
             setDefaultsOnSuccess
         >
             {({ errors, isDirty, processing, recentlySuccessful }) => (
                 <>
                     <AdminFormNavigationGuard isDirty={isDirty} />
                     <AdminFormActions
+                        heading={Boolean(activeTab)}
+                        eyebrow="Event bewerken"
+                        navigation={
+                            activeTab && onTabChange ? (
+                                <EventTabs
+                                    value={activeTab}
+                                    onChange={onTabChange}
+                                />
+                            ) : undefined
+                        }
                         context={
                             title.trim() ||
                             (event ? 'Event bewerken' : 'Nieuw event')
@@ -172,514 +226,593 @@ export function EventForm({
                         </Button>
                     </AdminFormActions>
 
-                    <AdminFormLayout
-                        asideFirstOnSmallScreens={false}
-                        asideLayoutClassName="@min-[56rem]/admin-page:grid-cols-[minmax(0,1fr)_18.5rem] @min-[84rem]/admin-page:grid-cols-[minmax(0,1fr)_21.5rem]"
-                        className="mx-auto w-full"
-                        contentClassName="@container/event-main"
-                        aside={
-                            <EventFormAside event={event} isDirty={isDirty} />
-                        }
-                    >
-                        <AdminFormErrorSummary errors={errors} />
-
-                        {/* 1. Identiteit: wat is het event, en waar vindt het plaats. */}
-                        <AdminFormSection
-                            id="event-basics"
-                            className="@container/fields"
-                            icon={FileText}
-                            title="Basisinformatie"
-                            description={
-                                event
-                                    ? 'De titel, het type en de locatie vormen de herkenbare basis van het event.'
-                                    : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel en startdatum gemaakt.'
+                    <div>
+                        <AdminFormLayout
+                            asideFirstOnSmallScreens={false}
+                            asideClassName={
+                                activeTab
+                                    ? '@min-[56rem]/admin-page:top-60'
+                                    : undefined
+                            }
+                            asideLayoutClassName="@min-[56rem]/admin-page:grid-cols-[minmax(0,1fr)_18.5rem] @min-[84rem]/admin-page:grid-cols-[minmax(0,1fr)_21.5rem]"
+                            className="mx-auto w-full"
+                            contentClassName="@container/event-main"
+                            aside={
+                                <EventFormAside
+                                    event={event}
+                                    isDirty={isDirty}
+                                    showOutline={!activeTab}
+                                />
                             }
                         >
-                            <div className="grid gap-5 @min-[40rem]/fields:grid-cols-2">
-                                <FormField
-                                    id="title"
-                                    label="Titel"
-                                    error={errors.title}
-                                    className="@min-[40rem]/fields:col-span-2"
-                                >
-                                    <Input
-                                        id="title"
-                                        name="title"
-                                        value={title}
-                                        onChange={(inputEvent) => {
-                                            const nextTitle =
-                                                inputEvent.target.value;
+                            <AdminFormErrorSummary errors={errors} />
 
-                                            setTitle(nextTitle);
-                                        }}
-                                        required
-                                        maxLength={255}
-                                        autoFocus={!event}
-                                        autoComplete="off"
-                                        placeholder={
-                                            event
-                                                ? undefined
-                                                : 'Bijv. Indoor training Rotterdam'
-                                        }
-                                        aria-invalid={Boolean(errors.title)}
-                                        aria-describedby={fieldDescription(
-                                            'title',
-                                            errors.title,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="type"
-                                    label="Eventtype"
-                                    error={errors.type}
+                            <EventTabPanel tab="general" activeTab={activeTab}>
+                                {/* 1. Identiteit: wat is het event, en waar vindt het plaats. */}
+                                <AdminFormSection
+                                    id="event-basics"
+                                    className="@container/fields"
+                                    icon={FileText}
+                                    title="Basisinformatie"
+                                    description={
+                                        event
+                                            ? 'De titel, het type en de locatie vormen de herkenbare basis van het event.'
+                                            : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel en startdatum gemaakt.'
+                                    }
                                 >
-                                    <FormSelect
-                                        id="type"
-                                        name="type"
-                                        defaultValue={defaultEventType}
-                                        options={options.types}
-                                        required
-                                        invalid={Boolean(errors.type)}
-                                        describedBy={fieldDescription(
-                                            'type',
-                                            errors.type,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="location_id"
-                                    label="Locatie"
-                                    error={errors.location_id}
-                                >
-                                    <FormSelect
-                                        id="location_id"
-                                        name="location_id"
-                                        defaultValue={defaultLocationId}
-                                        options={options.locations.map(
-                                            (option) => ({
-                                                value: String(option.id),
-                                                label: option.label,
-                                            }),
-                                        )}
-                                        placeholder="Kies een locatie"
-                                        required
-                                        invalid={Boolean(errors.location_id)}
-                                        describedBy={fieldDescription(
-                                            'location_id',
-                                            errors.location_id,
-                                        )}
-                                    />
-                                </FormField>
-                            </div>
-                        </AdminFormSection>
-
-                        {/* 2. Planning: wanneer het event plaatsvindt en of het bij een seizoen hoort. */}
-                        <AdminFormSection
-                            id="event-schedule"
-                            className="@container/fields"
-                            icon={CalendarClock}
-                            title="Wanneer"
-                            description="Koppel het event optioneel aan een seizoen en leg start- en eindtijd vast."
-                        >
-                            <div
-                                data-testid="event-schedule-fields"
-                                className="grid grid-cols-1 items-start gap-5 @min-[44rem]/fields:grid-cols-2"
-                            >
-                                <FormField
-                                    id="season_id"
-                                    label="Seizoen (optioneel)"
-                                    error={errors.season_id}
-                                    className="max-w-[23rem] @min-[44rem]/fields:col-span-2"
-                                >
-                                    <FormSelect
-                                        id="season_id"
-                                        name="season_id"
-                                        defaultValue={String(
-                                            event?.seasonId ?? '',
-                                        )}
-                                        options={options.seasons.map(
-                                            (option) => ({
-                                                value: String(option.id),
-                                                label: option.label,
-                                            }),
-                                        )}
-                                        placeholder="Geen seizoen"
-                                        invalid={Boolean(errors.season_id)}
-                                        describedBy={fieldDescription(
-                                            'season_id',
-                                            errors.season_id,
-                                        )}
-                                    />
-                                    {canManageSeasons && (
-                                        <Link
-                                            href={seasonsIndex()}
-                                            className="w-fit text-xs font-medium text-signal-700 hover:underline dark:text-signal-300"
+                                    <div className="grid gap-5 @min-[40rem]/fields:grid-cols-2">
+                                        <FormField
+                                            id="title"
+                                            label="Titel"
+                                            error={errors.title}
+                                            className="@min-[40rem]/fields:col-span-2"
                                         >
-                                            Seizoenen beheren
-                                        </Link>
-                                    )}
-                                </FormField>
-                                <FormField
-                                    id="starts_at"
-                                    label="Start"
-                                    error={errors.starts_at}
-                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
-                                >
-                                    <DateTimePicker
-                                        id="starts_at"
-                                        name="starts_at"
-                                        label="Start"
-                                        defaultValue={event?.startsAt ?? ''}
-                                        aria-invalid={Boolean(errors.starts_at)}
-                                        aria-describedby={fieldDescription(
-                                            'starts_at',
-                                            errors.starts_at,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="ends_at"
-                                    label="Einde (optioneel)"
-                                    error={errors.ends_at}
-                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
-                                >
-                                    <DateTimePicker
-                                        id="ends_at"
-                                        name="ends_at"
-                                        label="Einde"
-                                        defaultValue={event?.endsAt ?? ''}
-                                        aria-invalid={Boolean(errors.ends_at)}
-                                        aria-describedby={fieldDescription(
-                                            'ends_at',
-                                            errors.ends_at,
-                                        )}
-                                    />
-                                </FormField>
-                            </div>
-                        </AdminFormSection>
+                                            <Input
+                                                id="title"
+                                                name="title"
+                                                value={title}
+                                                onChange={(inputEvent) => {
+                                                    const nextTitle =
+                                                        inputEvent.target.value;
 
-                        {/* 3. Praktische grenzen: los van de planning, dus een eigen, kleinere sectie. */}
-                        <AdminFormSection
-                            id="event-capacity"
-                            className="@container/fields"
-                            icon={Coins}
-                            title="Capaciteit en prijs"
-                            description="Bepaal of er een limiet aan deelnemers zit en wat meedoen kost."
-                        >
-                            <div
-                                data-testid="event-capacity-fields"
-                                className="grid grid-cols-1 gap-5 @min-[36rem]/fields:grid-cols-2"
-                            >
-                                <FormField
-                                    id="price_euros"
-                                    label="Deelnameprijs (optioneel)"
-                                    hint="Vul 0 in voor gratis; laat leeg als de prijs later volgt."
-                                    error={errors.price_euros}
-                                    reserveSupportingTextSpace
-                                >
-                                    <div className="relative">
-                                        <span
-                                            aria-hidden="true"
-                                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-neutral-500"
+                                                    setTitle(nextTitle);
+                                                }}
+                                                required
+                                                maxLength={255}
+                                                autoFocus={!event}
+                                                autoComplete="off"
+                                                placeholder={
+                                                    event
+                                                        ? undefined
+                                                        : 'Bijv. Indoor training Rotterdam'
+                                                }
+                                                aria-invalid={Boolean(
+                                                    errors.title,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'title',
+                                                    errors.title,
+                                                )}
+                                            />
+                                        </FormField>
+                                        <FormField
+                                            id="type"
+                                            label="Eventtype"
+                                            error={errors.type}
                                         >
-                                            €
-                                        </span>
-                                        <Input
-                                            id="price_euros"
-                                            name="price_euros"
-                                            type="number"
-                                            inputMode="decimal"
-                                            min="0"
-                                            max="42949672.95"
-                                            step="0.01"
-                                            defaultValue={
-                                                event?.priceEuros ?? ''
-                                            }
-                                            className="pl-8"
-                                            aria-invalid={Boolean(
-                                                errors.price_euros,
-                                            )}
-                                            aria-describedby={fieldDescription(
-                                                'price_euros',
-                                                errors.price_euros,
-                                                true,
-                                            )}
-                                        />
+                                            <FormSelect
+                                                id="type"
+                                                name="type"
+                                                defaultValue={defaultEventType}
+                                                options={options.types}
+                                                required
+                                                invalid={Boolean(errors.type)}
+                                                describedBy={fieldDescription(
+                                                    'type',
+                                                    errors.type,
+                                                )}
+                                            />
+                                        </FormField>
+                                        <FormField
+                                            id="location_id"
+                                            label="Locatie"
+                                            error={errors.location_id}
+                                        >
+                                            <FormSelect
+                                                id="location_id"
+                                                name="location_id"
+                                                defaultValue={defaultLocationId}
+                                                options={options.locations.map(
+                                                    (option) => ({
+                                                        value: String(
+                                                            option.id,
+                                                        ),
+                                                        label: option.label,
+                                                    }),
+                                                )}
+                                                placeholder="Kies een locatie"
+                                                required
+                                                invalid={Boolean(
+                                                    errors.location_id,
+                                                )}
+                                                describedBy={fieldDescription(
+                                                    'location_id',
+                                                    errors.location_id,
+                                                )}
+                                            />
+                                        </FormField>
                                     </div>
-                                </FormField>
-                                <FormField
-                                    id="capacity"
-                                    label="Deelnemerslimiet (optioneel)"
-                                    error={errors.capacity}
-                                    reserveSupportingTextSpace
-                                >
-                                    <Input
-                                        id="capacity"
-                                        name="capacity"
-                                        type="number"
-                                        inputMode="numeric"
-                                        min="1"
-                                        max="65535"
-                                        placeholder="Geen limiet"
-                                        defaultValue={event?.capacity ?? ''}
-                                        aria-invalid={Boolean(errors.capacity)}
-                                        aria-describedby={fieldDescription(
-                                            'capacity',
-                                            errors.capacity,
-                                        )}
-                                    />
-                                </FormField>
-                            </div>
-                        </AdminFormSection>
+                                </AdminFormSection>
 
-                        {/* 4. Inschrijving: status stuurt de rest van de sectie aan, dus die staat eerst
-                        en de link krijgt een duidelijk zichtbare "verplicht"-behandeling. */}
-                        <AdminFormSection
-                            id="event-registration"
-                            className="@container/fields"
-                            icon={ClipboardCheck}
-                            title="Inschrijving"
-                            description="Plan wanneer inschrijven mogelijk is. Het platform opent en sluit de inschrijving automatisch."
-                        >
-                            <div className="overflow-hidden border-y border-neutral-200 dark:border-neutral-800">
-                                <RegistrationSwitch
-                                    id="registration_enabled"
-                                    checked={registrationEnabled}
-                                    description="Toon de inschrijving en gebruik de planning hieronder."
-                                    error={errors.registration_enabled}
-                                    onCheckedChange={setRegistrationEnabled}
-                                    title="Inschrijving aanbieden"
-                                />
-                                <div
-                                    id="event-registration-fields"
-                                    hidden={!registrationEnabled}
-                                    className="grid gap-6 border-t border-neutral-200 bg-white px-3 py-5 sm:px-4 sm:py-6 dark:border-neutral-800 dark:bg-neutral-950"
+                                {/* 2. Planning: wanneer het event plaatsvindt en of het bij een seizoen hoort. */}
+                                <AdminFormSection
+                                    id="event-schedule"
+                                    className="@container/fields"
+                                    icon={CalendarClock}
+                                    title="Wanneer"
+                                    description="Koppel het event optioneel aan een seizoen en leg start- en eindtijd vast."
                                 >
-                                    <FormField
-                                        id="registration_url"
-                                        label="Inschrijflink"
-                                        labelSuffix={
-                                            <span className="rounded-full bg-flight-100 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-flight-700 uppercase dark:bg-flight-500/15 dark:text-flight-300">
-                                                Verplicht
-                                            </span>
-                                        }
-                                        hint="Deze link wordt pas publiek zodra de inschrijving automatisch opent."
-                                        error={errors.registration_url}
-                                        className="border-l-2 border-flight-300 pl-4 dark:border-flight-500/40"
-                                    >
-                                        <Input
-                                            id="registration_url"
-                                            name="registration_url"
-                                            type="url"
-                                            defaultValue={
-                                                event?.registrationUrl ?? ''
-                                            }
-                                            maxLength={2048}
-                                            placeholder="https://… of mailto:…"
-                                            inputMode="url"
-                                            autoComplete="url"
-                                            required={registrationRequiresUrl}
-                                            aria-invalid={Boolean(
-                                                errors.registration_url,
-                                            )}
-                                            aria-describedby={fieldDescription(
-                                                'registration_url',
-                                                errors.registration_url,
-                                                true,
-                                            )}
-                                        />
-                                    </FormField>
                                     <div
-                                        data-testid="event-registration-dates"
-                                        className="grid gap-5 @min-[44rem]/fields:grid-cols-2"
+                                        data-testid="event-schedule-fields"
+                                        className="grid grid-cols-1 items-start gap-5 @min-[44rem]/fields:grid-cols-2"
                                     >
                                         <FormField
-                                            id="registration_opens_at"
-                                            label="Inschrijving opent (optioneel)"
-                                            hint="Laat leeg als inschrijven direct mogelijk is."
-                                            error={errors.registration_opens_at}
+                                            id="season_id"
+                                            label="Seizoen (optioneel)"
+                                            error={errors.season_id}
+                                            className="max-w-[23rem] @min-[44rem]/fields:col-span-2"
+                                        >
+                                            <FormSelect
+                                                id="season_id"
+                                                name="season_id"
+                                                defaultValue={String(
+                                                    event?.seasonId ?? '',
+                                                )}
+                                                options={options.seasons.map(
+                                                    (option) => ({
+                                                        value: String(
+                                                            option.id,
+                                                        ),
+                                                        label: option.label,
+                                                    }),
+                                                )}
+                                                placeholder="Geen seizoen"
+                                                invalid={Boolean(
+                                                    errors.season_id,
+                                                )}
+                                                describedBy={fieldDescription(
+                                                    'season_id',
+                                                    errors.season_id,
+                                                )}
+                                            />
+                                            {canManageSeasons && (
+                                                <Link
+                                                    href={seasonsIndex()}
+                                                    className="w-fit text-xs font-medium text-signal-700 hover:underline dark:text-signal-300"
+                                                >
+                                                    Seizoenen beheren
+                                                </Link>
+                                            )}
+                                        </FormField>
+                                        <FormField
+                                            id="starts_at"
+                                            label="Start"
+                                            error={errors.starts_at}
                                             className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
                                         >
                                             <DateTimePicker
-                                                id="registration_opens_at"
-                                                name="registration_opens_at"
-                                                label="Inschrijving opent"
+                                                id="starts_at"
+                                                name="starts_at"
+                                                label="Start"
                                                 defaultValue={
-                                                    event?.registrationOpensAt ??
-                                                    ''
+                                                    event?.startsAt ?? ''
                                                 }
-                                                showTodayShortcut
                                                 aria-invalid={Boolean(
-                                                    errors.registration_opens_at,
+                                                    errors.starts_at,
                                                 )}
                                                 aria-describedby={fieldDescription(
-                                                    'registration_opens_at',
-                                                    errors.registration_opens_at,
+                                                    'starts_at',
+                                                    errors.starts_at,
                                                 )}
                                             />
                                         </FormField>
                                         <FormField
-                                            id="registration_deadline_at"
-                                            label="Inschrijfdeadline (optioneel)"
-                                            hint="Op dit tijdstip sluit de inschrijving automatisch."
-                                            error={
-                                                errors.registration_deadline_at
-                                            }
+                                            id="ends_at"
+                                            label="Einde (optioneel)"
+                                            error={errors.ends_at}
                                             className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
                                         >
                                             <DateTimePicker
-                                                id="registration_deadline_at"
-                                                name="registration_deadline_at"
-                                                label="Inschrijfdeadline"
+                                                id="ends_at"
+                                                name="ends_at"
+                                                label="Einde"
                                                 defaultValue={
-                                                    event?.registrationDeadlineAt ??
-                                                    ''
+                                                    event?.endsAt ?? ''
                                                 }
                                                 aria-invalid={Boolean(
-                                                    errors.registration_deadline_at,
+                                                    errors.ends_at,
                                                 )}
                                                 aria-describedby={fieldDescription(
-                                                    'registration_deadline_at',
-                                                    errors.registration_deadline_at,
+                                                    'ends_at',
+                                                    errors.ends_at,
                                                 )}
                                             />
                                         </FormField>
                                     </div>
-                                    <div className="grid gap-3 @min-[44rem]/fields:grid-cols-2">
-                                        <RegistrationSwitch
-                                            id="registration_closed_manually"
-                                            checked={registrationClosedManually}
-                                            description="Noodrem die de automatische planning tijdelijk overstemt."
-                                            error={
-                                                errors.registration_closed_manually
-                                            }
-                                            onCheckedChange={
-                                                setRegistrationClosedManually
-                                            }
-                                            title="Tijdelijk gesloten"
-                                            variant="warning"
-                                        />
-                                        <RegistrationSwitch
-                                            id="registration_full"
-                                            checked={registrationFull}
-                                            description="Markeer de reguliere inschrijving handmatig als vol."
-                                            error={errors.registration_full}
-                                            onCheckedChange={(checked) => {
-                                                setRegistrationFull(checked);
-
-                                                if (!checked) {
-                                                    setRegistrationWaitlistEnabled(
-                                                        false,
-                                                    );
-                                                }
-                                            }}
-                                            title="Event is vol"
-                                        />
-                                    </div>
-                                    {registrationFull ? (
-                                        <RegistrationSwitch
-                                            id="registration_waitlist_enabled"
-                                            checked={
-                                                registrationWaitlistEnabled
-                                            }
-                                            description="Gebruik de inschrijflink voor aanmeldingen op de wachtlijst."
-                                            error={
-                                                errors.registration_waitlist_enabled
-                                            }
-                                            onCheckedChange={
-                                                setRegistrationWaitlistEnabled
-                                            }
-                                            title="Wachtlijst openen"
-                                        />
-                                    ) : (
-                                        <input
-                                            type="hidden"
-                                            name="registration_waitlist_enabled"
-                                            value="0"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        </AdminFormSection>
-
-                        {/* 5. Publieke copy: dit vullen mensen als laatste in, nadat de kern vaststaat. */}
-                        <AdminFormSection
-                            id="event-public-page"
-                            className="@container/fields"
-                            icon={Globe}
-                            title="Publieke pagina"
-                            description="Voeg een omslag en uitgebreide informatie toe. De publieke URL wordt automatisch uit de titel en startdatum gemaakt."
-                        >
-                            <div className="grid gap-5">
-                                <FormField
-                                    id="cover_image_id"
-                                    label="Omslagafbeelding (optioneel)"
-                                    error={errors.cover_image_id}
-                                >
-                                    <MediaAssetPicker
-                                        id="cover_image_id"
-                                        name="cover_image_id"
-                                        selected={coverImage}
-                                        onChange={setCoverImage}
-                                        invalid={Boolean(errors.cover_image_id)}
-                                        describedBy={fieldDescription(
-                                            'cover_image_id',
-                                            errors.cover_image_id,
-                                        )}
-                                    />
-                                </FormField>
-                                <FormField
-                                    id="content"
-                                    label="Omschrijving (optioneel)"
-                                    error={errors.content}
-                                    hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
-                                >
-                                    <MarkdownEditor
-                                        id="content"
-                                        name="content"
-                                        defaultValue={event?.content ?? ''}
-                                        rows={8}
-                                        maxLength={50000}
-                                        placeholder="Praktische informatie, programma en benodigdheden…"
-                                        aria-invalid={Boolean(errors.content)}
-                                        aria-describedby={fieldDescription(
-                                            'content',
-                                            errors.content,
-                                            true,
-                                        )}
-                                    />
-                                </FormField>
-                            </div>
-                        </AdminFormSection>
-
-                        {event?.capabilities.delete && (
-                            <AdminFormSection
-                                id="event-danger-zone"
-                                icon={TriangleAlert}
-                                tone="danger"
-                                title="Gevarenzone"
-                                description="Verwijder dit event alleen wanneer het niet langer nodig is. Deze actie kan niet ongedaan worden gemaakt."
+                                </AdminFormSection>
+                            </EventTabPanel>
+                            <EventTabPanel
+                                tab="registration"
+                                activeTab={activeTab}
                             >
-                                <div>
-                                    <AdminConfirmationDialog
-                                        form={destroy.form(event.id)}
-                                        intent="delete"
-                                        subject={event.title}
-                                        trigger={
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="sm"
+                                <AdminFormSection
+                                    id="event-capacity"
+                                    className="@container/fields"
+                                    icon={Coins}
+                                    title="Capaciteit en prijs"
+                                    description="Bepaal of er een limiet aan deelnemers zit en wat meedoen kost."
+                                >
+                                    <div
+                                        data-testid="event-capacity-fields"
+                                        className="grid grid-cols-1 gap-5 @min-[36rem]/fields:grid-cols-2"
+                                    >
+                                        <FormField
+                                            id="price_euros"
+                                            label="Deelnameprijs (optioneel)"
+                                            hint="Vul 0 in voor gratis; laat leeg als de prijs later volgt."
+                                            error={errors.price_euros}
+                                            reserveSupportingTextSpace
+                                        >
+                                            <div className="relative">
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-neutral-500"
+                                                >
+                                                    €
+                                                </span>
+                                                <Input
+                                                    id="price_euros"
+                                                    name="price_euros"
+                                                    type="number"
+                                                    inputMode="decimal"
+                                                    min="0"
+                                                    max="42949672.95"
+                                                    step="0.01"
+                                                    defaultValue={
+                                                        event?.priceEuros ?? ''
+                                                    }
+                                                    className="pl-8"
+                                                    aria-invalid={Boolean(
+                                                        errors.price_euros,
+                                                    )}
+                                                    aria-describedby={fieldDescription(
+                                                        'price_euros',
+                                                        errors.price_euros,
+                                                        true,
+                                                    )}
+                                                />
+                                            </div>
+                                        </FormField>
+                                        <FormField
+                                            id="capacity"
+                                            label="Deelnemerslimiet (optioneel)"
+                                            error={errors.capacity}
+                                            reserveSupportingTextSpace
+                                        >
+                                            <Input
+                                                id="capacity"
+                                                name="capacity"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min="1"
+                                                max="65535"
+                                                placeholder="Geen limiet"
+                                                defaultValue={
+                                                    event?.capacity ?? ''
+                                                }
+                                                aria-invalid={Boolean(
+                                                    errors.capacity,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'capacity',
+                                                    errors.capacity,
+                                                )}
+                                            />
+                                        </FormField>
+                                    </div>
+                                </AdminFormSection>
+
+                                {/* 4. Inschrijving: status stuurt de rest van de sectie aan, dus die staat eerst
+                        en de link krijgt een duidelijk zichtbare "verplicht"-behandeling. */}
+                                <AdminFormSection
+                                    id="event-registration"
+                                    className="@container/fields"
+                                    icon={ClipboardCheck}
+                                    title="Inschrijving"
+                                    description="Plan wanneer inschrijven mogelijk is. Het platform opent en sluit de inschrijving automatisch."
+                                >
+                                    <div className="overflow-hidden border-y border-neutral-200 dark:border-neutral-800">
+                                        <RegistrationSwitch
+                                            id="registration_enabled"
+                                            checked={registrationEnabled}
+                                            description="Toon de inschrijving en gebruik de planning hieronder."
+                                            error={errors.registration_enabled}
+                                            onCheckedChange={
+                                                setRegistrationEnabled
+                                            }
+                                            title="Inschrijving aanbieden"
+                                        />
+                                        <div
+                                            id="event-registration-fields"
+                                            hidden={!registrationEnabled}
+                                            className="grid gap-6 border-t border-neutral-200 bg-white px-3 py-5 sm:px-4 sm:py-6 dark:border-neutral-800 dark:bg-neutral-950"
+                                        >
+                                            <FormField
+                                                id="registration_url"
+                                                label="Inschrijflink"
+                                                labelSuffix={
+                                                    <span className="rounded-full bg-flight-100 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-flight-700 uppercase dark:bg-flight-500/15 dark:text-flight-300">
+                                                        Verplicht
+                                                    </span>
+                                                }
+                                                hint="Deze link wordt pas publiek zodra de inschrijving automatisch opent."
+                                                error={errors.registration_url}
+                                                className="border-l-2 border-flight-300 pl-4 dark:border-flight-500/40"
                                             >
-                                                <Trash2 />
-                                                Event verwijderen
-                                            </Button>
-                                        }
+                                                <Input
+                                                    id="registration_url"
+                                                    name="registration_url"
+                                                    type="url"
+                                                    defaultValue={
+                                                        event?.registrationUrl ??
+                                                        ''
+                                                    }
+                                                    maxLength={2048}
+                                                    placeholder="https://… of mailto:…"
+                                                    inputMode="url"
+                                                    autoComplete="url"
+                                                    required={
+                                                        registrationRequiresUrl
+                                                    }
+                                                    aria-invalid={Boolean(
+                                                        errors.registration_url,
+                                                    )}
+                                                    aria-describedby={fieldDescription(
+                                                        'registration_url',
+                                                        errors.registration_url,
+                                                        true,
+                                                    )}
+                                                />
+                                            </FormField>
+                                            <div
+                                                data-testid="event-registration-dates"
+                                                className="grid gap-5 @min-[44rem]/fields:grid-cols-2"
+                                            >
+                                                <FormField
+                                                    id="registration_opens_at"
+                                                    label="Inschrijving opent (optioneel)"
+                                                    hint="Laat leeg als inschrijven direct mogelijk is."
+                                                    error={
+                                                        errors.registration_opens_at
+                                                    }
+                                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
+                                                >
+                                                    <DateTimePicker
+                                                        id="registration_opens_at"
+                                                        name="registration_opens_at"
+                                                        label="Inschrijving opent"
+                                                        defaultValue={
+                                                            event?.registrationOpensAt ??
+                                                            ''
+                                                        }
+                                                        showTodayShortcut
+                                                        aria-invalid={Boolean(
+                                                            errors.registration_opens_at,
+                                                        )}
+                                                        aria-describedby={fieldDescription(
+                                                            'registration_opens_at',
+                                                            errors.registration_opens_at,
+                                                        )}
+                                                    />
+                                                </FormField>
+                                                <FormField
+                                                    id="registration_deadline_at"
+                                                    label="Inschrijfdeadline (optioneel)"
+                                                    hint="Op dit tijdstip sluit de inschrijving automatisch."
+                                                    error={
+                                                        errors.registration_deadline_at
+                                                    }
+                                                    className="max-w-[28rem] @min-[44rem]/fields:max-w-none"
+                                                >
+                                                    <DateTimePicker
+                                                        id="registration_deadline_at"
+                                                        name="registration_deadline_at"
+                                                        label="Inschrijfdeadline"
+                                                        defaultValue={
+                                                            event?.registrationDeadlineAt ??
+                                                            ''
+                                                        }
+                                                        aria-invalid={Boolean(
+                                                            errors.registration_deadline_at,
+                                                        )}
+                                                        aria-describedby={fieldDescription(
+                                                            'registration_deadline_at',
+                                                            errors.registration_deadline_at,
+                                                        )}
+                                                    />
+                                                </FormField>
+                                            </div>
+                                            <div className="grid gap-3 @min-[44rem]/fields:grid-cols-2">
+                                                <RegistrationSwitch
+                                                    id="registration_closed_manually"
+                                                    checked={
+                                                        registrationClosedManually
+                                                    }
+                                                    description="Noodrem die de automatische planning tijdelijk overstemt."
+                                                    error={
+                                                        errors.registration_closed_manually
+                                                    }
+                                                    onCheckedChange={
+                                                        setRegistrationClosedManually
+                                                    }
+                                                    title="Tijdelijk gesloten"
+                                                    variant="warning"
+                                                />
+                                                <RegistrationSwitch
+                                                    id="registration_full"
+                                                    checked={registrationFull}
+                                                    description="Markeer de reguliere inschrijving handmatig als vol."
+                                                    error={
+                                                        errors.registration_full
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) => {
+                                                        setRegistrationFull(
+                                                            checked,
+                                                        );
+
+                                                        if (!checked) {
+                                                            setRegistrationWaitlistEnabled(
+                                                                false,
+                                                            );
+                                                        }
+                                                    }}
+                                                    title="Event is vol"
+                                                />
+                                            </div>
+                                            {registrationFull ? (
+                                                <RegistrationSwitch
+                                                    id="registration_waitlist_enabled"
+                                                    checked={
+                                                        registrationWaitlistEnabled
+                                                    }
+                                                    description="Gebruik de inschrijflink voor aanmeldingen op de wachtlijst."
+                                                    error={
+                                                        errors.registration_waitlist_enabled
+                                                    }
+                                                    onCheckedChange={
+                                                        setRegistrationWaitlistEnabled
+                                                    }
+                                                    title="Wachtlijst openen"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="hidden"
+                                                    name="registration_waitlist_enabled"
+                                                    value="0"
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                </AdminFormSection>
+                            </EventTabPanel>
+                            <EventTabPanel tab="page" activeTab={activeTab}>
+                                <AdminFormSection
+                                    id="event-public-page"
+                                    className="@container/fields"
+                                    icon={Globe}
+                                    title="Publieke pagina"
+                                    description="Voeg een omslag en uitgebreide informatie toe. De publieke URL wordt automatisch uit de titel en startdatum gemaakt."
+                                >
+                                    <div className="grid gap-5">
+                                        <FormField
+                                            id="cover_image_id"
+                                            label="Omslagafbeelding (optioneel)"
+                                            error={errors.cover_image_id}
+                                        >
+                                            <MediaAssetPicker
+                                                id="cover_image_id"
+                                                name="cover_image_id"
+                                                selected={coverImage}
+                                                onChange={setCoverImage}
+                                                invalid={Boolean(
+                                                    errors.cover_image_id,
+                                                )}
+                                                describedBy={fieldDescription(
+                                                    'cover_image_id',
+                                                    errors.cover_image_id,
+                                                )}
+                                            />
+                                        </FormField>
+                                        <FormField
+                                            id="content"
+                                            label="Omschrijving (optioneel)"
+                                            error={errors.content}
+                                            hint="Markdown wordt ondersteund, zoals koppen, lijsten, links, vet en cursief."
+                                        >
+                                            <MarkdownEditor
+                                                id="content"
+                                                name="content"
+                                                defaultValue={
+                                                    event?.content ?? ''
+                                                }
+                                                rows={8}
+                                                maxLength={50000}
+                                                placeholder="Praktische informatie, programma en benodigdheden…"
+                                                aria-invalid={Boolean(
+                                                    errors.content,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'content',
+                                                    errors.content,
+                                                    true,
+                                                )}
+                                            />
+                                        </FormField>
+                                    </div>
+                                </AdminFormSection>
+                            </EventTabPanel>
+                            {event && (
+                                <EventTabPanel
+                                    tab="track"
+                                    activeTab={activeTab}
+                                >
+                                    <EventTrackForm
+                                        event={event}
+                                        resetKey={saveVersion}
+                                        active={activeTab === 'track'}
+                                        errors={errors}
+                                        processing={processing}
                                     />
-                                </div>
-                            </AdminFormSection>
-                        )}
-                    </AdminFormLayout>
+                                </EventTabPanel>
+                            )}
+                            <div
+                                hidden={
+                                    activeTab !== undefined &&
+                                    activeTab !== 'general'
+                                }
+                            >
+                                {event?.capabilities.delete && (
+                                    <AdminFormSection
+                                        id="event-danger-zone"
+                                        icon={TriangleAlert}
+                                        tone="danger"
+                                        title="Gevarenzone"
+                                        description="Verwijder dit event alleen wanneer het niet langer nodig is. Deze actie kan niet ongedaan worden gemaakt."
+                                    >
+                                        <div>
+                                            <AdminConfirmationDialog
+                                                form={destroy.form(event.id)}
+                                                intent="delete"
+                                                subject={event.title}
+                                                trigger={
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="sm"
+                                                    >
+                                                        <Trash2 />
+                                                        Event verwijderen
+                                                    </Button>
+                                                }
+                                            />
+                                        </div>
+                                    </AdminFormSection>
+                                )}
+                            </div>
+                        </AdminFormLayout>
+                    </div>
                 </>
             )}
         </Form>
@@ -888,7 +1021,9 @@ function EventStatusPanel({
 function EventFormAside({
     event,
     isDirty,
+    showOutline,
 }: {
+    showOutline: boolean;
     event?: EditableEvent;
     isDirty: boolean;
 }) {
@@ -896,10 +1031,12 @@ function EventFormAside({
         <div className="overflow-clip rounded-2xl border border-neutral-200 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-950">
             <EventStatusPanel event={event} isDirty={isDirty} />
             {event && <AdminActivityMetadata activity={event.activity} />}
-            <AdminFormOutline
-                description="Spring direct naar een onderdeel van het formulier."
-                items={eventFormOutlineItems}
-            />
+            {showOutline && (
+                <AdminFormOutline
+                    description="Spring direct naar een onderdeel van het formulier."
+                    items={eventFormOutlineItems}
+                />
+            )}
         </div>
     );
 }

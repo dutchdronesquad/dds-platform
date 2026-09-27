@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\EventStatusController;
+use App\Http\Controllers\Admin\EventTrackController;
+use App\Http\Controllers\Admin\EventTrackProjectController;
+use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\LocationAddressLookupController;
 use App\Http\Controllers\Admin\LocationAddressSuggestController;
 use App\Http\Controllers\Admin\LocationController as AdminLocationController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\Admin\MediaAssetQuickUploadController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
+use App\Http\Controllers\Admin\TrackDrawConnectionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\ArticleController;
@@ -82,6 +86,11 @@ Route::middleware([
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->name('admin.')->group(function () {
+        Route::get('integrations', IntegrationController::class)->name('integrations.index');
+        Route::get('integrations/trackdraw', [TrackDrawConnectionController::class, 'index'])->name('integrations.trackdraw.index');
+        Route::post('integrations/trackdraw', [TrackDrawConnectionController::class, 'store'])->name('integrations.trackdraw.store');
+        Route::put('integrations/trackdraw/{connection}', [TrackDrawConnectionController::class, 'update'])->name('integrations.trackdraw.update');
+        Route::delete('integrations/trackdraw/{connection}', [TrackDrawConnectionController::class, 'destroy'])->name('integrations.trackdraw.destroy');
         Route::post('markdown-preview', MarkdownPreviewController::class)
             ->name('markdown-preview');
         Route::get('media/picker', MediaAssetPickerController::class)
@@ -105,6 +114,9 @@ Route::middleware([
             ->name('events.duplicate');
         Route::get('events/{event}/preview', [EventController::class, 'preview'])
             ->name('events.preview');
+        Route::get('events/{event}/track/projects', EventTrackProjectController::class)->middleware('throttle:60,1')->name('events.track.projects');
+        Route::put('events/{event}/track', [EventTrackController::class, 'update'])->middleware('throttle:10,1')->name('events.track.update');
+        Route::delete('events/{event}/track', [EventTrackController::class, 'destroy'])->name('events.track.destroy');
         Route::resource('events', AdminEventController::class)->except('show');
         Route::get('locations/address-suggestions', LocationAddressSuggestController::class)
             ->middleware('throttle:location-geocoding')
@@ -141,6 +153,8 @@ Route::middleware([
 });
 
 require __DIR__.'/settings.php';
+
+Route::get('events/{event:slug}/track', App\Http\Controllers\Public\EventTrackController::class)->name('events.track');
 
 Route::fallback(fn () => abort(404))
     ->middleware(HandleLegacyRedirects::class);

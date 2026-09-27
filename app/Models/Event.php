@@ -24,6 +24,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $title
  * @property string $slug
  * @property string|null $content
+ * @property string|null $trackdraw_project_id
+ * @property int|null $track_draw_connection_id
+ * @property string|null $trackdraw_snapshot_path
+ * @property string $trackdraw_default_view
+ * @property string|null $trackdraw_title
+ * @property CarbonImmutable|null $trackdraw_synced_at
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable|null $ends_at
  * @property CarbonImmutable|null $published_at
@@ -47,6 +53,8 @@ final class Event extends Model
     use TracksContentActivity;
 
     /** @var list<string> */
+    protected $hidden = ['trackdraw_snapshot_path'];
+
     protected $fillable = [
         'location_id',
         'season_id',
@@ -54,6 +62,7 @@ final class Event extends Model
         'title',
         'slug',
         'content',
+        'trackdraw_default_view',
         'starts_at',
         'ends_at',
         'published_at',
@@ -167,6 +176,7 @@ final class Event extends Model
     protected function casts(): array
     {
         return [
+            'trackdraw_synced_at' => 'immutable_datetime',
             'starts_at' => 'immutable_datetime',
             'ends_at' => 'immutable_datetime',
             'published_at' => 'immutable_datetime',

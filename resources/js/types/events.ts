@@ -63,6 +63,8 @@ export type PublicEventDetail = Omit<
     'location' | 'status'
 > & {
     contentHtml: string | null;
+    trackTitle: string | null;
+    trackDefaultView: '2d' | '3d';
     location: PublicEventSummary['location'] & {
         houseNumber: string;
         mapEmbedUrl: string;

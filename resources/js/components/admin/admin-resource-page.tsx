@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 
 type AdminResourcePageProps = {
     actions?: ReactNode;
+    showHeader?: boolean;
     children: ReactNode;
     contentClassName?: string;
     description: string;
@@ -14,6 +15,7 @@ type AdminResourcePageProps = {
 
 export function AdminResourcePage({
     actions,
+    showHeader = true,
     children,
     contentClassName,
     description,
@@ -28,74 +30,76 @@ export function AdminResourcePage({
             data-testid="admin-resource-page"
             className="flex min-h-0 flex-1 flex-col overflow-x-clip bg-neutral-100/75 dark:bg-neutral-900/55"
         >
-            <header
-                className={cn(
-                    'relative overflow-hidden border-b px-4 py-7 sm:px-6 sm:py-8',
-                    isFormPage
-                        ? 'border-night-800 bg-night-950 text-white'
-                        : 'border-sidebar-border/70 bg-white/90 backdrop-blur dark:border-sidebar-border dark:bg-neutral-950/90',
-                )}
-            >
-                {isFormPage && (
-                    <>
-                        <div className="pointer-events-none absolute -top-28 right-[8%] size-64 rounded-full bg-signal-500/12 blur-3xl" />
-                        <div className="pointer-events-none absolute -bottom-32 left-[22%] size-56 rounded-full bg-flight-500/10 blur-3xl" />
-                    </>
-                )}
-                <div
-                    data-testid="admin-resource-header-content"
+            {showHeader && (
+                <header
                     className={cn(
-                        'relative mx-auto flex w-full max-w-[100rem] flex-col gap-5 lg:flex-row lg:items-end lg:justify-between',
-                        contentClassName,
+                        'relative overflow-hidden border-b px-4 py-7 sm:px-6 sm:py-8',
+                        isFormPage
+                            ? 'border-night-800 bg-night-950 text-white'
+                            : 'border-sidebar-border/70 bg-white/90 backdrop-blur dark:border-sidebar-border dark:bg-neutral-950/90',
                     )}
                 >
-                    <div className="max-w-3xl">
-                        <p
-                            className={cn(
-                                'text-xs font-semibold tracking-[0.16em] uppercase',
-                                isFormPage
-                                    ? 'text-signal-300'
-                                    : 'text-signal-700 dark:text-signal-300',
-                            )}
-                        >
-                            {eyebrow}
-                        </p>
-                        <h1
-                            className={cn(
-                                'mt-2 text-2xl font-semibold tracking-tight sm:text-3xl',
-                                isFormPage
-                                    ? 'text-white'
-                                    : 'text-neutral-950 dark:text-white',
-                            )}
-                        >
-                            {title}
-                        </h1>
-                        <p
-                            className={cn(
-                                'mt-2 max-w-2xl text-sm leading-6 sm:text-base',
-                                isFormPage
-                                    ? 'text-night-200'
-                                    : 'text-neutral-600 dark:text-neutral-400',
-                            )}
-                        >
-                            {description}
-                        </p>
-                    </div>
-
-                    {actions && (
-                        <div className="flex flex-wrap items-center gap-2">
-                            {actions}
-                        </div>
+                    {isFormPage && (
+                        <>
+                            <div className="pointer-events-none absolute -top-28 right-[8%] size-64 rounded-full bg-signal-500/12 blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-32 left-[22%] size-56 rounded-full bg-flight-500/10 blur-3xl" />
+                        </>
                     )}
-                </div>
-            </header>
+                    <div
+                        data-testid="admin-resource-header-content"
+                        className={cn(
+                            'relative mx-auto flex w-full max-w-[100rem] flex-col gap-5 lg:flex-row lg:items-end lg:justify-between',
+                            contentClassName,
+                        )}
+                    >
+                        <div className="max-w-3xl">
+                            <p
+                                className={cn(
+                                    'text-xs font-semibold tracking-[0.16em] uppercase',
+                                    isFormPage
+                                        ? 'text-signal-300'
+                                        : 'text-signal-700 dark:text-signal-300',
+                                )}
+                            >
+                                {eyebrow}
+                            </p>
+                            <h1
+                                className={cn(
+                                    'mt-2 text-2xl font-semibold tracking-tight sm:text-3xl',
+                                    isFormPage
+                                        ? 'text-white'
+                                        : 'text-neutral-950 dark:text-white',
+                                )}
+                            >
+                                {title}
+                            </h1>
+                            <p
+                                className={cn(
+                                    'mt-2 max-w-2xl text-sm leading-6 sm:text-base',
+                                    isFormPage
+                                        ? 'text-night-200'
+                                        : 'text-neutral-600 dark:text-neutral-400',
+                                )}
+                            >
+                                {description}
+                            </p>
+                        </div>
+
+                        {actions && (
+                            <div className="flex flex-wrap items-center gap-2">
+                                {actions}
+                            </div>
+                        )}
+                    </div>
+                </header>
+            )}
 
             <div className={cn(isFormPage ? 'p-0' : 'p-4 sm:p-6 lg:py-7')}>
                 <div
                     data-testid="admin-resource-content"
                     className={cn(
                         'mx-auto grid w-full max-w-[100rem] gap-6 lg:gap-8',
-                        isFormPage && 'max-w-none gap-0',
+                        isFormPage && 'max-w-none gap-0 lg:gap-0',
                         contentClassName,
                     )}
                 >

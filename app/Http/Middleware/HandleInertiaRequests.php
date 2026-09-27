@@ -9,9 +9,11 @@ use App\Models\ContactSubmission;
 use App\Models\Event;
 use App\Models\MediaAsset;
 use App\Models\Season;
+use App\Models\TrackDrawConnection;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Vite;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -38,7 +40,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        return Vite::isRunningHot() ? null : parent::version($request);
     }
 
     /**
@@ -104,6 +106,7 @@ class HandleInertiaRequests extends Middleware
             'media' => [
                 'canView' => $user->can('viewAny', MediaAsset::class),
             ],
+            'integrations' => ['canManage' => $user->can('manage', TrackDrawConnection::class)],
             'seasons' => [
                 'canManage' => $user->can('viewAny', Season::class),
             ],

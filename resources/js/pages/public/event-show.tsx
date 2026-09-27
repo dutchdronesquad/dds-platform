@@ -1,3 +1,4 @@
+import EventTrackViewer from '@/components/public/event-track-viewer';
 import { Link } from '@inertiajs/react';
 import {
     ArrowUpRight,
@@ -153,6 +154,34 @@ export default function EventShow({ event, isPreview = false, seo }: Props) {
                         />
                     </div>
                 </section>
+
+                {event.trackTitle && (
+                    <section
+                        aria-labelledby="event-track-heading"
+                        className="mx-auto w-full max-w-7xl px-public-gutter pb-16 sm:pb-20"
+                    >
+                        <div className="mb-7 max-w-2xl">
+                            <p className="text-xs font-semibold tracking-[0.12em] text-dds-blue uppercase dark:text-dds-cyan">
+                                De track
+                            </p>
+                            <h2
+                                id="event-track-heading"
+                                className="mt-3 font-public-display text-3xl font-semibold tracking-[-0.045em] sm:text-4xl"
+                            >
+                                Bekijk wat je gaat vliegen.
+                            </h2>
+                            <p className="dark:text-night-300 mt-4 text-base leading-7 text-signal-muted">
+                                Verken het parcours, bekijk de obstakels en
+                                ontdek de lijnen voordat je aan de start staat.
+                            </p>
+                        </div>
+                        <EventTrackViewer
+                            slug={event.slug}
+                            title={event.trackTitle}
+                            initialView={event.trackDefaultView}
+                        />
+                    </section>
+                )}
 
                 <section className="border-t border-paddock-rule bg-paddock dark:border-white/12 dark:bg-night-900">
                     <div className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-14 lg:grid-cols-[minmax(16rem,0.62fr)_minmax(0,1.38fr)] lg:items-stretch lg:gap-14 lg:py-20">

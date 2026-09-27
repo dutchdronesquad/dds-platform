@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'trackdraw' => [
+        'disk' => env('TRACKDRAW_DISK', env('APP_ENV', 'production') === 'local' ? 'local' : 's3'),
+        'url' => rtrim((string) env('TRACKDRAW_URL', 'https://trackdraw.app'), '/'),
+    ],
+
 ];
