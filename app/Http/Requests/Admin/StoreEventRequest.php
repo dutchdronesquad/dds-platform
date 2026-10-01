@@ -2,19 +2,20 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Location;
 use App\Models\MediaAsset;
 use App\Models\Season;
 use App\Rules\RegistrationUrl;
+use App\Support\EventSlug;
 use App\Support\UtcDateTime;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StoreEventRequest extends FormRequest
@@ -62,7 +63,9 @@ class StoreEventRequest extends FormRequest
                 },
             ],
             'title' => ['required', 'string', 'max:255'],
+            'generate_slug' => ['sometimes', 'boolean'],
             'slug' => [
+                Rule::excludeIf(fn (): bool => $this->generatesSlug()),
                 'nullable',
                 'string',
                 'max:255',
@@ -115,17 +118,18 @@ class StoreEventRequest extends FormRequest
         $price = Arr::pull($validated, 'price_euros');
         $event = $this->event();
         $slug = match (true) {
-            filled($validated['slug'] ?? null) => $validated['slug'],
-            $event instanceof Event => $event->slug,
-            default => $this->uniqueSlug(
+            $this->generatesSlug() || ($event === null && blank($validated['slug'] ?? null)) => EventSlug::generate(
                 $validated['title'],
                 $this->startsAtDateForSlug
                     ?? CarbonImmutable::parse($validated['starts_at'])->format('Y-m-d'),
+                $event?->id,
             ),
+            filled($validated['slug'] ?? null) => $validated['slug'],
+            default => $event->slug,
         };
 
         return [
-            ...$validated,
+            ...Arr::except($validated, ['generate_slug']),
             'slug' => $slug,
             'price_cents' => $price === null ? null : (int) round((float) $price * 100),
         ];
@@ -172,29 +176,21 @@ class StoreEventRequest extends FormRequest
         ]));
     }
 
+    /**
+     * Slugs only follow the title and start date while the event is an unpublished draft.
+     */
+    public function generatesSlug(): bool
+    {
+        $event = $this->event();
+
+        return $this->boolean('generate_slug')
+            && ($event === null || $event->status === EventStatus::Draft);
+    }
+
     protected function event(): ?Event
     {
         $event = $this->route('event');
 
         return $event instanceof Event ? $event : null;
-    }
-
-    private function uniqueSlug(string $title, string $startsAtDate): string
-    {
-        $titleSlug = Str::slug($title) ?: 'event';
-        $dateSuffix = '-'.$startsAtDate;
-        $sequence = 1;
-
-        do {
-            $sequenceSuffix = $sequence === 1 ? '' : '-'.$sequence;
-            $slug = Str::limit(
-                $titleSlug,
-                255 - Str::length($dateSuffix) - Str::length($sequenceSuffix),
-                '',
-            ).$dateSuffix.$sequenceSuffix;
-            $sequence++;
-        } while (Event::query()->where('slug', $slug)->exists());
-
-        return $slug;
     }
 }

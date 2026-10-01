@@ -4,17 +4,16 @@ namespace App\Actions\Admin;
 
 use App\Enums\EventStatus;
 use App\Models\Event;
+use App\Support\EventSlug;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class DuplicateEvent
 {
-    private const string COPY_SUFFIX = ' (kopie)';
-
     public function handle(Event $event): Event
     {
-        $sequence = 1;
+        $sequence = 2;
 
         while (true) {
             try {
@@ -36,10 +35,10 @@ class DuplicateEvent
             $duplicate->fill([
                 'title' => Str::limit(
                     $sourceEvent->title,
-                    255 - Str::length(self::COPY_SUFFIX),
+                    255 - Str::length(EventSlug::COPY_SUFFIX),
                     '',
-                ).self::COPY_SUFFIX,
-                'slug' => $this->uniqueSlug($sourceEvent->slug, $sequence),
+                ).EventSlug::COPY_SUFFIX,
+                'slug' => $this->uniqueSlug($sourceEvent, $sequence),
                 'status' => EventStatus::Draft,
                 'published_at' => null,
             ]);
@@ -49,17 +48,15 @@ class DuplicateEvent
         }, attempts: 3);
     }
 
-    private function uniqueSlug(string $sourceSlug, int &$sequence): string
+    /**
+     * Continue the source's slug sequence ("-2", "-3", …) instead of appending "-kopie".
+     */
+    private function uniqueSlug(Event $sourceEvent, int &$sequence): string
     {
-        $baseSlug = Str::limit($sourceSlug, 249, '').'-kopie';
+        $slug = EventSlug::unique(EventSlug::withoutSequence($sourceEvent), firstSequence: $sequence);
+        $sequence = (int) Str::afterLast($slug, '-') + 1;
 
-        do {
-            $suffix = $sequence === 1 ? '' : '-'.$sequence;
-            $candidate = Str::limit($baseSlug, 255 - Str::length($suffix), '').$suffix;
-            $sequence++;
-        } while (Event::query()->where('slug', $candidate)->exists());
-
-        return $candidate;
+        return $slug;
     }
 
     private function isSlugCollision(UniqueConstraintViolationException $exception): bool

@@ -583,7 +583,7 @@ test('editors can duplicate events as uniquely named drafts', function () {
             'message' => 'Event gedupliceerd als concept.',
         ]);
 
-    $firstDuplicate = Event::query()->where('slug', 'vrijdagtraining-kopie')->firstOrFail();
+    $firstDuplicate = Event::query()->where('slug', 'vrijdagtraining-2')->firstOrFail();
 
     expect($firstDuplicate)
         ->title->toBe('Vrijdagtraining (kopie)')
@@ -611,7 +611,7 @@ test('editors can duplicate events as uniquely named drafts', function () {
     $this->post(route('admin.events.duplicate', $sourceEvent))
         ->assertRedirect();
 
-    $this->assertDatabaseHas('events', ['slug' => 'vrijdagtraining-kopie-2']);
+    $this->assertDatabaseHas('events', ['slug' => 'vrijdagtraining-3']);
 });
 
 test('event duplication retries when the unique slug is claimed during creation', function () {
@@ -624,7 +624,7 @@ test('event duplication retries when the unique slug is claimed during creation'
     $simulatedCollision = false;
 
     Event::creating(function (Event $event) use ($sourceEvent, &$simulatedCollision): void {
-        if ($simulatedCollision || $event->slug !== 'raceavond-kopie') {
+        if ($simulatedCollision || $event->slug !== 'raceavond-2') {
             return;
         }
 
@@ -647,8 +647,95 @@ test('event duplication retries when the unique slug is claimed during creation'
         ]);
 
     expect($simulatedCollision)->toBeTrue();
-    $this->assertDatabaseMissing('events', ['slug' => 'raceavond-kopie']);
-    $this->assertDatabaseHas('events', ['slug' => 'raceavond-kopie-2']);
+    $this->assertDatabaseMissing('events', ['slug' => 'raceavond-2']);
+    $this->assertDatabaseHas('events', ['slug' => 'raceavond-3']);
+});
+
+test('duplicated events continue the date based slug and follow a new start date', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    $sourceEvent = Event::factory()->published()->create([
+        'location_id' => $location->id,
+        'title' => 'Vrijdagtraining',
+        'slug' => 'vrijdagtraining-2026-10-15',
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.duplicate', $sourceEvent))
+        ->assertRedirect();
+
+    $duplicate = Event::query()->where('slug', 'vrijdagtraining-2026-10-15-2')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->get(route('admin.events.edit', $duplicate))
+        ->assertInertia(fn (Assert $page) => $page->where('event.slugIsGenerated', true));
+
+    $this->put(route('admin.events.update', $duplicate), validEventPayload($location, [
+        'title' => 'Vrijdagtraining',
+        'generate_slug' => true,
+        'slug' => 'genegeerd-in-automatische-modus',
+        'starts_at' => '2026-11-13T18:00:00+01:00',
+        'ends_at' => '2026-11-13T22:00:00+01:00',
+        'registration_deadline_at' => '2026-11-12T23:59:00+01:00',
+    ]))->assertSessionHasNoErrors();
+
+    expect($duplicate->refresh()->slug)->toBe('vrijdagtraining-2026-11-13');
+});
+
+test('generated draft slugs keep their sequence when saved unchanged', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    Event::factory()->create(['slug' => 'trainingavond-2026-10-15']);
+    $event = Event::factory()->create([
+        'location_id' => $location->id,
+        'title' => 'Trainingavond (kopie)',
+        'slug' => 'trainingavond-2026-10-15-2',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'title' => 'Trainingavond (kopie)',
+            'generate_slug' => true,
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($event->refresh()->slug)->toBe('trainingavond-2026-10-15-2');
+});
+
+test('published events never regenerate their slug automatically', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    $event = Event::factory()->published()->create([
+        'location_id' => $location->id,
+        'title' => 'Trainingavond',
+        'slug' => 'trainingavond-2026-10-15',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'title' => 'Andere titel',
+            'generate_slug' => true,
+            'slug' => '',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($event->refresh()->slug)->toBe('trainingavond-2026-10-15');
+});
+
+test('custom slugs are not reported as generated', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $event = Event::factory()->create([
+        'title' => 'Trainingavond',
+        'slug' => 'eigen-url',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.events.edit', $event))
+        ->assertInertia(fn (Assert $page) => $page->where('event.slugIsGenerated', false));
 });
 
 test('event activity shows manual editors and system or import records', function () {

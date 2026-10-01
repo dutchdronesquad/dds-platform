@@ -13,6 +13,7 @@ use App\Models\Location;
 use App\Models\Season;
 use App\Models\TrackDrawConnection;
 use App\Models\User;
+use App\Support\EventSlug;
 use App\Support\MediaAssetPickerData;
 use App\Support\TrackDrawSnapshot;
 use Illuminate\Database\Eloquent\Builder;
@@ -432,6 +433,7 @@ final class EventController extends Controller
             'id' => $event->id,
             'title' => $event->title,
             'slug' => $event->slug,
+            'slugIsGenerated' => EventSlug::isGenerated($event),
             'content' => $event->content,
             'track' => [
                 'defaultView' => $event->trackdraw_default_view,
