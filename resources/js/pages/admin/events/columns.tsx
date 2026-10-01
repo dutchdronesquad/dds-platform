@@ -13,7 +13,6 @@ import {
     publish,
     unpublish,
 } from '@/actions/App/Http/Controllers/Admin/EventStatusController';
-import { AdminActivityByline } from '@/components/admin/admin-activity-metadata';
 import { AdminConfirmationDialog } from '@/components/admin/admin-confirmation-dialog';
 import { AdminRowActions } from '@/components/admin/admin-row-actions';
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
@@ -33,14 +32,12 @@ const eventTypeLabels: Record<EventRecord['type'], string> = {
     workshop: 'Workshop',
 };
 
-const eventTypeStyles: Record<EventRecord['type'], string> = {
-    demo: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
-    other: 'border-neutral-200 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300',
-    race: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300',
-    training:
-        'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300',
-    workshop:
-        'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
+const eventTypeDots: Record<EventRecord['type'], string> = {
+    demo: 'bg-amber-500',
+    other: 'bg-neutral-400',
+    race: 'bg-violet-500',
+    training: 'bg-blue-500',
+    workshop: 'bg-emerald-500',
 };
 
 const registrationLabels: Record<EventRecord['registrationStatus'], string> = {
@@ -60,69 +57,71 @@ const timeFormatter = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
 });
 
+const primaryLine =
+    'block truncate text-sm leading-5 text-neutral-800 dark:text-neutral-200';
+const secondaryLine =
+    'mt-0.5 block truncate text-xs leading-4 text-neutral-500 dark:text-neutral-400';
+
 export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
     [
         {
             accessorKey: 'title',
             header: 'Event',
+            meta: {
+                className: 'sm:w-[35%] 2xl:w-[32%]',
+            },
             cell: ({ row }) => {
-                const startsAt = new Date(row.original.startsAt);
+                const event = row.original;
+                const startsAt = new Date(event.startsAt);
+                const titleClassName =
+                    'block max-w-full truncate text-sm leading-5 font-semibold text-neutral-950 dark:text-white';
 
                 return (
-                    <div className="min-w-0 sm:w-80 sm:max-w-full">
-                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
-                            {row.original.capabilities.update ? (
-                                <Link
-                                    href={edit(row.original.id)}
-                                    className="min-w-0 font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:truncate dark:text-white dark:hover:text-signal-300"
-                                >
-                                    {row.original.title}
-                                </Link>
-                            ) : (
-                                <p className="min-w-0 font-semibold text-neutral-950 sm:truncate dark:text-white">
-                                    {row.original.title}
-                                </p>
-                            )}
-                            <EventTypeBadge
-                                type={row.original.type}
-                                className="shrink-0"
-                            />
-                            {row.original.season && (
-                                <Badge
-                                    variant="outline"
-                                    className="max-w-40 min-w-14 shrink-[100] border-neutral-200 bg-neutral-50 font-normal text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-                                    title={row.original.season.name}
-                                >
-                                    <span className="truncate">
-                                        {row.original.season.name}
-                                    </span>
-                                </Badge>
-                            )}
-                        </div>
+                    <div className="min-w-0">
+                        {event.capabilities.update ? (
+                            <Link
+                                href={edit(event.id)}
+                                title={event.title}
+                                className={cn(
+                                    titleClassName,
+                                    'underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:hover:text-signal-300',
+                                )}
+                            >
+                                {event.title}
+                            </Link>
+                        ) : (
+                            <p title={event.title} className={titleClassName}>
+                                {event.title}
+                            </p>
+                        )}
                         <p
-                            className="mt-0.5 hidden truncate text-xs text-neutral-500 sm:block dark:text-neutral-400"
-                            title={`/events/${row.original.slug}`}
+                            className={cn(secondaryLine, 'hidden sm:block')}
+                            title={`/events/${event.slug}`}
                         >
-                            /events/{row.original.slug}
+                            /events/{event.slug}
                         </p>
-                        <div className="mt-2 grid gap-1.5 sm:hidden">
-                            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                        <div className="mt-1.5 grid gap-1 sm:hidden">
+                            <div className="flex min-w-0 items-center gap-2">
+                                <EventTypeLabel type={event.type} />
+                                {event.season && (
+                                    <EventSeasonBadge
+                                        name={event.season.name}
+                                    />
+                                )}
+                            </div>
+                            <p className="text-xs text-neutral-700 dark:text-neutral-300">
                                 {dateFormatter.format(startsAt)} ·{' '}
                                 {timeFormatter.format(startsAt)} uur
                             </p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                {row.original.location.name} ·{' '}
-                                {row.original.location.city}
+                            <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                                {event.location.name} · {event.location.city}
                             </p>
-                            <div className="flex flex-wrap items-center gap-1.5">
-                                <AdminStatusBadge
-                                    status={row.original.status}
-                                    className="h-5 px-1.5 text-[10px]"
-                                />
-                                <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-0.5">
+                                <AdminStatusBadge status={event.status} />
+                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                     {
                                         registrationLabels[
-                                            row.original.registrationStatus
+                                            event.registrationStatus
                                         ]
                                     }
                                 </span>
@@ -133,23 +132,47 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
             },
         },
         {
+            id: 'classification',
+            header: 'Type',
+            meta: {
+                className: 'hidden sm:table-cell sm:w-[19%] 2xl:w-[18%]',
+            },
+            cell: ({ row }) => (
+                <div className="min-w-0">
+                    <EventTypeLabel type={row.original.type} />
+                    {row.original.season && (
+                        <div className="mt-1">
+                            <EventSeasonBadge name={row.original.season.name} />
+                        </div>
+                    )}
+                </div>
+            ),
+        },
+        {
             id: 'planning',
             header: 'Planning',
             meta: {
-                className: 'hidden sm:table-cell',
+                className: 'hidden sm:table-cell sm:w-[24%] 2xl:w-[20%]',
             },
             cell: ({ row }) => {
                 const startsAt = new Date(row.original.startsAt);
 
                 return (
-                    <div className="min-w-56">
-                        <p className="font-medium text-neutral-800 dark:text-neutral-200">
+                    <div className="min-w-0">
+                        <p className={cn(primaryLine, 'font-medium')}>
                             {dateFormatter.format(startsAt)} ·{' '}
                             {timeFormatter.format(startsAt)} uur
                         </p>
-                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                            {row.original.location.name} ·{' '}
-                            {row.original.location.city}
+                        <p
+                            className={cn(secondaryLine, 'flex gap-1')}
+                            title={`${row.original.location.name}, ${row.original.location.city}`}
+                        >
+                            <span className="truncate">
+                                {row.original.location.name}
+                            </span>
+                            <span className="shrink-0">
+                                · {row.original.location.city}
+                            </span>
                         </p>
                     </div>
                 );
@@ -159,14 +182,14 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
             id: 'status',
             header: 'Status',
             meta: {
-                className: 'hidden sm:table-cell',
+                className: 'hidden sm:table-cell sm:w-[18%] 2xl:w-[16%]',
             },
             cell: ({ row }) => (
-                <div className="grid min-w-40 gap-2">
+                <div className="min-w-0">
                     <AdminStatusBadge status={row.original.status} />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <p className={secondaryLine}>
                         {registrationLabels[row.original.registrationStatus]}
-                    </span>
+                    </p>
                 </div>
             ),
         },
@@ -174,10 +197,23 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
             id: 'activity',
             header: 'Bijgewerkt',
             meta: {
-                className: 'hidden xl:table-cell',
+                className: 'hidden 2xl:table-cell 2xl:w-[12%]',
             },
             cell: ({ row }) => (
-                <AdminActivityByline activity={row.original.activity} />
+                <div className="min-w-0">
+                    <time
+                        dateTime={row.original.activity.updatedAt}
+                        className={primaryLine}
+                    >
+                        {dateFormatter.format(
+                            new Date(row.original.activity.updatedAt),
+                        )}
+                    </time>
+                    <p className={secondaryLine}>
+                        {row.original.activity.updatedBy?.name ??
+                            'Systeem / import'}
+                    </p>
+                </div>
             ),
         },
         {
@@ -190,19 +226,29 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
         },
     ];
 
-function EventTypeBadge({
-    className,
-    type,
-}: {
-    className?: string;
-    type: EventRecord['type'];
-}) {
+function EventTypeLabel({ type }: { type: EventRecord['type'] }) {
+    return (
+        <span className="flex shrink-0 items-center gap-2 text-sm leading-5 font-medium text-neutral-800 dark:text-neutral-200">
+            <span
+                aria-hidden="true"
+                className={cn(
+                    'size-1.5 shrink-0 rounded-full',
+                    eventTypeDots[type],
+                )}
+            />
+            {eventTypeLabels[type]}
+        </span>
+    );
+}
+
+function EventSeasonBadge({ name }: { name: string }) {
     return (
         <Badge
             variant="outline"
-            className={cn(eventTypeStyles[type], className)}
+            title={name}
+            className="max-w-full min-w-0 shrink border-neutral-200 bg-neutral-50 font-normal text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
         >
-            {eventTypeLabels[type]}
+            <span className="truncate">{name}</span>
         </Badge>
     );
 }

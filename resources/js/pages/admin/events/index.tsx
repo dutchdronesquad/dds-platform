@@ -119,7 +119,7 @@ export default function EventsIndex({
                     }
                     pagination={events}
                     resourceLabel="events"
-                    tableClassName="min-w-0 sm:min-w-[44rem] xl:min-w-[56rem]"
+                    tableClassName="min-w-0 table-fixed sm:min-w-[44rem] xl:min-w-[56rem]"
                     toolbar={
                         <EventFilterBar
                             filters={filters}

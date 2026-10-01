@@ -53,7 +53,7 @@ test('admins can select multiple event facets without closing the menu', functio
         ->assertNoJavaScriptErrors();
 });
 
-test('event index groups type and season with its title and keeps planning compact', function () {
+test('event index shows title with slug, type with season label, and keeps rows to two compact lines', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::Admin->value);
     $season = Season::factory()->create(['name' => 'Wintercompetitie']);
@@ -75,22 +75,21 @@ test('event index groups type and season with its title and keeps planning compa
 
     visit('/dashboard/events')
         ->on()->desktop()
-        ->resize(1440, 1000)
+        ->resize(1280, 800)
         ->assertNoJavaScriptErrors()
-        ->assertSee('Planning')
-        ->assertSee('Status')
         ->assertSee('Race')
         ->assertSee('Training')
         ->assertSee('Wintercompetitie')
         ->assertDontSee('Los event')
         ->assertSee('/events/verborgen-race-slug')
         ->assertSee('/events/verborgen-training-slug')
-        // Title + badges and the public path are the only two lines in the Event cell on desktop.
+        // Event column: title on line one, public path on line two.
         ->assertScript(
-            "(() => { const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const wrapper = finalRow?.querySelector('td')?.firstElementChild; const lines = Array.from(wrapper?.children ?? []).filter((line) => line.offsetParent !== null); const slug = lines.find((line) => line.textContent.includes('/events/verborgen-race-slug')); return lines.length === 2 && !!slug && slug.getBoundingClientRect().height < 20 && lines[0].getBoundingClientRect().height < 32 && wrapper.getBoundingClientRect().height < 64; })()",
+            "(() => { const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const wrapper = finalRow?.querySelector('td')?.firstElementChild; const lines = Array.from(wrapper?.children ?? []).filter((line) => line.offsetParent !== null); const slug = lines.find((line) => line.textContent.includes('/events/verborgen-race-slug')); return lines.length === 2 && lines[0].textContent.includes('Finalerace') && !!slug && slug.getBoundingClientRect().height < 20 && lines[0].getBoundingClientRect().height < 24 && wrapper.getBoundingClientRect().height < 48; })()",
         )
+        // Type column holds type plus the season label; planning and status keep two lines each; no row exceeds two lines.
         ->assertScript(
-            "(() => { const headings = Array.from(document.querySelectorAll('thead th')).map((heading) => heading.textContent.trim()); const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const cells = finalRow?.querySelectorAll('td'); return ['Event', 'Planning', 'Status', 'Bijgewerkt'].every((heading) => headings.includes(heading)) && !['Start', 'Locatie', 'Type', 'Seizoen'].some((heading) => headings.includes(heading)) && cells?.length === 5 && cells[0]?.textContent.includes('Race') && cells[0]?.textContent.includes('Wintercompetitie') && !cells[1]?.textContent.includes('Wintercompetitie') && cells[1]?.querySelectorAll('p').length === 2 && !cells[2]?.textContent.includes('Race') && document.documentElement.scrollWidth <= window.innerWidth; })()",
+            "(() => { const headings = Array.from(document.querySelectorAll('thead th')).map((heading) => heading.textContent.trim()); const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const cells = finalRow?.querySelectorAll('td'); const trainingRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Losse training')); return ['Event', 'Type', 'Planning', 'Status'].every((heading) => headings.includes(heading)) && !['Start', 'Locatie', 'Seizoen'].some((heading) => headings.includes(heading)) && cells?.length === 6 && cells[1]?.textContent.includes('Race') && cells[1]?.querySelector('[data-slot=badge]')?.textContent.includes('Wintercompetitie') && !cells[0]?.innerText.includes('Wintercompetitie') && !cells[2]?.textContent.includes('Wintercompetitie') && cells[2]?.querySelectorAll('p').length === 2 && cells[3]?.querySelectorAll('p').length === 1 && trainingRow?.querySelectorAll('td')[1]?.querySelector('[data-slot=badge]') === null && finalRow.getBoundingClientRect().height < 90 && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
         ->assertNoJavaScriptErrors();
 });
