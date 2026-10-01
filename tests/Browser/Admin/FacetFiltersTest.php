@@ -85,6 +85,10 @@ test('event index groups type and season with its title and keeps planning compa
         ->assertDontSee('Los event')
         ->assertSee('/events/verborgen-race-slug')
         ->assertSee('/events/verborgen-training-slug')
+        // Title + badges and the public path are the only two lines in the Event cell on desktop.
+        ->assertScript(
+            "(() => { const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const wrapper = finalRow?.querySelector('td')?.firstElementChild; const lines = Array.from(wrapper?.children ?? []).filter((line) => line.offsetParent !== null); const slug = lines.find((line) => line.textContent.includes('/events/verborgen-race-slug')); return lines.length === 2 && !!slug && slug.getBoundingClientRect().height < 20 && lines[0].getBoundingClientRect().height < 32 && wrapper.getBoundingClientRect().height < 64; })()",
+        )
         ->assertScript(
             "(() => { const headings = Array.from(document.querySelectorAll('thead th')).map((heading) => heading.textContent.trim()); const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const cells = finalRow?.querySelectorAll('td'); return ['Event', 'Planning', 'Status', 'Bijgewerkt'].every((heading) => headings.includes(heading)) && !['Start', 'Locatie', 'Type', 'Seizoen'].some((heading) => headings.includes(heading)) && cells?.length === 5 && cells[0]?.textContent.includes('Race') && cells[0]?.textContent.includes('Wintercompetitie') && !cells[1]?.textContent.includes('Wintercompetitie') && cells[1]?.querySelectorAll('p').length === 2 && !cells[2]?.textContent.includes('Race') && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )

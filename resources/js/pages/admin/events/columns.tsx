@@ -78,39 +78,45 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
                 const startsAt = new Date(row.original.startsAt);
 
                 return (
-                    <div className="min-w-0 sm:min-w-60">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <div className="min-w-0 sm:w-80 sm:max-w-full sm:min-w-60">
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                             {row.original.capabilities.update ? (
                                 <Link
                                     href={edit(row.original.id)}
-                                    className="font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-white dark:hover:text-signal-300"
+                                    className="min-w-0 font-semibold text-neutral-950 underline-offset-4 hover:text-signal-700 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:truncate dark:text-white dark:hover:text-signal-300"
                                 >
                                     {row.original.title}
                                 </Link>
                             ) : (
-                                <p className="font-semibold text-neutral-950 dark:text-white">
+                                <p className="min-w-0 font-semibold text-neutral-950 sm:truncate dark:text-white">
                                     {row.original.title}
                                 </p>
                             )}
-                            <EventTypeBadge type={row.original.type} />
+                            <EventTypeBadge
+                                type={row.original.type}
+                                className="shrink-0"
+                            />
+                            {row.original.season && (
+                                <span
+                                    className="flex max-w-full min-w-0 items-center gap-1 text-xs text-neutral-500 sm:max-w-44 dark:text-neutral-400"
+                                    title={row.original.season.name}
+                                >
+                                    <Tags className="size-3.5 shrink-0" />
+                                    <span className="truncate">
+                                        {row.original.season.name}
+                                    </span>
+                                </span>
+                            )}
                         </div>
                         <p
-                            className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
+                            className="mt-1 hidden min-w-0 items-center gap-1.5 text-xs text-neutral-400 sm:flex dark:text-neutral-500"
                             title={`/events/${row.original.slug}`}
                         >
                             <Link2 className="size-3.5 shrink-0" />
-                            <span className="truncate font-mono">
+                            <span className="truncate">
                                 /events/{row.original.slug}
                             </span>
                         </p>
-                        {row.original.season && (
-                            <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                <Tags className="size-3.5 shrink-0" />
-                                <span className="truncate">
-                                    {row.original.season.name}
-                                </span>
-                            </p>
-                        )}
                         <div className="mt-2 grid gap-1.5 sm:hidden">
                             <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                                 {dateFormatter.format(startsAt)} ·{' '}
