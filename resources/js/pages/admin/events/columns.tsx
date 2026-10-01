@@ -1,16 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { adminTableFeatures } from '@/components/admin/admin-data-table';
-import {
-    Ban,
-    Copy,
-    EyeOff,
-    Link2,
-    Pencil,
-    Send,
-    Tags,
-    Trash2,
-} from 'lucide-react';
+import { Ban, Copy, EyeOff, Pencil, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
     destroy,
@@ -78,7 +69,7 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
                 const startsAt = new Date(row.original.startsAt);
 
                 return (
-                    <div className="min-w-0 sm:w-80 sm:max-w-full sm:min-w-60">
+                    <div className="min-w-0 sm:w-80 sm:max-w-full">
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                             {row.original.capabilities.update ? (
                                 <Link
@@ -97,25 +88,22 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
                                 className="shrink-0"
                             />
                             {row.original.season && (
-                                <span
-                                    className="flex max-w-full min-w-0 items-center gap-1 text-xs text-neutral-500 sm:max-w-44 dark:text-neutral-400"
+                                <Badge
+                                    variant="outline"
+                                    className="max-w-40 min-w-14 shrink-[100] border-neutral-200 bg-neutral-50 font-normal text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
                                     title={row.original.season.name}
                                 >
-                                    <Tags className="size-3.5 shrink-0" />
                                     <span className="truncate">
                                         {row.original.season.name}
                                     </span>
-                                </span>
+                                </Badge>
                             )}
                         </div>
                         <p
-                            className="mt-1 hidden min-w-0 items-center gap-1.5 text-xs text-neutral-400 sm:flex dark:text-neutral-500"
+                            className="mt-0.5 hidden truncate text-xs text-neutral-500 sm:block dark:text-neutral-400"
                             title={`/events/${row.original.slug}`}
                         >
-                            <Link2 className="size-3.5 shrink-0" />
-                            <span className="truncate">
-                                /events/{row.original.slug}
-                            </span>
+                            /events/{row.original.slug}
                         </p>
                         <div className="mt-2 grid gap-1.5 sm:hidden">
                             <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
