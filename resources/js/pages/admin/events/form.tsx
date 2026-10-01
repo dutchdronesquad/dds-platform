@@ -117,6 +117,7 @@ export function EventForm({
 }) {
     const [saveVersion, setSaveVersion] = useState(0);
     const [title, setTitle] = useState(event?.title ?? '');
+    const [slug, setSlug] = useState(event?.slug ?? '');
     const [registrationEnabled, setRegistrationEnabled] = useState(
         event?.registrationEnabled ?? false,
     );
@@ -257,7 +258,7 @@ export function EventForm({
                                     description={
                                         event
                                             ? 'De titel, het type en de locatie vormen de herkenbare basis van het event.'
-                                            : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel en startdatum gemaakt.'
+                                            : 'Geef het event een titel en kies het type en de locatie. Zonder eigen URL-slug wordt de URL automatisch uit de titel en startdatum gemaakt.'
                                     }
                                 >
                                     <div className="grid gap-5 @min-[40rem]/fields:grid-cols-2">
@@ -292,6 +293,48 @@ export function EventForm({
                                                 aria-describedby={fieldDescription(
                                                     'title',
                                                     errors.title,
+                                                )}
+                                            />
+                                        </FormField>
+                                        <FormField
+                                            id="slug"
+                                            label="URL-slug (optioneel)"
+                                            error={errors.slug}
+                                            hint={
+                                                slug
+                                                    ? event &&
+                                                      slug !== event.slug
+                                                        ? `Publieke URL: /events/${slug}. Bestaande links naar /events/${event.slug} werken daarna niet meer.`
+                                                        : `Publieke URL: /events/${slug}`
+                                                    : undefined
+                                            }
+                                            reserveSupportingTextSpace
+                                            className="@min-[40rem]/fields:col-span-2"
+                                        >
+                                            <Input
+                                                id="slug"
+                                                name="slug"
+                                                value={slug}
+                                                onChange={(inputEvent) =>
+                                                    setSlug(
+                                                        inputEvent.target.value,
+                                                    )
+                                                }
+                                                maxLength={255}
+                                                placeholder={
+                                                    event
+                                                        ? event.slug
+                                                        : 'Automatisch uit titel en startdatum'
+                                                }
+                                                autoComplete="off"
+                                                autoCapitalize="none"
+                                                spellCheck={false}
+                                                aria-invalid={Boolean(
+                                                    errors.slug,
+                                                )}
+                                                aria-describedby={fieldDescription(
+                                                    'slug',
+                                                    errors.slug,
                                                 )}
                                             />
                                         </FormField>
@@ -713,7 +756,7 @@ export function EventForm({
                                     className="@container/fields"
                                     icon={Globe}
                                     title="Publieke pagina"
-                                    description="Voeg een omslag en uitgebreide informatie toe. De publieke URL wordt automatisch uit de titel en startdatum gemaakt."
+                                    description="Voeg een omslag en uitgebreide informatie toe voor de publieke eventpagina."
                                 >
                                     <div className="grid gap-5">
                                         <FormField

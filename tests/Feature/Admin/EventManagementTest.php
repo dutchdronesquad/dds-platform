@@ -364,7 +364,7 @@ test('editors can create and update events but cannot publish or delete them', f
     $this->actingAs($editor)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
             'title' => 'Bijgewerkte editor training',
-            'slug' => 'wordt-genegeerd',
+            'slug' => '',
         ]))
         ->assertRedirect(route('admin.events.edit', $event));
 
@@ -393,7 +393,7 @@ test('admins can create events with normalized prices and date-based generated s
         ->post(route('admin.events.store'), validEventPayload($location, [
             'season_id' => $season->id,
             'title' => 'Indoor Training Oktober',
-            'slug' => 'handmatige-slug-wordt-genegeerd',
+            'slug' => '',
             'price_euros' => '12.50',
         ]))
         ->assertRedirect();
@@ -448,7 +448,7 @@ test('generated event slugs remain stable when an event is updated', function ()
     $this->actingAs($admin)
         ->put(route('admin.events.update', $event), validEventPayload($location, [
             'title' => 'FPV Trainingsavond',
-            'slug' => 'deze-mag-de-url-niet-wijzigen',
+            'slug' => '',
             'starts_at' => '2027-10-21T18:00',
             'ends_at' => '2027-10-21T22:00',
             'registration_deadline_at' => '2027-10-20T23:59',
@@ -458,6 +458,80 @@ test('generated event slugs remain stable when an event is updated', function ()
     expect($event->refresh())
         ->title->toBe('FPV Trainingsavond')
         ->slug->toBe('fpv-vliegavond-2026-10-15');
+});
+
+test('admins can choose a custom event slug when creating an event', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.events.store'), validEventPayload($location, [
+            'title' => 'Indoor Training Oktober',
+            'slug' => 'indoor-oktober',
+        ]))
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('events', ['slug' => 'indoor-oktober']);
+});
+
+test('admins can change the slug of a duplicated event', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    $event = Event::factory()->create([
+        'location_id' => $location->id,
+        'slug' => 'vrijdagtraining-kopie',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'slug' => 'vrijdagtraining-november',
+        ]))
+        ->assertRedirect(route('admin.events.edit', $event));
+
+    expect($event->refresh()->slug)->toBe('vrijdagtraining-november');
+});
+
+test('custom event slugs must be unique and url safe', function (string $slug) {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    Event::factory()->create(['slug' => 'bezet']);
+    $event = Event::factory()->create([
+        'location_id' => $location->id,
+        'slug' => 'origineel',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'slug' => $slug,
+        ]))
+        ->assertSessionHasErrors('slug');
+
+    expect($event->refresh()->slug)->toBe('origineel');
+})->with([
+    'already taken' => 'bezet',
+    'contains a slash' => 'met/slash',
+    'contains spaces' => 'met spaties',
+]);
+
+test('an event can be saved with its current slug unchanged', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::Admin->value);
+    $location = Location::factory()->create();
+    $event = Event::factory()->create([
+        'location_id' => $location->id,
+        'slug' => 'origineel',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.events.update', $event), validEventPayload($location, [
+            'slug' => 'origineel',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($event->refresh()->slug)->toBe('origineel');
 });
 
 test('event dates preserve offset-defined moments in UTC', function () {
