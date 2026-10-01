@@ -15,7 +15,9 @@ import {
     Send,
     TriangleAlert,
     Trash2,
+    WandSparkles,
 } from 'lucide-react';
+import { format } from 'date-fns';
 import { flushSync } from 'react-dom';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
@@ -44,6 +46,7 @@ import {
 import { AdminStatusBadge } from '@/components/admin/admin-status-badge';
 import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import { MediaAssetPicker } from '@/components/admin/media-asset-picker';
+import { createSlug } from '@/lib/create-slug';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
@@ -117,7 +120,7 @@ export function EventForm({
 }) {
     const [saveVersion, setSaveVersion] = useState(0);
     const [title, setTitle] = useState(event?.title ?? '');
-    const [slug, setSlug] = useState(event?.slug ?? '');
+    const [startsAt, setStartsAt] = useState(event?.startsAt ?? '');
     const [registrationEnabled, setRegistrationEnabled] = useState(
         event?.registrationEnabled ?? false,
     );
@@ -258,7 +261,7 @@ export function EventForm({
                                     description={
                                         event
                                             ? 'De titel, het type en de locatie vormen de herkenbare basis van het event.'
-                                            : 'Geef het event een titel en kies het type en de locatie. Zonder eigen URL-slug wordt de URL automatisch uit de titel en startdatum gemaakt.'
+                                            : 'Geef het event een titel en kies het type en de locatie. De URL wordt automatisch uit de titel en startdatum gemaakt.'
                                     }
                                 >
                                     <div className="grid gap-5 @min-[40rem]/fields:grid-cols-2">
@@ -266,7 +269,6 @@ export function EventForm({
                                             id="title"
                                             label="Titel"
                                             error={errors.title}
-                                            className="@min-[40rem]/fields:col-span-2"
                                         >
                                             <Input
                                                 id="title"
@@ -296,48 +298,12 @@ export function EventForm({
                                                 )}
                                             />
                                         </FormField>
-                                        <FormField
-                                            id="slug"
-                                            label="URL-slug (optioneel)"
+                                        <EventSlugField
                                             error={errors.slug}
-                                            hint={
-                                                slug
-                                                    ? event &&
-                                                      slug !== event.slug
-                                                        ? `Publieke URL: /events/${slug}. Bestaande links naar /events/${event.slug} werken daarna niet meer.`
-                                                        : `Publieke URL: /events/${slug}`
-                                                    : undefined
-                                            }
-                                            reserveSupportingTextSpace
-                                            className="@min-[40rem]/fields:col-span-2"
-                                        >
-                                            <Input
-                                                id="slug"
-                                                name="slug"
-                                                value={slug}
-                                                onChange={(inputEvent) =>
-                                                    setSlug(
-                                                        inputEvent.target.value,
-                                                    )
-                                                }
-                                                maxLength={255}
-                                                placeholder={
-                                                    event
-                                                        ? event.slug
-                                                        : 'Automatisch uit titel en startdatum'
-                                                }
-                                                autoComplete="off"
-                                                autoCapitalize="none"
-                                                spellCheck={false}
-                                                aria-invalid={Boolean(
-                                                    errors.slug,
-                                                )}
-                                                aria-describedby={fieldDescription(
-                                                    'slug',
-                                                    errors.slug,
-                                                )}
-                                            />
-                                        </FormField>
+                                            event={event}
+                                            startsAt={startsAt}
+                                            title={title}
+                                        />
                                         <FormField
                                             id="type"
                                             label="Eventtype"
@@ -446,6 +412,7 @@ export function EventForm({
                                             <DateTimePicker
                                                 id="starts_at"
                                                 name="starts_at"
+                                                onValueChange={setStartsAt}
                                                 label="Start"
                                                 defaultValue={
                                                     event?.startsAt ?? ''
@@ -1081,6 +1048,115 @@ function EventFormAside({
                 />
             )}
         </div>
+    );
+}
+
+function isSequencedSlug(slug: string, baseSlug: string): boolean {
+    return (
+        slug === baseSlug ||
+        (slug.startsWith(`${baseSlug}-`) &&
+            /^\d+$/.test(slug.slice(baseSlug.length + 1)))
+    );
+}
+
+/**
+ * Mirrors App\Support\EventSlug: "{title}-{Y-m-d}", ignoring the "(kopie)" marker
+ * of duplicated events. The server adds a sequence when the slug is taken.
+ */
+function generatedEventSlug(title: string, startsAt: string): string {
+    const titleSlug =
+        createSlug(title.replace(/ \(kopie\)$/, '')).slice(0, 240) || 'event';
+    const startsAtDate = startsAt ? new Date(startsAt) : null;
+
+    return startsAtDate && !Number.isNaN(startsAtDate.getTime())
+        ? `${titleSlug}-${format(startsAtDate, 'yyyy-MM-dd')}`
+        : titleSlug;
+}
+
+function EventSlugField({
+    error,
+    event,
+    startsAt,
+    title,
+}: {
+    error?: string;
+    event?: EditableEvent;
+    startsAt: string;
+    title: string;
+}) {
+    // Only drafts follow the title and date: their public URL is not live yet.
+    const canGenerate = !event || event.status === 'draft';
+    const [generateSlug, setGenerateSlug] = useState(
+        canGenerate && (!event || event.slugIsGenerated),
+    );
+    const [customSlug, setCustomSlug] = useState(event?.slug ?? '');
+    const generatedSlug = generatedEventSlug(title, startsAt);
+    const slug = generateSlug
+        ? event && isSequencedSlug(event.slug, generatedSlug)
+            ? event.slug
+            : generatedSlug
+        : customSlug;
+    const publicUrl = `/events/${slug || event?.slug || ''}`;
+    const breaksExistingLinks =
+        event !== undefined &&
+        event.status !== 'draft' &&
+        slug !== '' &&
+        slug !== event.slug;
+
+    return (
+        <FormField
+            id="slug"
+            label="URL-slug"
+            error={error}
+            labelSuffix={
+                generateSlug ? (
+                    <span className="text-xs text-neutral-500">
+                        Automatisch
+                    </span>
+                ) : canGenerate ? (
+                    <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-xs"
+                        onClick={() => setGenerateSlug(true)}
+                    >
+                        <WandSparkles />
+                        Automatisch maken
+                    </Button>
+                ) : undefined
+            }
+            hint={
+                breaksExistingLinks
+                    ? `Publieke URL: ${publicUrl}. Bestaande links naar /events/${event.slug} werken daarna niet meer.`
+                    : generateSlug
+                      ? `Publieke URL: ${publicUrl}. Volgt de titel en startdatum zolang het event een concept is.`
+                      : `Publieke URL: ${publicUrl}`
+            }
+            reserveSupportingTextSpace
+        >
+            <input
+                type="hidden"
+                name="generate_slug"
+                value={generateSlug ? '1' : '0'}
+            />
+            <Input
+                id="slug"
+                name="slug"
+                value={slug}
+                onChange={(inputEvent) => {
+                    setGenerateSlug(false);
+                    setCustomSlug(inputEvent.target.value);
+                }}
+                maxLength={255}
+                placeholder={event?.slug}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-invalid={Boolean(error)}
+                aria-describedby={fieldDescription('slug', error)}
+            />
+        </FormField>
     );
 }
 

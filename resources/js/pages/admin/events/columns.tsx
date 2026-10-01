@@ -1,7 +1,16 @@
 import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { adminTableFeatures } from '@/components/admin/admin-data-table';
-import { Ban, Copy, EyeOff, Pencil, Send, Tags, Trash2 } from 'lucide-react';
+import {
+    Ban,
+    Copy,
+    EyeOff,
+    Link2,
+    Pencil,
+    Send,
+    Tags,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import {
     destroy,
@@ -85,6 +94,15 @@ export const eventColumns: ColumnDef<typeof adminTableFeatures, EventRecord>[] =
                             )}
                             <EventTypeBadge type={row.original.type} />
                         </div>
+                        <p
+                            className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
+                            title={`/events/${row.original.slug}`}
+                        >
+                            <Link2 className="size-3.5 shrink-0" />
+                            <span className="truncate font-mono">
+                                /events/{row.original.slug}
+                            </span>
+                        </p>
                         {row.original.season && (
                             <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
                                 <Tags className="size-3.5 shrink-0" />

@@ -109,6 +109,7 @@ export type EditableEvent = {
     registrationWaitlistEnabled: boolean;
     seasonId: number | null;
     slug: string;
+    slugIsGenerated: boolean;
     startsAt: string;
     status: AdminEventStatus;
     title: string;

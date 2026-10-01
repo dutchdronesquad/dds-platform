@@ -144,11 +144,13 @@ test('event create responds to the available form width instead of the viewport'
             "(() => { const headings = Array.from(document.querySelectorAll('[data-testid=\"admin-form-layout\"] h2')).map((heading) => heading.textContent?.trim()); return JSON.stringify(headings) === JSON.stringify(['Basisinformatie', 'Wanneer', 'Capaciteit en prijs', 'Inschrijving', 'Publieke pagina']); })()",
         )
         ->fill('#title', 'Indoor Training Éindhoven')
-        ->assertVisible('input[name="slug"]')
-        ->assertAttribute('#slug', 'placeholder', 'Automatisch uit titel en startdatum')
+        ->assertValue('#slug', 'indoor-training-eindhoven')
+        ->assertValue('input[name="generate_slug"]', '1')
         ->fill('#slug', 'indoor-eindhoven')
+        ->assertValue('input[name="generate_slug"]', '0')
         ->assertSee('Publieke URL: /events/indoor-eindhoven')
-        ->clear('#slug')
+        ->click('Automatisch maken')
+        ->assertValue('#slug', 'indoor-training-eindhoven')
         ->fill('#content', "## Programma\n\n- Briefing\n- Vrij vliegen")
         ->click('button[aria-controls="content-preview"]')
         ->assertSee('Programma')
@@ -214,6 +216,10 @@ test('event create responds to the available form width instead of the viewport'
         ->click('Gereed')
         ->assertScript(
             '(() => { const value = document.querySelector(\'input[name="starts_at"]\')?.value; if (!value || !/(?:Z|[+-]\\d{2}:\\d{2})$/.test(value)) return false; const date = new Date(value); return date.getHours() === 9 && date.getMinutes() === 30; })()',
+        )
+        // The automatic slug follows the chosen start date in the browser's own time zone.
+        ->assertScript(
+            "document.querySelector('#slug')?.value === 'indoor-training-eindhoven-' + document.querySelector('input[name=\"starts_at\"]')?.value.slice(0, 10)",
         )
         ->assertNoJavaScriptErrors();
 });

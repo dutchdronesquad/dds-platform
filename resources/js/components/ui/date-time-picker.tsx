@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CalendarIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -19,6 +19,7 @@ type DateTimePickerProps = {
     id: string;
     label: string;
     name: string;
+    onValueChange?: (value: string) => void;
     showNowShortcut?: boolean;
     showTodayShortcut?: boolean;
 };
@@ -62,6 +63,7 @@ function DateTimePicker({
     id,
     label,
     name,
+    onValueChange,
     showNowShortcut = false,
     showTodayShortcut = false,
 }: DateTimePickerProps) {
@@ -69,6 +71,11 @@ function DateTimePicker({
     const [date, setDate] = useState<Date | undefined>(initialValue.date);
     const [time, setTime] = useState(initialValue.time);
     const [open, setOpen] = useState(false);
+    const value = formatDateTime(date, time);
+
+    useEffect(() => {
+        onValueChange?.(value);
+    }, [onValueChange, value]);
 
     return (
         <div
@@ -83,7 +90,7 @@ function DateTimePicker({
             <input
                 type="hidden"
                 name={name}
-                value={formatDateTime(date, time)}
+                value={value}
             />
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>

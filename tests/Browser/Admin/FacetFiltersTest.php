@@ -83,8 +83,8 @@ test('event index groups type and season with its title and keeps planning compa
         ->assertSee('Training')
         ->assertSee('Wintercompetitie')
         ->assertDontSee('Los event')
-        ->assertDontSee('verborgen-race-slug')
-        ->assertDontSee('verborgen-training-slug')
+        ->assertSee('/events/verborgen-race-slug')
+        ->assertSee('/events/verborgen-training-slug')
         ->assertScript(
             "(() => { const headings = Array.from(document.querySelectorAll('thead th')).map((heading) => heading.textContent.trim()); const finalRow = Array.from(document.querySelectorAll('tbody tr')).find((row) => row.textContent.includes('Finalerace')); const cells = finalRow?.querySelectorAll('td'); return ['Event', 'Planning', 'Status', 'Bijgewerkt'].every((heading) => headings.includes(heading)) && !['Start', 'Locatie', 'Type', 'Seizoen'].some((heading) => headings.includes(heading)) && cells?.length === 5 && cells[0]?.textContent.includes('Race') && cells[0]?.textContent.includes('Wintercompetitie') && !cells[1]?.textContent.includes('Wintercompetitie') && cells[1]?.querySelectorAll('p').length === 2 && !cells[2]?.textContent.includes('Race') && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
