@@ -62,6 +62,13 @@ class StoreEventRequest extends FormRequest
                 },
             ],
             'title' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                'alpha_dash:ascii',
+                Rule::unique(Event::class, 'slug')->ignore($event),
+            ],
             'content' => ['nullable', 'string', 'max:50000'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
@@ -107,13 +114,15 @@ class StoreEventRequest extends FormRequest
         $validated = $this->validated();
         $price = Arr::pull($validated, 'price_euros');
         $event = $this->event();
-        $slug = $event instanceof Event
-            ? $event->slug
-            : $this->uniqueSlug(
+        $slug = match (true) {
+            filled($validated['slug'] ?? null) => $validated['slug'],
+            $event instanceof Event => $event->slug,
+            default => $this->uniqueSlug(
                 $validated['title'],
                 $this->startsAtDateForSlug
                     ?? CarbonImmutable::parse($validated['starts_at'])->format('Y-m-d'),
-            );
+            ),
+        };
 
         return [
             ...$validated,
@@ -130,6 +139,7 @@ class StoreEventRequest extends FormRequest
             'season_id' => 'seizoen',
             'cover_image_id' => 'omslagafbeelding',
             'title' => 'titel',
+            'slug' => 'URL-slug',
             'content' => 'omschrijving',
             'starts_at' => 'startdatum',
             'ends_at' => 'einddatum',
