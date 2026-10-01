@@ -2,12 +2,14 @@
 
 namespace App\Support;
 
-use App\Actions\Admin\DuplicateEvent;
 use App\Models\Event;
 use Illuminate\Support\Str;
 
 final class EventSlug
 {
+    /** Title marker for duplicated events; ignored when deriving slugs. */
+    public const string COPY_SUFFIX = ' (kopie)';
+
     private const int MAX_LENGTH = 255;
 
     /** Room kept free after the title for "-Y-m-d" and a "-999" sequence. */
@@ -64,8 +66,8 @@ final class EventSlug
 
     private static function titleSlug(string $title): string
     {
-        $title = Str::endsWith($title, DuplicateEvent::COPY_SUFFIX)
-            ? Str::beforeLast($title, DuplicateEvent::COPY_SUFFIX)
+        $title = Str::endsWith($title, self::COPY_SUFFIX)
+            ? Str::beforeLast($title, self::COPY_SUFFIX)
             : $title;
 
         return rtrim(Str::limit(Str::slug($title) ?: 'event', self::MAX_LENGTH - self::SUFFIX_RESERVE, ''), '-');

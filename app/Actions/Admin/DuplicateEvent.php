@@ -11,8 +11,6 @@ use Illuminate\Support\Str;
 
 class DuplicateEvent
 {
-    public const string COPY_SUFFIX = ' (kopie)';
-
     public function handle(Event $event): Event
     {
         $sequence = 2;
@@ -37,9 +35,9 @@ class DuplicateEvent
             $duplicate->fill([
                 'title' => Str::limit(
                     $sourceEvent->title,
-                    255 - Str::length(self::COPY_SUFFIX),
+                    255 - Str::length(EventSlug::COPY_SUFFIX),
                     '',
-                ).self::COPY_SUFFIX,
+                ).EventSlug::COPY_SUFFIX,
                 'slug' => $this->uniqueSlug($sourceEvent, $sequence),
                 'status' => EventStatus::Draft,
                 'published_at' => null,
