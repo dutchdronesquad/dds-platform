@@ -16,6 +16,7 @@ namespace App\Support;
  *     media: list<PublicProjectMedium>,
  *     featured: bool,
  *     videoUrl: ?string,
+ *     subprojects: list<array{title: string, summary: string, primaryLink: array{label: string, url: string}, supportingLinks: list<array{label: string, url: string}>, media: list<PublicProjectMedium>}>,
  * }
  */
 final class PublicProjectData
@@ -64,6 +65,10 @@ final class PublicProjectData
             ),
             'featured' => $entry->featured,
             'videoUrl' => $entry->videoUrl,
+            'subprojects' => array_map(static fn (array $subproject): array => [
+                ...$subproject,
+                'media' => array_map(static fn (array $medium): array => self::medium($medium), $subproject['media']),
+            ], $entry->subprojects),
         ];
     }
 

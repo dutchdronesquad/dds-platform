@@ -111,88 +111,154 @@ function SoftwareSpotlight({ project }: { project: PublicProject }) {
         >
             <div
                 data-testid="project-spotlight-container"
-                className="mx-auto grid w-full max-w-7xl gap-10 px-public-gutter py-16 sm:py-20 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16 lg:py-24"
+                className="mx-auto w-full max-w-[1440px] px-public-gutter py-16 sm:py-20 lg:py-24"
             >
-                <div className="max-w-xl">
-                    <Eyebrow inverse line={false}>
-                        Baanontwerp
-                    </Eyebrow>
-                    <h2
-                        id="software-spotlight-heading"
-                        className="mt-5 font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.055em] sm:text-6xl lg:text-7xl"
-                    >
-                        {project.title}
-                    </h2>
-                    <p className="mt-7 font-public-display text-2xl leading-[1.1] font-semibold tracking-[-0.04em] text-balance sm:text-3xl">
-                        Een baanidee wordt pas echt goed als je het kunt zien,
-                        testen en delen.
-                    </p>
-                    <p className="mt-5 text-base leading-7 text-white/68 sm:text-lg sm:leading-8">
-                        {project.summary}
-                    </p>
-                    <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                        {project.primaryLink && (
-                            <PublicExternalLink
-                                href={project.primaryLink.url}
-                                data-testid="project-external-link-trackdraw"
-                                className="min-h-11 bg-dds-cyan px-5 py-3 text-sm font-semibold text-deep-signal transition-colors hover:bg-white dark:focus-visible:ring-offset-deep-signal"
-                            >
-                                {project.primaryLink.label}
-                            </PublicExternalLink>
-                        )}
-                        {sourceLink && (
-                            <PublicExternalLink
-                                href={sourceLink.url}
-                                className="min-h-11 text-sm font-semibold text-white/75 transition-colors hover:text-white"
-                            >
-                                Bekijk broncode
-                            </PublicExternalLink>
-                        )}
+                <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)] lg:gap-16">
+                    <div className="min-w-0">
+                        <Eyebrow inverse line={false}>
+                            Baanontwerp
+                        </Eyebrow>
+                        <h2
+                            id="software-spotlight-heading"
+                            className="mt-5 font-public-display text-5xl leading-[0.95] font-semibold tracking-[-0.055em] sm:text-6xl lg:text-[clamp(4.5rem,6.4vw,6rem)]"
+                        >
+                            {project.title}
+                        </h2>
+                        <p className="mt-5 font-public-display text-2xl leading-[1.1] font-semibold tracking-[-0.04em] text-balance sm:text-3xl lg:text-[clamp(2rem,2.8vw,2.75rem)]">
+                            Van baanidee tot racedag.
+                        </p>
+                        <p className="mt-6 max-w-2xl text-base leading-7 text-white/80 sm:text-lg lg:text-2xl">
+                            {project.summary}
+                        </p>
+                        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                            {project.primaryLink && (
+                                <PublicExternalLink
+                                    href={project.primaryLink.url}
+                                    data-testid="project-external-link-trackdraw"
+                                    className="min-h-11 bg-dds-cyan px-5 py-3 text-base font-semibold text-deep-signal transition-colors hover:bg-white lg:text-lg dark:focus-visible:ring-offset-deep-signal"
+                                >
+                                    {project.primaryLink.label}
+                                </PublicExternalLink>
+                            )}
+                            {sourceLink && (
+                                <PublicExternalLink
+                                    href={sourceLink.url}
+                                    className="min-h-11 text-base font-semibold text-white/75 transition-colors hover:text-white"
+                                >
+                                    Bekijk broncode
+                                </PublicExternalLink>
+                            )}
+                        </div>
+                    </div>
+                    <div className="min-w-0">
+                        <figure
+                            data-testid="project-spotlight-media-frame"
+                            className="overflow-hidden rounded-sm border border-white/15 bg-night-950 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.8)]"
+                        >
+                            <div className="relative">
+                                {videoUrl ? (
+                                    <video
+                                        src={videoUrl}
+                                        poster={medium?.src}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        aria-hidden="true"
+                                        data-testid="project-spotlight-video-trackdraw"
+                                        className="aspect-[1920/1044] w-full object-cover"
+                                    />
+                                ) : (
+                                    medium && (
+                                        <img
+                                            src={medium.src}
+                                            alt={medium.alt}
+                                            loading="lazy"
+                                            data-testid="project-spotlight-image-trackdraw"
+                                            className="aspect-[1920/1044] w-full object-cover"
+                                        />
+                                    )
+                                )}
+                                <div
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-0 ring-1 ring-white/8 ring-inset"
+                                />
+                            </div>
+                        </figure>
                     </div>
                 </div>
-
-                <figure
-                    data-testid="project-spotlight-media-frame"
-                    className="overflow-hidden rounded-sm border border-white/15 bg-night-950 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.8)]"
-                >
-                    <div className="relative">
-                        {videoUrl ? (
-                            <video
-                                src={videoUrl}
-                                poster={medium?.src}
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                aria-hidden="true"
-                                data-testid="project-spotlight-video-trackdraw"
-                                className="aspect-[1920/1044] w-full object-cover"
-                            />
-                        ) : (
-                            medium && (
-                                <img
-                                    src={medium.src}
-                                    alt={medium.alt}
-                                    loading="lazy"
-                                    data-testid="project-spotlight-image-trackdraw"
-                                    className="aspect-[1920/1044] w-full object-cover"
-                                />
-                            )
-                        )}
-                        <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 ring-1 ring-white/8 ring-inset"
-                        />
-                    </div>
-                    <figcaption className="flex flex-col gap-1 border-t border-white/10 px-5 py-4 text-xs leading-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                        <span className="font-semibold tracking-[0.08em] text-white/78 uppercase">
-                            TrackDraw-editor
-                        </span>
-                        <span className="text-white/48">
-                            2D-ontwerp · 3D-controle van de racelijn
-                        </span>
-                    </figcaption>
-                </figure>
+                {project.subprojects.length > 0 && (
+                    <aside
+                        aria-labelledby="trackdraw-subprojects-heading"
+                        className="mt-12 border-t border-white/15 pt-8 sm:mt-14"
+                    >
+                        <h3
+                            id="trackdraw-subprojects-heading"
+                            className="text-sm font-semibold tracking-[0.14em] text-dds-cyan uppercase"
+                        >
+                            Maak je baan compleet
+                        </h3>
+                        <div className="mt-6 grid gap-10 lg:grid-cols-2">
+                            {project.subprojects.map((subproject) => (
+                                <article
+                                    key={subproject.title}
+                                    data-testid={`project-subproject-${subproject.title === 'Track Assets' ? 'assets' : 'viewer'}`}
+                                    className="grid min-w-0 items-start gap-5 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+                                >
+                                    <div className="min-w-0">
+                                        <h4 className="font-public-display text-2xl font-semibold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                                            {subproject.title}
+                                        </h4>
+                                        <p className="mt-3 text-base leading-6 text-white/80 sm:text-lg sm:leading-7">
+                                            {subproject.summary}
+                                        </p>
+                                        <div className="mt-5 flex flex-col items-start gap-1">
+                                            <PublicExternalLink
+                                                href={
+                                                    subproject.primaryLink.url
+                                                }
+                                                className="min-h-11 text-base font-semibold text-white underline decoration-dds-cyan/70 underline-offset-4 transition-colors hover:decoration-white dark:focus-visible:ring-offset-deep-signal"
+                                            >
+                                                {subproject.primaryLink.label}
+                                            </PublicExternalLink>
+                                            {subproject.supportingLinks.map(
+                                                (link) => (
+                                                    <PublicExternalLink
+                                                        key={link.url}
+                                                        href={link.url}
+                                                        className="min-h-11 text-base font-semibold text-white/75 transition-colors hover:text-white dark:focus-visible:ring-offset-deep-signal"
+                                                    >
+                                                        {link.label}
+                                                    </PublicExternalLink>
+                                                ),
+                                            )}
+                                        </div>
+                                    </div>
+                                    {subproject.media[0] && (
+                                        <img
+                                            src={subproject.media[0].src}
+                                            alt={subproject.media[0].alt}
+                                            loading="lazy"
+                                            width={
+                                                subproject.title ===
+                                                'Track Assets'
+                                                    ? 1536
+                                                    : 1774
+                                            }
+                                            height={
+                                                subproject.title ===
+                                                'Track Assets'
+                                                    ? 1024
+                                                    : 887
+                                            }
+                                            className="mx-auto max-h-60 w-full self-center object-contain sm:max-h-52 lg:max-h-56"
+                                        />
+                                    )}
+                                </article>
+                            ))}
+                        </div>
+                    </aside>
+                )}
             </div>
         </section>
     );
