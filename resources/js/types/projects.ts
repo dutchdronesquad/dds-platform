@@ -9,6 +9,14 @@ export type ProjectMedium = {
     src: string;
 };
 
+export type ProjectSubproject = {
+    media: ProjectMedium[];
+    title: string;
+    summary: string;
+    primaryLink: ProjectLink;
+    supportingLinks: ProjectLink[];
+};
+
 export type PublicProject = {
     audience: string;
     credits: string[];
@@ -24,4 +32,5 @@ export type PublicProject = {
         value: string;
     };
     videoUrl: string | null;
+    subprojects: ProjectSubproject[];
 };

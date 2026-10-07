@@ -98,7 +98,9 @@ test('every configured project has public-facing context and valid media referen
             expect($link['url'])->toStartWith('https://');
         }
 
-        foreach ($entry->media as $medium) {
+        $media = [...$entry->media, ...collect($entry->subprojects)->pluck('media')->flatten(1)->all()];
+
+        foreach ($media as $medium) {
             expect(public_path(ltrim($medium['path'], '/')))->toBeFile();
 
             if (isset($medium['dark_path'])) {
@@ -188,4 +190,32 @@ test('invalid catalogue fields are rejected', function (array $entry, string $me
         fn (): array => validProjectCatalogueEntry(['video_url' => 'https://example.com/demo.mov']),
         'Project [test-project] field [video_url] must be a safe HTTPS link to a .webm or .mp4 video.',
     ],
+]);
+
+test('invalid subproject data is rejected', function (mixed $subprojects) {
+    $entry = validProjectCatalogueEntry(['subprojects' => $subprojects]);
+
+    expect(fn () => ProjectCatalogue::fromArray([$entry]))
+        ->toThrow(InvalidArgumentException::class);
+})->with([
+    'not a list' => ['invalid'],
+    'not project data' => [[null]],
+    'missing context' => [[['title' => 'Child']]],
+    'unsafe link' => [[[
+        'title' => 'Child',
+        'summary' => 'A related tool.',
+        'primary_link' => ['label' => 'Open', 'url' => 'javascript:alert(1)'],
+    ]]],
+    'external subproject media' => [[[
+        'title' => 'Child',
+        'summary' => 'A related tool.',
+        'primary_link' => ['label' => 'Open', 'url' => 'https://example.com'],
+        'media' => [['path' => 'https://example.com/image.png', 'alt' => 'Preview']],
+    ]]],
+    'unsafe supporting link' => [[[
+        'title' => 'Child',
+        'summary' => 'A related tool.',
+        'primary_link' => ['label' => 'Open', 'url' => 'https://example.com'],
+        'supporting_links' => [['label' => 'Source', 'url' => 'http://example.com']],
+    ]]],
 ]);

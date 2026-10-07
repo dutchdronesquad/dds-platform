@@ -54,12 +54,14 @@ function EventTrackViewerContent({
                         RENDERER_CAPABILITIES,
                     },
                     { getViewerSnapshotId },
+                    { createAssetResolver, OBSTACLE_ASSETS_URL },
                     response,
                 ] = await Promise.all([
                     import('@trackdraw/viewer/mount'),
                     import('@trackdraw/viewer/snapshot/api'),
                     import('@trackdraw/viewer/snapshot/version'),
                     import('@trackdraw/viewer/snapshot/identity'),
+                    import('@trackdraw/viewer/assets/asset-url'),
                     fetch(track.url({ event: slug }), {
                         signal: controller.signal,
                         credentials: 'same-origin',
@@ -81,8 +83,14 @@ function EventTrackViewerContent({
                 if (controller.signal.aborted || !container.current) {
                     return;
                 }
+                const resolveAsset = createAssetResolver();
                 const options: Parameters<typeof createTrackDrawViewer>[1] = {
                     design: snapshot.design,
+                    assetResolver: (path) =>
+                        resolveAsset(path).replace(
+                            `${OBSTACLE_ASSETS_URL}/`,
+                            'https://assets.trackdraw.app/',
+                        ),
                     theme: 'light',
                     initialView,
                     showViewControls: false,

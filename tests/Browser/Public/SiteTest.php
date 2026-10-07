@@ -1055,9 +1055,18 @@ test('project catalogue stays usable on mobile', function () {
 
     $page->assertSee('Projecten uit de praktijk.')
         ->assertSee('Baanontwerp')
-        ->assertSee('Een baanidee wordt pas echt goed als je het kunt zien, testen en delen.')
+        ->assertSee('Van baanidee tot racedag.')
         ->assertSee('Ontwerpen, timen en livestreamen.')
         ->assertSee('TrackDraw')
+        ->assertSee('Maak je baan compleet')
+        ->assertSee('Ontwerp FPV-racebanen op schaal en controleer de racelijn in 3D.')
+        ->assertSee('Geef gates en vlaggen je eigen kleuren en logo’s.')
+        ->assertSee('Toon TrackDraw-banen op je website of in een app.')
+        ->assertSee('Track Assets')
+        ->assertSee('Track Viewer')
+        ->assertVisible('[data-testid=project-subproject-assets] img')
+        ->assertVisible('[data-testid=project-subproject-viewer] img')
+        ->assertScript('[...document.querySelectorAll("[data-testid^=project-subproject-] img")].every((image) => image.complete && image.naturalWidth > 0 && getComputedStyle(image).borderTopWidth === "0px")')
         ->assertSee('Race Voice')
         ->assertSee('YouTube Chapters')
         ->assertSee('Timer Dotfiles')
@@ -1082,6 +1091,16 @@ test('software and hardware projects stay balanced on desktop', function () {
         ->on()->desktop();
 
     $page->assertSee('Stream Overlays')
+        ->assertSee('Maak je baan compleet')
+        ->assertSee('Ontwerp FPV-racebanen op schaal en controleer de racelijn in 3D.')
+        ->assertSee('Geef gates en vlaggen je eigen kleuren en logo’s.')
+        ->assertSee('Toon TrackDraw-banen op je website of in een app.')
+        ->assertSee('Track Assets')
+        ->assertSee('Track Viewer')
+        ->assertScript('document.querySelector("[data-testid=project-subproject-assets]").getBoundingClientRect().top > document.querySelector("[data-testid=project-spotlight-media-frame]").getBoundingClientRect().bottom')
+        ->assertVisible('[data-testid=project-subproject-assets] img')
+        ->assertVisible('[data-testid=project-subproject-viewer] img')
+        ->assertScript('[...document.querySelectorAll("[data-testid^=project-subproject-] img")].every((image) => image.complete && image.naturalWidth > 0 && getComputedStyle(image).borderTopWidth === "0px")')
         ->assertSee('Baanontwerp')
         ->assertSee('Van racecontrol tot baanopbouw.')
         ->assertSee('De projecten op deze pagina ontstonden vanuit wat we tijdens races, trainingen en livestreams nodig hadden. De ene keer was dat software, de andere keer hardware of een bijdrage aan een bestaand open-sourceproject.')
@@ -1105,7 +1124,7 @@ test('software and hardware projects stay balanced on desktop', function () {
             'document.querySelectorAll("[data-testid=project-spotlight-trackdraw]").length === 1',
         )
         ->assertScript(
-            'document.querySelector("[data-testid=project-spotlight-container]")?.getBoundingClientRect().width <= 1280',
+            'document.querySelector("[data-testid=project-spotlight-container]")?.getBoundingClientRect().width <= 1440',
         )
         ->assertScript(
             'getComputedStyle(document.querySelector("[data-testid=project-spotlight-media-frame]")).borderTopWidth === "1px"',

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 
 /**
  * @phpstan-type ProjectLink array{label: string, url: string}
+ * @phpstan-type Subproject array{title: string, summary: string, primaryLink: ProjectLink, supportingLinks: list<ProjectLink>, media: list<ProjectMedium>}
  * @phpstan-type ProjectMedium array{path: string, dark_path?: string, alt: string}
  */
 final readonly class ProjectCatalogueEntry
@@ -17,6 +18,7 @@ final readonly class ProjectCatalogueEntry
      * @param  list<ProjectLink>  $supportingLinks
      * @param  list<string>  $credits
      * @param  list<ProjectMedium>  $media
+     * @param  list<Subproject>  $subprojects
      */
     private function __construct(
         public string $slug,
@@ -30,6 +32,7 @@ final readonly class ProjectCatalogueEntry
         public array $media,
         public bool $featured,
         public ?string $videoUrl,
+        public array $subprojects,
     ) {}
 
     /**
@@ -62,7 +65,32 @@ final readonly class ProjectCatalogueEntry
             media: self::media($attributes['media'] ?? [], $slug),
             featured: self::featured($attributes['featured'] ?? false, $slug),
             videoUrl: self::videoUrl($attributes['video_url'] ?? null, $slug),
+            subprojects: self::subprojects($attributes['subprojects'] ?? [], $slug),
         );
+    }
+
+    /**
+     * @return list<Subproject>
+     */
+    private static function subprojects(mixed $value, string $slug): array
+    {
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new InvalidArgumentException("Project [{$slug}] subprojects must be a list.");
+        }
+
+        return array_map(static function (mixed $subproject) use ($slug): array {
+            if (! is_array($subproject)) {
+                throw new InvalidArgumentException("Project [{$slug}] subprojects must contain project data.");
+            }
+
+            return [
+                'title' => self::requiredString($subproject, 'title'),
+                'summary' => self::requiredString($subproject, 'summary'),
+                'primaryLink' => self::link($subproject['primary_link'] ?? null, $slug, 'primary_link'),
+                'supportingLinks' => self::links($subproject['supporting_links'] ?? [], $slug),
+                'media' => self::media($subproject['media'] ?? [], $slug),
+            ];
+        }, $value);
     }
 
     /**

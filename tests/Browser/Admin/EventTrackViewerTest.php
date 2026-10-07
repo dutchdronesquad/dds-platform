@@ -73,12 +73,14 @@ test('a public event renders its saved course and switches between 2D and 3D', f
         ->assertPresent('.trackdraw-viewer canvas')
         ->assertSee('Bekijk wat je gaat vliegen.')
         ->assertMissing('.trackdraw-viewer button[aria-pressed]')
+        ->assertPresent('[aria-label=Trackweergave]')
         ->assertScript('document.querySelector("[aria-label=Trackweergave]").getBoundingClientRect().bottom <= document.querySelector(".trackdraw-viewer").getBoundingClientRect().top')
         ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '3D')
         ->assertScript('getComputedStyle(document.querySelector(".dds-track-viewer button[aria-pressed=true]")).minHeight', '32px')
         ->assertScript('getComputedStyle(document.querySelector(".trackdraw-viewer [data-viewer-gizmo]")).backgroundColor', 'rgb(23, 39, 46)')
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
-        ->assertNoJavaScriptErrors();
+        ->assertNoJavaScriptErrors()
+        ->assertScript('performance.getEntriesByType("resource").some((resource) => resource.name === "https://assets.trackdraw.app/multigp/5x10-hurdle-multigp.webp")');
     $page->click('2D')
         ->assertScript('document.querySelector(".dds-track-viewer button[aria-pressed=true]").textContent', '2D')
         ->assertPresent('.trackdraw-viewer canvas')->assertNoJavaScriptErrors();

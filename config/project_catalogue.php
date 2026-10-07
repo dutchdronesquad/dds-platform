@@ -14,7 +14,7 @@ return [
         [
             'slug' => 'trackdraw',
             'title' => 'TrackDraw',
-            'summary' => 'Ontwerp FPV-racebanen op schaal, beoordeel de racelijn in 3D en leg een bruikbaar baan- en opbouwplan vast voor de racedag.',
+            'summary' => 'Ontwerp FPV-racebanen op schaal en controleer de racelijn in 3D. Deel een duidelijk baanplan voor de opbouw op racedag.',
             'type' => 'application',
             'featured' => true,
             'video_url' => 'https://media.trackdraw.app/landing/video-demo.webm',
@@ -30,6 +30,33 @@ return [
                 [
                     'label' => 'Roadmap',
                     'url' => 'https://github.com/dutchdronesquad/trackdraw/discussions/106',
+                ],
+            ],
+            'subprojects' => [
+                [
+                    'title' => 'Track Assets',
+                    'media' => [['path' => '/images/projects/track-assets-dds-preview.png', 'alt' => 'Illustratie van een rechthoekige racegate en vlag met DDS-bedrukking']],
+                    'summary' => 'Geef gates en vlaggen je eigen kleuren en logo’s. Ontwerp artwork, bekijk het in 3D en ontdek collecties voor TrackDraw.',
+                    'primary_link' => [
+                        'label' => 'Open de Artwork Designer',
+                        'url' => 'https://designer.trackdraw.app',
+                    ],
+                    'supporting_links' => [
+                        [
+                            'label' => 'Broncode en collecties',
+                            'url' => 'https://github.com/dutchdronesquad/track-assets',
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Track Viewer',
+                    'media' => [['path' => '/images/projects/track-viewer-preview.png', 'alt' => 'Illustratie van een FPV-racebaan met gates en een blauwe racelijn in 3D']],
+                    'summary' => 'Toon TrackDraw-banen op je website of in een app. Laat piloten het parcours interactief verkennen in 2D en 3D.',
+                    'primary_link' => [
+                        'label' => 'Bekijk Track Viewer',
+                        'url' => 'https://github.com/dutchdronesquad/track-viewer',
+                    ],
+                    'supporting_links' => [],
                 ],
             ],
             'credits' => [
