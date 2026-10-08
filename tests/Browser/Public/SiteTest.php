@@ -1090,7 +1090,11 @@ test('software and hardware projects stay balanced on desktop', function () {
     $page = visit('/projects')
         ->on()->desktop();
 
-    $page->assertSee('Stream Overlays')
+    $page->assertVisible('[data-testid=project-card-track-assets]')
+        ->assertVisible('[data-testid=project-card-track-viewer]')
+        ->assertAttribute('[data-testid=project-card-track-assets] a', 'href', 'https://designer.trackdraw.app')
+        ->assertAttribute('[data-testid=project-card-track-viewer] a', 'href', 'https://viewer.trackdraw.app')
+        ->assertSee('Stream Overlays')
         ->assertSee('Maak je baan compleet')
         ->assertSee('Ontwerp FPV-racebanen op schaal en controleer de racelijn in 3D.')
         ->assertSee('Geef gates en vlaggen je eigen kleuren en logo’s.')
@@ -1130,7 +1134,7 @@ test('software and hardware projects stay balanced on desktop', function () {
             'getComputedStyle(document.querySelector("[data-testid=project-spotlight-media-frame]")).borderTopWidth === "1px"',
         )
         ->assertScript(
-            'document.querySelectorAll("[data-testid^=project-card-]").length === 9',
+            'document.querySelectorAll("[data-testid^=project-card-]").length === 11',
         )
         ->assertScript(
             'document.querySelectorAll("[data-testid=project-card-trackdraw]").length === 1',
@@ -1189,6 +1193,12 @@ test('the project grid can be filtered by type', function () {
         ->assertScript(
             'document.querySelector("[data-testid=project-card-live-feed-flightcase]") !== null',
         )
+        ->click('button[aria-controls="projects-grid-results"][aria-pressed="false"]:has-text("TrackDraw")')
+        ->assertVisible('[data-testid=project-card-trackdraw]')
+        ->assertVisible('[data-testid=project-card-track-assets]')
+        ->assertVisible('[data-testid=project-card-track-viewer]')
+        ->assertScript('document.querySelectorAll("#projects-grid-results > article").length === 3')
+        ->assertScript('document.querySelector("[data-testid=projects-grid-status]")?.textContent?.replace(/\\s+/g, " ").trim() === "3 projecten zichtbaar"')
         ->click('Flightcases')
         ->assertScript(
             'document.querySelector("[data-testid=project-card-rh-race-voice]") === null',
@@ -1237,7 +1247,7 @@ test('the project grid can be filtered by type', function () {
             'document.querySelector("[data-testid=project-card-rh-race-voice]") !== null',
         )
         ->assertScript(
-            'document.querySelectorAll("#projects-grid-results > article").length === 9',
+            'document.querySelectorAll("#projects-grid-results > article").length === 11',
         )
         ->assertNoJavaScriptErrors();
 });

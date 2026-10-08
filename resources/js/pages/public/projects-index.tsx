@@ -24,9 +24,10 @@ type Props = {
 
 const githubUrl = 'https://github.com/dutchdronesquad';
 
-type ProjectFilter = 'flightcases' | 'rotorhazard';
+type ProjectFilter = 'trackdraw' | 'flightcases' | 'rotorhazard';
 
 const projectFilters: { label: string; value: ProjectFilter }[] = [
+    { label: 'TrackDraw', value: 'trackdraw' },
     { label: 'RotorHazard', value: 'rotorhazard' },
     { label: 'Flightcases', value: 'flightcases' },
 ];
@@ -350,6 +351,12 @@ function matchesProjectFilter(
     project: PublicProject,
     filter: ProjectFilter,
 ): boolean {
+    if (filter === 'trackdraw') {
+        return ['trackdraw', 'track-assets', 'track-viewer'].includes(
+            project.slug,
+        );
+    }
+
     if (filter === 'flightcases') {
         return project.type.value === 'hardware_build';
     }
@@ -396,13 +403,18 @@ function ProjectCard({ project }: { project: PublicProject }) {
     const medium = project.media[0];
     const isMark = medium?.src.endsWith('.svg') ?? false;
     const hasPrimaryLink = project.primaryLink !== null;
-    const imageClassName = isMark
-        ? 'h-full w-full object-contain p-10'
-        : cn(
-              'h-full w-full object-cover',
-              hasPrimaryLink &&
-                  'transition duration-500 group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none',
-          );
+    const imageClassName =
+        project.slug === 'track-viewer'
+            ? 'h-full w-full -translate-y-[11%] scale-[1.65] object-cover'
+            : project.slug === 'track-assets'
+              ? 'h-full w-full object-contain p-6'
+              : isMark
+                ? 'h-full w-full object-contain p-10'
+                : cn(
+                      'h-full w-full object-cover',
+                      hasPrimaryLink &&
+                          'transition duration-500 group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none',
+                  );
 
     return (
         <article

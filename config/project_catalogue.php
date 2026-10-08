@@ -49,7 +49,7 @@ return [
                     'summary' => 'Toon TrackDraw-banen op je website of in een app. Laat piloten het parcours interactief verkennen in 2D en 3D.',
                     'primary_link' => [
                         'label' => 'Bekijk Track Viewer',
-                        'url' => 'https://github.com/dutchdronesquad/track-viewer',
+                        'url' => 'https://viewer.trackdraw.app',
                     ],
                     'supporting_links' => [],
                 ],
@@ -70,6 +70,34 @@ return [
                     'alt' => 'TrackDraw-editor met een uitgewerkte FPV-racebaan in de 3D-weergave',
                 ],
             ],
+        ],
+        [
+            'slug' => 'track-assets',
+            'title' => 'Track Assets',
+            'summary' => 'Geef gates en vlaggen je eigen kleuren en logo’s. Ontwerp artwork, bekijk het in 3D en ontdek collecties voor TrackDraw.',
+            'type' => 'application',
+            'primary_link' => [
+                'label' => 'Open de Artwork Designer',
+                'url' => 'https://designer.trackdraw.app',
+            ],
+            'supporting_links' => [],
+            'credits' => ['Dutch Drone Squad', 'Klaas Nicolaas en open-sourcebijdragers'],
+            'audience' => 'Clubs en organisatoren die hun gates en vlaggen een eigen uitstraling willen geven.',
+            'media' => [['path' => '/images/projects/track-assets-dds-preview.png', 'alt' => 'Illustratie van een rechthoekige racegate en vlag met DDS-bedrukking']],
+        ],
+        [
+            'slug' => 'track-viewer',
+            'title' => 'Track Viewer',
+            'summary' => 'Toon TrackDraw-banen op je website of in een app. Laat piloten het parcours interactief verkennen in 2D en 3D.',
+            'type' => 'application',
+            'primary_link' => [
+                'label' => 'Open Track Viewer',
+                'url' => 'https://viewer.trackdraw.app',
+            ],
+            'supporting_links' => [],
+            'credits' => ['Dutch Drone Squad', 'Klaas Nicolaas en open-sourcebijdragers'],
+            'audience' => 'Piloten die een parcours willen verkennen en organisatoren die hun baan online willen tonen.',
+            'media' => [['path' => '/images/projects/track-viewer-dds-track.png', 'alt' => '3D-weergave van DDS Track 15-03-2026 met gates, vlaggen en de racelijn']],
         ],
         [
             'slug' => 'live-feed-flightcase',

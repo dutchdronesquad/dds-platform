@@ -31,7 +31,7 @@ test('the configured public projects form a typed catalogue', function () {
     $catalogue = ProjectCatalogue::fromConfig();
 
     expect($catalogue->all())
-        ->toHaveCount(9)->toContainOnlyInstancesOf(ProjectCatalogueEntry::class)
+        ->toHaveCount(11)->toContainOnlyInstancesOf(ProjectCatalogueEntry::class)
         ->and($catalogue->find('trackdraw')?->type)->toBe(ProjectType::Application)
         ->and($catalogue->find('panevo'))->toBeNull()
         ->and($catalogue->find('live-feed-flightcase')?->type)->toBe(ProjectType::HardwareBuild)
