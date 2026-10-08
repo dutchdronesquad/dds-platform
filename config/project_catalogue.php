@@ -41,16 +41,11 @@ return [
                         'label' => 'Open de Artwork Designer',
                         'url' => 'https://designer.trackdraw.app',
                     ],
-                    'supporting_links' => [
-                        [
-                            'label' => 'Broncode en collecties',
-                            'url' => 'https://github.com/dutchdronesquad/track-assets',
-                        ],
-                    ],
+                    'supporting_links' => [],
                 ],
                 [
                     'title' => 'Track Viewer',
-                    'media' => [['path' => '/images/projects/track-viewer-preview.png', 'alt' => 'Illustratie van een FPV-racebaan met gates en een blauwe racelijn in 3D']],
+                    'media' => [['path' => '/images/projects/track-viewer-dds-track.png', 'alt' => '3D-weergave van DDS Track 15-03-2026 met gates, vlaggen en de racelijn']],
                     'summary' => 'Toon TrackDraw-banen op je website of in een app. Laat piloten het parcours interactief verkennen in 2D en 3D.',
                     'primary_link' => [
                         'label' => 'Bekijk Track Viewer',
