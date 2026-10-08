@@ -234,26 +234,32 @@ function SoftwareSpotlight({ project }: { project: PublicProject }) {
                                             )}
                                         </div>
                                     </div>
-                                    {subproject.media[0] && (
-                                        <img
-                                            src={subproject.media[0].src}
-                                            alt={subproject.media[0].alt}
-                                            loading="lazy"
-                                            width={
-                                                subproject.title ===
-                                                'Track Assets'
-                                                    ? 1536
-                                                    : 1774
-                                            }
-                                            height={
-                                                subproject.title ===
-                                                'Track Assets'
-                                                    ? 1024
-                                                    : 887
-                                            }
-                                            className="mx-auto max-h-60 w-full self-center object-contain sm:max-h-52 lg:max-h-56"
-                                        />
-                                    )}
+                                    {subproject.media[0] &&
+                                        (subproject.title === 'Track Viewer' ? (
+                                            <div className="aspect-[5/3] w-full self-center overflow-hidden">
+                                                <img
+                                                    src={
+                                                        subproject.media[0].src
+                                                    }
+                                                    alt={
+                                                        subproject.media[0].alt
+                                                    }
+                                                    loading="lazy"
+                                                    width={3200}
+                                                    height={2400}
+                                                    className="h-full w-full -translate-y-[11%] scale-[1.65] object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={subproject.media[0].src}
+                                                alt={subproject.media[0].alt}
+                                                loading="lazy"
+                                                width={1536}
+                                                height={1024}
+                                                className="mx-auto max-h-60 w-full self-center object-contain sm:max-h-52 lg:max-h-56"
+                                            />
+                                        ))}
                                 </article>
                             ))}
                         </div>
