@@ -9,7 +9,7 @@ test('the project overview presents the curated public catalogue', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('public/projects-index')
-            ->has('projects', 9)
+            ->has('projects', 11)
             ->missing('projects.0.hasCasePage')
             ->has('seo'),
         );
@@ -47,11 +47,13 @@ test('the project overview presents the curated public catalogue', function () {
         ->and($trackdraw['subprojects'][0]['supportingLinks'])->toBe([])
         ->and($trackdraw['subprojects'][0]['media'][0]['src'])->toBe('/images/projects/track-assets-dds-preview.png')
         ->and($trackdraw['subprojects'][1]['media'][0]['src'])->toBe('/images/projects/track-viewer-dds-track.png')
-        ->and($trackdraw['subprojects'][1]['primaryLink']['url'])->toBe('https://github.com/dutchdronesquad/track-viewer')
+        ->and($trackdraw['subprojects'][1]['primaryLink']['url'])->toBe('https://viewer.trackdraw.app')
+        ->and($projectsBySlug['track-assets']['primaryLink']['url'])->toBe('https://designer.trackdraw.app')
+        ->and($projectsBySlug['track-viewer']['primaryLink']['url'])->toBe('https://viewer.trackdraw.app')
         ->and($projectsBySlug['timer-dotfiles']['subprojects'])->toBe([])
         ->and($trackdraw['featured'])->toBeTrue()
         ->and($projects->where('featured', true)->pluck('slug')->values()->all())->toBe(['trackdraw'])
-        ->and($projects->where('featured', false))->toHaveCount(8)
+        ->and($projects->where('featured', false))->toHaveCount(10)
         ->and($slugs->sort()->values()->all())->toBe([
             'event-livestream-flightcase',
             'live-feed-flightcase',
@@ -61,6 +63,8 @@ test('the project overview presents the curated public catalogue', function () {
             'rotorhazard-contributions',
             'timer-dotfiles',
             'timing-flightcase',
+            'track-assets',
+            'track-viewer',
             'trackdraw',
         ])
         ->and($projectsBySlug['timer-dotfiles']['type']['value'])->toBe('race_tooling')
