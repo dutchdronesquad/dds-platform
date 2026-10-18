@@ -20,9 +20,15 @@ final class WordPressSnapshotCommand extends Command
 {
     public function handle(CreateWordPressSourceSnapshot $createSnapshot): int
     {
-        $manifestPath = $this->absolutePath((string) $this->option('manifest'));
-        $xmlPath = $this->absolutePath((string) $this->option('xml'));
-        $outputDirectory = $this->absolutePath((string) $this->option('output'));
+        /** @var string $manifestPath */
+        $manifestPath = $this->option('manifest');
+        $manifestPath = $this->absolutePath($manifestPath);
+        /** @var string $xmlPath */
+        $xmlPath = $this->option('xml');
+        $xmlPath = $this->absolutePath($xmlPath);
+        /** @var string $outputDirectory */
+        $outputDirectory = $this->option('output');
+        $outputDirectory = $this->absolutePath($outputDirectory);
 
         try {
             $result = $createSnapshot->handle(

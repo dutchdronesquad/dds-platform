@@ -41,7 +41,9 @@ final class WordPressRehearsalCommand extends Command
             return self::FAILURE;
         }
 
-        $manifestPath = $this->absolutePath((string) $this->option('manifest'));
+        /** @var string $manifestPath */
+        $manifestPath = $this->option('manifest');
+        $manifestPath = $this->absolutePath($manifestPath);
 
         if (! File::isFile($manifestPath)) {
             $this->error("Stagingmanifest niet gevonden: {$manifestPath}");
