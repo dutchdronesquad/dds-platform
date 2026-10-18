@@ -201,7 +201,7 @@ test('event create responds to the available form width instead of the viewport'
         )
         ->resize(1440, 1000)
         ->click('#starts_at')
-        ->click('button[aria-label^="Vandaag,"]')
+        ->click('[data-slot="popover-content"][data-state="open"] button[aria-label^="Vandaag,"]')
         ->assertAriaAttribute(
             '#starts_at_time',
             'label',

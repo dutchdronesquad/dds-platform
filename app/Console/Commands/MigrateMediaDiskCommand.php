@@ -24,8 +24,10 @@ final class MigrateMediaDiskCommand extends Command
             return self::FAILURE;
         }
 
-        $from = (string) $this->option('from');
-        $to = (string) $this->option('to');
+        /** @var string $from */
+        $from = $this->option('from');
+        /** @var string $to */
+        $to = $this->option('to');
 
         if ($from === $to) {
             $this->error('--from and --to must be different disks.');

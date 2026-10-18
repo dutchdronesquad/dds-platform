@@ -33,7 +33,8 @@ final class WordPressImportCommand extends Command
         GenerateWordPressImportReport $generateWordPressImportReport,
         RecordWordPressImportRun $recordWordPressImportRun,
     ): int {
-        $phase = (string) $this->argument('phase');
+        /** @var string $phase */
+        $phase = $this->argument('phase');
 
         if (! in_array($phase, ['media', 'posts', 'pages', 'cleanup', 'redirects', 'report'], true)) {
             $this->error('Alleen de importfasen "media", "posts", "pages", "cleanup", "redirects" en "report" zijn momenteel beschikbaar.');
@@ -151,7 +152,8 @@ final class WordPressImportCommand extends Command
 
     private function manifestPath(): string
     {
-        $manifestPath = (string) $this->option('manifest');
+        /** @var string $manifestPath */
+        $manifestPath = $this->option('manifest');
 
         return str_starts_with($manifestPath, DIRECTORY_SEPARATOR)
             ? $manifestPath
