@@ -148,6 +148,7 @@ type Props = {
 export default function PublicLayout({ children }: Props) {
     const { url } = usePage();
     const currentPath = url.split('?')[0];
+    const [copyrightYear] = useState(() => new Date().getFullYear());
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMenuMounted, setIsMenuMounted] = useState(false);
     const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
@@ -656,7 +657,7 @@ export default function PublicLayout({ children }: Props) {
 
                 <div className="border-t border-white/10">
                     <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-public-gutter py-4 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                        <p>© {new Date().getFullYear()} Dutch Drone Squad</p>
+                        <p>© {copyrightYear} Dutch Drone Squad</p>
                         <p>Where racing brings pilots together.</p>
                     </div>
                 </div>
