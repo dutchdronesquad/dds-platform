@@ -17,7 +17,7 @@ test('the article form clearly distinguishes a concept from publication', functi
 
     $this->actingAs($admin);
 
-    visit('/dashboard/articles/create')
+    visit('/admin/articles/create')
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
         ->assertSee('Opslaan als concept')
@@ -35,7 +35,7 @@ test('the article form previews markdown while editing', function () {
 
     $this->actingAs($admin);
 
-    visit('/dashboard/articles/create')
+    visit('/admin/articles/create')
         ->on()->desktop()
         ->fill('#content', "## Wedstrijdverslag\n\nEen **spannende** finale.")
         ->click('button[aria-controls="content-preview"]')
@@ -51,7 +51,7 @@ test('the article publication date can be set to the current time', function () 
 
     $this->actingAs($admin);
 
-    visit('/dashboard/articles/create')
+    visit('/admin/articles/create')
         ->on()->desktop()
         ->click('#published_at')
         ->click('internal:role=button[name="Nu"s]')
@@ -68,14 +68,14 @@ test('a saved draft article has a protected preview in a new tab', function () {
 
     $this->actingAs($admin);
 
-    visit("/dashboard/articles/{$article->id}/edit")
+    visit("/admin/articles/{$article->id}/edit")
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
         ->assertScript(
             "(() => { const previewLink = document.querySelector('a[href$=\"/preview\"][target=\"_blank\"]'); if (previewLink === null) return false; const rel = new Set((previewLink.getAttribute('rel') ?? '').split(/\\s+/)); return rel.has('noopener') && rel.has('noreferrer') && previewLink.dataset.sidebarAction === 'preview' && previewLink.textContent?.includes('Voorbeeld bekijken') === true; })()",
         );
 
-    visit("/dashboard/articles/{$article->id}/preview")
+    visit("/admin/articles/{$article->id}/preview")
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
         ->assertSee('Voorbeeldweergave · dit artikel is nog niet gepubliceerd')

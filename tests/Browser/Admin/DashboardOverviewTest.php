@@ -60,13 +60,13 @@ test('admin dashboard prioritizes open points quick actions and recent changes',
         ->assertDontSee('Open beheer')
         ->assertDontSee('Projecten')
         ->assertScript(
-            "(() => { const draftStat = document.querySelector('[data-testid=\"dashboard-stat-drafts\"]'); const upcomingStat = document.querySelector('[data-testid=\"dashboard-stat-upcoming\"]'); const recentStat = document.querySelector('[data-testid=\"dashboard-stat-recent\"]'); const quickActions = Array.from(document.querySelectorAll('[data-testid=\"quick-action\"]')).map((link) => new URL(link.href).pathname).sort(); return draftStat?.textContent.includes('1') && upcomingStat?.textContent.includes('3') && recentStat?.textContent.includes('4') && quickActions.join('|') === ['/dashboard/events/create', '/dashboard/seasons/create', '/dashboard/locations/create', '/dashboard/users'].sort().join('|') && document.querySelectorAll('[data-testid=\"recent-change\"]').length === 4 && document.querySelector('[data-testid=\"next-event\"]')?.textContent.includes('Eerstvolgende training') && document.documentElement.scrollWidth <= window.innerWidth; })()",
+            "(() => { const draftStat = document.querySelector('[data-testid=\"dashboard-stat-drafts\"]'); const upcomingStat = document.querySelector('[data-testid=\"dashboard-stat-upcoming\"]'); const recentStat = document.querySelector('[data-testid=\"dashboard-stat-recent\"]'); const quickActions = Array.from(document.querySelectorAll('[data-testid=\"quick-action\"]')).map((link) => new URL(link.href).pathname).sort(); return draftStat?.textContent.includes('1') && upcomingStat?.textContent.includes('3') && recentStat?.textContent.includes('4') && quickActions.join('|') === ['/admin/events/create', '/admin/seasons/create', '/admin/locations/create', '/admin/users'].sort().join('|') && document.querySelectorAll('[data-testid=\"recent-change\"]').length === 4 && document.querySelector('[data-testid=\"next-event\"]')?.textContent.includes('Eerstvolgende training') && document.documentElement.scrollWidth <= window.innerWidth; })()",
         )
         ->assertScript(
             "(() => { const hasValue = (testId, value) => Array.from(new URL(document.querySelector('[data-testid=\"' + testId + '\"]').href).searchParams.values()).includes(value); return hasValue('open-point-closed-registration', 'closed_registration') && hasValue('open-point-without-content', 'without_content') && hasValue('open-point-without-cover', 'without_cover') && hasValue('open-point-without-season', 'without_season'); })()",
         )
         ->click('[data-testid="open-point-closed-registration"]')
-        ->assertPathIs('/dashboard/events')
+        ->assertPathIs('/admin/events')
         ->assertSee('Race met gesloten registratie')
         ->assertDontSee('Race met open registratie')
         ->assertScript(

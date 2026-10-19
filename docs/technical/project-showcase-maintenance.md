@@ -3,7 +3,7 @@
 ## Phase 1 Policy
 
 The public project showcase is maintained in code. There is no `Project` model,
-database table, permission set, publication workflow, or `/dashboard/projects`
+database table, permission set, publication workflow, or `/admin/projects`
 resource in phase 1.
 
 Every public project change follows the pull-request workflow below. A CMS is

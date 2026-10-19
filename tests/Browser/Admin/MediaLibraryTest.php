@@ -24,7 +24,7 @@ test('the media library renders previews and filters without browser errors', fu
 
     $this->actingAs($admin);
 
-    visit('/dashboard/media')
+    visit('/admin/media')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -60,7 +60,7 @@ test('the media library stays usable on a mobile viewport', function () {
 
     $this->actingAs($admin);
 
-    visit('/dashboard/media')
+    visit('/admin/media')
         ->on()->mobile()
         ->resize(390, 844)
         ->assertNoJavaScriptErrors()
@@ -86,7 +86,7 @@ test('the media library opens file details in a desktop dialog without duplicate
 
     $this->actingAs($admin);
 
-    $page = visit('/dashboard/media')
+    $page = visit('/admin/media')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -122,7 +122,7 @@ test('the media library opens file details in a desktop dialog without duplicate
         ->assertSee('Opgeslagen')
         ->assertPresent('@media-details-overlay')
         ->assertButtonDisabled('Opslaan')
-        ->assertScript("window.location.pathname === '/dashboard/media'")
+        ->assertScript("window.location.pathname === '/admin/media'")
         ->assertNoAccessibilityIssues()
         ->assertNoConsoleLogs()
         ->assertNoJavaScriptErrors();
@@ -137,7 +137,7 @@ test('the media library opens file details in a mobile drawer', function () {
 
     $this->actingAs($admin);
 
-    visit('/dashboard/media')
+    visit('/admin/media')
         ->on()->mobile()
         ->resize(390, 844)
         ->assertNoJavaScriptErrors()
@@ -151,7 +151,7 @@ test('the media library opens file details in a mobile drawer', function () {
             "document.querySelector('[data-test=\"media-details-close\"]')?.getBoundingClientRect().bottom <= window.innerHeight",
         )
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
-        ->assertScript("window.location.pathname === '/dashboard/media'")
+        ->assertScript("window.location.pathname === '/admin/media'")
         ->assertNoAccessibilityIssues()
         ->assertNoConsoleLogs()
         ->assertNoJavaScriptErrors();
@@ -163,7 +163,7 @@ test('the empty media library offers a mobile upload action without overflow', f
 
     $this->actingAs($admin);
 
-    visit('/dashboard/media')
+    visit('/admin/media')
         ->on()->mobile()
         ->resize(390, 844)
         ->assertNoJavaScriptErrors()
@@ -179,7 +179,7 @@ test('the media library opens a desktop upload dialog with image preview', funct
 
     $this->actingAs($admin);
 
-    $page = visit('/dashboard/media')
+    $page = visit('/admin/media')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors();
@@ -220,7 +220,7 @@ test('the media library opens a mobile upload drawer with a usable preview', fun
 
     $this->actingAs($admin);
 
-    $page = visit('/dashboard/media')
+    $page = visit('/admin/media')
         ->on()->mobile()
         ->resize(390, 844)
         ->assertNoJavaScriptErrors();
@@ -254,7 +254,7 @@ test('event forms search the media library and store the selected cover id', fun
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()

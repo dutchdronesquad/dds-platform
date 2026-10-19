@@ -85,7 +85,7 @@ Route::middleware([
 ])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-    Route::prefix('dashboard')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('integrations', IntegrationController::class)->name('integrations.index');
         Route::get('integrations/trackdraw', [TrackDrawConnectionController::class, 'index'])->name('integrations.trackdraw.index');
         Route::post('integrations/trackdraw', [TrackDrawConnectionController::class, 'store'])->name('integrations.trackdraw.store');
@@ -147,7 +147,7 @@ Route::middleware([
             ->name('roles.index');
     });
 
-    Route::get('dashboard/redirects', [RedirectController::class, 'index'])
+    Route::get('admin/redirects', [RedirectController::class, 'index'])
         ->middleware('can:'.Permission::ViewRedirects->value)
         ->name('redirects.index');
 });
