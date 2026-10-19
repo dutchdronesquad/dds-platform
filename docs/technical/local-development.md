@@ -190,7 +190,7 @@ Its default project URL is `https://dds-platform.ddev.site:8026`.
 2. Ensure at least one active user has the `admin` role. Contact notifications are sent to all active administrators.
 3. Start the queue worker.
 4. Submit the public form at `/contact`.
-5. Inspect the captured message in Mailpit and the delivery status under `/dashboard/contact-submissions`.
+5. Inspect the captured message in Mailpit and the delivery status under `/admin/contact-submissions`.
 
 The message uses the configured global sender. The visitor's name and email address are set as the reply-to address, so replying from a real mailbox targets the visitor.
 

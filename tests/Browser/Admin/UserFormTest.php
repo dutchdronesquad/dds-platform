@@ -19,7 +19,7 @@ test('the user form displays and changes the locale with an aligned desktop layo
 
     $this->actingAs($admin);
 
-    visit("/dashboard/users/{$managedUser->id}/edit")
+    visit("/admin/users/{$managedUser->id}/edit")
         ->on()->desktop()
         ->resize(1180, 900)
         ->assertNoJavaScriptErrors()
@@ -47,7 +47,7 @@ test('the user search follows the active filters through browser history', funct
 
     $this->actingAs($admin);
 
-    visit('/dashboard/users')
+    visit('/admin/users')
         ->fill('#user-search', 'Alpha')
         ->assertDontSee('Beta gebruiker')
         ->assertQueryStringHas('search', 'Alpha')
@@ -71,7 +71,7 @@ test('the user index hides the role review link without its permission', functio
 
     $this->actingAs($editor);
 
-    visit('/dashboard/users')
+    visit('/admin/users')
         ->assertSee('Gebruikers')
         ->assertMissing('[data-testid="role-permission-review-link"]')
         ->assertNoJavaScriptErrors();

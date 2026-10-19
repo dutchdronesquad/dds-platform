@@ -17,7 +17,7 @@ test('location forms offer one Dutch description with a Markdown preview', funct
 
     $this->actingAs($admin);
 
-    visit('/dashboard/locations/create')
+    visit('/admin/locations/create')
         ->on()->desktop()
         ->resize(1280, 900)
         ->assertNoJavaScriptErrors()

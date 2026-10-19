@@ -31,7 +31,7 @@ test('admins can select multiple event facets without closing the menu', functio
     $draftOption = 'internal:role=menuitemcheckbox[name="Concept"s]';
     $publishedOption = 'internal:role=menuitemcheckbox[name="Gepubliceerd"s]';
 
-    visit('/dashboard/events')
+    visit('/admin/events')
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
         ->click('button[aria-label="Filter op status"]')
@@ -73,7 +73,7 @@ test('event index shows title with slug, type with season label, and keeps rows 
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events')
+    visit('/admin/events')
         ->on()->desktop()
         ->resize(1280, 800)
         ->assertNoJavaScriptErrors()

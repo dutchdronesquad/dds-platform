@@ -20,7 +20,7 @@ test('the main admin navigation uses the orange brand accent', function () {
 
     $this->actingAs($admin);
 
-    $page = visit('/dashboard/events/create')
+    $page = visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1440, 900)
         ->assertNoJavaScriptErrors()
@@ -47,7 +47,7 @@ test('event forms use one main surface with flat sections and a context sidebar'
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1280, 900)
         ->assertNoJavaScriptErrors()
@@ -90,7 +90,7 @@ test('an empty event time uses a neutral placeholder and empty value', function 
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -105,7 +105,7 @@ test('choosing an event date defaults its time to midnight', function () {
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->click('#registration_enabled')
         ->click('#registration_opens_at')
@@ -128,7 +128,7 @@ test('event create responds to the available form width instead of the viewport'
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -231,7 +231,7 @@ test('event registration section reveals automatic planning and manual overrides
 
     $this->actingAs($admin);
 
-    visit('/dashboard/events/create')
+    visit('/admin/events/create')
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -265,7 +265,7 @@ test('event edit only places the publication panel beside a sufficiently wide fo
 
     $this->actingAs($admin);
 
-    visit("/dashboard/events/{$event->id}/edit")
+    visit("/admin/events/{$event->id}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -300,7 +300,7 @@ test('the public event page opens in a new tab', function () {
 
     $this->actingAs($admin);
 
-    visit("/dashboard/events/{$event->id}/edit")
+    visit("/admin/events/{$event->id}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -316,7 +316,7 @@ test('an event preview opens in a new tab while the event remains a draft', func
 
     $this->actingAs($admin);
 
-    visit("/dashboard/events/{$event->id}/edit")
+    visit("/admin/events/{$event->id}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -335,7 +335,7 @@ test('long admin forms use the document as their only vertical scroll container'
 
     $this->actingAs($admin);
 
-    $page = visit("/dashboard/events/{$event->id}/edit")
+    $page = visit("/admin/events/{$event->id}/edit")
         ->on()->desktop()
         ->resize(1440, 900)
         ->click('#event-tab-registration')

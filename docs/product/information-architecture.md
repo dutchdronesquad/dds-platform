@@ -109,15 +109,15 @@ The legacy training route continues to serve visitors looking for dated activiti
 
 ```txt
 /dashboard
-/dashboard/events
-/dashboard/events/create
-/dashboard/events/{event}/edit
-/dashboard/articles
-/dashboard/articles/create
-/dashboard/articles/{article}/edit
-/dashboard/locations
-/dashboard/media
-/dashboard/contact-submissions
+/admin/events
+/admin/events/create
+/admin/events/{event}/edit
+/admin/articles
+/admin/articles/create
+/admin/articles/{article}/edit
+/admin/locations
+/admin/media
+/admin/contact-submissions
 ```
 
 Projects and partners are code-owned in phase 1 and therefore have no dashboard routes. Their catalogues are updated through reviewed code changes until their separate CMS decision gates are reached.
@@ -383,7 +383,7 @@ Catalogue fields:
 - manual sort order;
 - explicit homepage visibility.
 
-The catalogue contains public presentation data only. Private contact notes, agreements, invoices, campaign administration, and unverified entries remain outside it. A later model and `/dashboard/partners` workflow may be designed only after the DDS-014E decision gate is reached.
+The catalogue contains public presentation data only. Private contact notes, agreements, invoices, campaign administration, and unverified entries remain outside it. A later model and `/admin/partners` workflow may be designed only after the DDS-014E decision gate is reached.
 
 Partner catalogue maintenance workflow:
 

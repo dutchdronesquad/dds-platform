@@ -23,7 +23,7 @@ test('season index does not expose the public path below the season name', funct
 
     $this->actingAs($admin);
 
-    visit('/dashboard/seasons')
+    visit('/admin/seasons')
         ->on()->desktop()
         ->assertNoJavaScriptErrors()
         ->assertSee($season->name)
@@ -36,7 +36,7 @@ test('season forms use one main surface without nested section cards', function 
 
     $this->actingAs($admin);
 
-    visit('/dashboard/seasons/create')
+    visit('/admin/seasons/create')
         ->on()->desktop()
         ->resize(1280, 900)
         ->assertNoJavaScriptErrors()
@@ -62,7 +62,7 @@ test('dirty season forms register a compatible browser unload warning', function
 
     $this->actingAs($admin);
 
-    visit('/dashboard/seasons/create')
+    visit('/admin/seasons/create')
         ->on()->desktop()
         ->fill('#name', 'Wintercompetitie')
         ->assertScript(
@@ -80,20 +80,20 @@ test('dirty season forms use a platform dialog for internal navigation', functio
 
     $this->actingAs($admin);
 
-    visit('/dashboard/seasons/create')
+    visit('/admin/seasons/create')
         ->on()->desktop()
         ->fill('#name', 'Wintercompetitie')
-        ->click('[data-sidebar="menu-button"][href="/dashboard/events"]')
-        ->assertPathIs('/dashboard/seasons/create')
+        ->click('[data-sidebar="menu-button"][href="/admin/events"]')
+        ->assertPathIs('/admin/seasons/create')
         ->assertVisible('[data-testid="unsaved-changes-dialog"]')
         ->assertSee('Wijzigingen niet opgeslagen')
         ->assertSee('Als je nu weggaat, gaan deze verloren.')
         ->press('Verder bewerken')
         ->assertMissing('[data-testid="unsaved-changes-dialog"]')
         ->assertValue('#name', 'Wintercompetitie')
-        ->click('[data-sidebar="menu-button"][href="/dashboard/events"]')
+        ->click('[data-sidebar="menu-button"][href="/admin/events"]')
         ->press('Wijzigingen verwerpen')
-        ->assertPathIs('/dashboard/events')
+        ->assertPathIs('/admin/events')
         ->assertNoJavaScriptErrors();
 });
 
@@ -106,7 +106,7 @@ test('a saved season form returns to the saved state', function () {
 
     $this->actingAs($admin);
 
-    visit("/dashboard/seasons/{$season->slug}/edit")
+    visit("/admin/seasons/{$season->slug}/edit")
         ->on()->desktop()
         ->fill('#name', 'Wintercompetitie 2027')
         ->assertScript(
@@ -135,7 +135,7 @@ test('season ticket fields use a balanced layout and combined date time controls
 
     $this->actingAs($admin);
 
-    visit("/dashboard/seasons/{$season->slug}/edit")
+    visit("/admin/seasons/{$season->slug}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -210,7 +210,7 @@ test('season ticket date fields reflow before they become cramped', function () 
 
     $this->actingAs($admin);
 
-    visit("/dashboard/seasons/{$season->slug}/edit")
+    visit("/admin/seasons/{$season->slug}/edit")
         ->on()->desktop()
         ->resize(1024, 900)
         ->assertNoJavaScriptErrors()
@@ -234,7 +234,7 @@ test('the public season page opens in a new tab', function () {
 
     $this->actingAs($admin);
 
-    visit("/dashboard/seasons/{$season->slug}/edit")
+    visit("/admin/seasons/{$season->slug}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
@@ -256,7 +256,7 @@ test('the edit-season layout stacks sections above a sticky usage aside without 
 
     $this->actingAs($admin);
 
-    visit("/dashboard/seasons/{$season->slug}/edit")
+    visit("/admin/seasons/{$season->slug}/edit")
         ->on()->desktop()
         ->resize(1440, 1000)
         ->assertNoJavaScriptErrors()
