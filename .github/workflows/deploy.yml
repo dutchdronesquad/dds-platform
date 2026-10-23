@@ -1,0 +1,57 @@
+name: Deploy release to Laravel Cloud
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify release tag and branch
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Release tag must use vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          COMMIT_SHA="$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "$COMMIT_SHA" origin/main
+          mapfile -t RELEASE_TAGS < <(git tag --points-at HEAD --list 'v*' | grep -E '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')
+          if [[ "${#RELEASE_TAGS[@]}" -ne 1 || "${RELEASE_TAGS[0]}" != "$RELEASE_TAG" ]]; then
+            echo "::error::The commit must have exactly one stable release tag matching this release."
+            exit 1
+          fi
+          echo "commit=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Request Laravel Cloud deployment
+        env:
+          DEPLOY_HOOK: ${{ secrets.LARAVEL_CLOUD_DEPLOY_HOOK }}
+          COMMIT_SHA: ${{ steps.release.outputs.commit }}
+        run: |
+          if [[ -z "$DEPLOY_HOOK" ]]; then
+            echo "::error::The LARAVEL_CLOUD_DEPLOY_HOOK secret is missing."
+            exit 1
+          fi
+          curl --fail --silent --show-error --output /dev/null \
+            --connect-timeout 10 --max-time 60 \
+            --request POST --url "$DEPLOY_HOOK" \
+            --url-query "commit_hash=$COMMIT_SHA"
+          echo "Deployment requested for commit $COMMIT_SHA. Check Laravel Cloud for the deployment result." >> "$GITHUB_STEP_SUMMARY"

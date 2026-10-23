@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
@@ -7,6 +7,7 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
@@ -18,6 +19,8 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const isMobile = useIsMobile();
+    const { releaseVersion } = usePage().props;
 
     const handleLogout = () => {
         cleanup();
@@ -58,6 +61,14 @@ export function UserMenuContent({ user }: Props) {
                     Log out
                 </Link>
             </DropdownMenuItem>
+            {isMobile && (
+                <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                        Platformversie {releaseVersion}
+                    </DropdownMenuLabel>
+                </>
+            )}
         </>
     );
 }
