@@ -48,7 +48,7 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { management } = usePage().props;
+    const { management, releaseVersion } = usePage().props;
     const { state } = useSidebar();
     const workspaceItems: NavItem[] = [
         {
@@ -211,6 +211,13 @@ export function AppSidebar() {
             <SidebarFooter className="gap-1 pt-2">
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
+                <p
+                    className="truncate px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden"
+                    data-testid="sidebar-version"
+                    title={`Platformversie ${releaseVersion}`}
+                >
+                    {releaseVersion}
+                </p>
             </SidebarFooter>
         </Sidebar>
     );

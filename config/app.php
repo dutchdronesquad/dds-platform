@@ -15,6 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'version' => is_file(app()->bootstrapPath('cache/release-version.php'))
+        ? require app()->bootstrapPath('cache/release-version.php')
+        : 'development',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
