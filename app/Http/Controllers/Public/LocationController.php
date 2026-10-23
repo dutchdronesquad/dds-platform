@@ -98,7 +98,7 @@ final class LocationController extends Controller
             ])
             ->orderBy('starts_at')
             ->orderBy('id')
-            ->limit(6)
+            ->limit(3)
             ->get()
             ->map(fn (Event $event): array => $this->eventData->summary($event));
 

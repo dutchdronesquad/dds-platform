@@ -187,6 +187,48 @@ test('a location detail shows only upcoming publicly visible events at that loca
         );
 });
 
+test('a location detail shows the three nearest upcoming events in chronological order', function () {
+    $this->freezeTime();
+    $location = Location::factory()->create();
+    $events = Event::factory()->for($location)->published()->count(5)
+        ->sequence(
+            ['starts_at' => now()->addDays(5)],
+            ['starts_at' => now()->addDays(2)],
+            ['starts_at' => now()->addDays(4)],
+            ['starts_at' => now()->addDay()],
+            ['starts_at' => now()->addDays(3)],
+        )
+        ->create();
+
+    $this->get(route('locations.show', ['location' => $location->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('upcomingEvents', 3)
+            ->where('upcomingEvents.0.id', $events[3]->id)
+            ->where('upcomingEvents.1.id', $events[1]->id)
+            ->where('upcomingEvents.2.id', $events[4]->id),
+        );
+});
+
+test('a location detail shows all upcoming events when fewer than three are available', function () {
+    $this->freezeTime();
+    $location = Location::factory()->create();
+    $laterEvent = Event::factory()->for($location)->published()->create([
+        'starts_at' => now()->addDays(2),
+    ]);
+    $nearestEvent = Event::factory()->for($location)->published()->create([
+        'starts_at' => now()->addDay(),
+    ]);
+
+    $this->get(route('locations.show', ['location' => $location->slug]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('upcomingEvents', 2)
+            ->where('upcomingEvents.0.id', $nearestEvent->id)
+            ->where('upcomingEvents.1.id', $laterEvent->id),
+        );
+});
+
 test('a location without upcoming events keeps a useful empty result contract', function () {
     $location = Location::factory()->create();
 
