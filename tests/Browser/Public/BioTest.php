@@ -23,8 +23,7 @@ test('bio visitors see accessible standalone content and can open the agenda', f
     if ($dark) {
         $page->inDarkMode();
     }
-    $page->resize($width, 844)->assertSee('Op de baan.')
-        ->assertSee('In de community.')
+    $page->resize($width, 844)->assertSee('Waar dronepiloten samenkomen.')
         ->assertSee('Het indoorseizoen gaat weer van start')
         ->assertSee('Indoor vliegen in Alkmaar')
         ->assertMissing('nav[aria-label="Hoofdnavigatie"]')

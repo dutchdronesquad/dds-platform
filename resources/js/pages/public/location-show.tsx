@@ -14,15 +14,23 @@ import { CtaBand, PublicHero } from '@/components/public/public-patterns';
 import PublicSeoHead from '@/components/public/public-seo-head';
 import { index as eventsIndex } from '@/routes/events';
 import { index as gettingStartedIndex } from '@/routes/getting_started';
-import { index as locationsIndex } from '@/routes/locations';
+import {
+    index as locationsIndex,
+    show as locationsShow,
+} from '@/routes/locations';
 import type {
     PublicEventSummary,
     PublicLocationDetail,
+    PublicLocationSummary,
     SeoMetadata,
 } from '@/types';
 
 type Props = {
     location: PublicLocationDetail;
+    otherLocations: Pick<
+        PublicLocationSummary,
+        'id' | 'slug' | 'name' | 'city'
+    >[];
     seo: SeoMetadata;
     upcomingEvents: PublicEventSummary[];
 };
@@ -32,7 +40,12 @@ const environmentLabels: Record<PublicLocationDetail['environment'], string> = {
     outdoor: 'Outdoor',
 };
 
-export default function LocationShow({ location, seo, upcomingEvents }: Props) {
+export default function LocationShow({
+    location,
+    otherLocations,
+    seo,
+    upcomingEvents,
+}: Props) {
     return (
         <>
             <PublicSeoHead metadata={seo} />
@@ -199,6 +212,54 @@ export default function LocationShow({ location, seo, upcomingEvents }: Props) {
                                 />
                             </div>
                         </section>
+                        {otherLocations.length > 0 && (
+                            <nav
+                                aria-labelledby="other-locations-heading"
+                                className="mt-8 border-t border-paddock-rule pt-6 dark:border-white/12"
+                            >
+                                <h2
+                                    id="other-locations-heading"
+                                    className="font-public-display text-xl font-semibold tracking-[-0.03em]"
+                                >
+                                    Andere locaties
+                                </h2>
+                                <ul className="mt-3 divide-y divide-paddock-rule dark:divide-white/12">
+                                    {otherLocations.map((otherLocation) => (
+                                        <li key={otherLocation.id}>
+                                            <Link
+                                                href={locationsShow(
+                                                    otherLocation.slug,
+                                                )}
+                                                className="group flex min-h-11 items-center justify-between gap-3 py-3 text-sm focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none"
+                                            >
+                                                <span className="min-w-0">
+                                                    <span className="block font-semibold text-deep-signal group-hover:text-dds-blue dark:text-white dark:group-hover:text-dds-cyan">
+                                                        {otherLocation.name}
+                                                    </span>
+                                                    <span className="mt-1 block text-signal-muted dark:text-night-400">
+                                                        {otherLocation.city}
+                                                    </span>
+                                                </span>
+                                                <ArrowUpRight
+                                                    aria-hidden="true"
+                                                    className="size-4 shrink-0 text-dds-blue dark:text-dds-cyan"
+                                                />
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <Link
+                                    href={locationsIndex()}
+                                    className="mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-dds-blue hover:text-deep-signal focus-visible:ring-2 focus-visible:ring-dds-cyan focus-visible:outline-none dark:text-dds-cyan dark:hover:text-white"
+                                >
+                                    Bekijk alle locaties
+                                    <ArrowUpRight
+                                        aria-hidden="true"
+                                        className="size-4"
+                                    />
+                                </Link>
+                            </nav>
+                        )}
                     </div>
                 </section>
 
