@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\TrackDrawConnectionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserStatusController;
 use App\Http\Controllers\Public\ArticleController;
+use App\Http\Controllers\Public\BioController;
 use App\Http\Controllers\Public\ContactController as PublicContactController;
 use App\Http\Controllers\Public\EventController;
 use App\Http\Controllers\Public\GettingStartedController;
@@ -42,6 +43,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 $seoMetadata = new SeoMetadata;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/bio', BioController::class)->name('bio');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');

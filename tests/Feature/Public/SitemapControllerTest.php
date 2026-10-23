@@ -25,6 +25,7 @@ test('the public sitemap contains fixed pages and getting started guides', funct
     expect(sitemapLocations(responseContent($response)))
         ->toContain(
             'https://dutchdronesquad.nl',
+            'https://dutchdronesquad.nl/bio',
             'https://dutchdronesquad.nl/events',
             'https://dutchdronesquad.nl/projects',
             'https://dutchdronesquad.nl/news',
