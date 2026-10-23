@@ -49,7 +49,7 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { management, releaseVersion } = usePage().props;
-    const { state } = useSidebar();
+    const { state, isMobile } = useSidebar();
     const workspaceItems: NavItem[] = [
         {
             title: 'Overzicht',
@@ -167,6 +167,12 @@ export function AppSidebar() {
                         <SidebarMenuButton
                             size="lg"
                             asChild
+                            tooltip={{
+                                children: `Platformversie ${releaseVersion}`,
+                                hidden: isMobile,
+                                side: 'bottom',
+                                align: 'start',
+                            }}
                             className="h-16 justify-center rounded-xl border border-sidebar-border/80 bg-linear-to-br from-white via-flight-50/45 to-signal-50/70 p-0 text-sidebar-foreground shadow-xs group-data-[collapsible=icon]:rounded-lg hover:border-signal-300/60 hover:from-flight-50 hover:to-signal-100/70 hover:text-sidebar-foreground focus-visible:ring-signal-500/60 dark:border-white/10 dark:from-white/6 dark:via-white/4 dark:to-signal-500/10 dark:hover:border-signal-400/35 dark:hover:from-white/8 dark:hover:to-signal-500/15"
                         >
                             <Link
@@ -211,13 +217,6 @@ export function AppSidebar() {
             <SidebarFooter className="gap-1 pt-2">
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
-                <p
-                    className="truncate px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden"
-                    data-testid="sidebar-version"
-                    title={`Platformversie ${releaseVersion}`}
-                >
-                    {releaseVersion}
-                </p>
             </SidebarFooter>
         </Sidebar>
     );
