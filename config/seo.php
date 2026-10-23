@@ -13,6 +13,11 @@ return [
     ],
 
     'pages' => [
+        'bio' => [
+            'title' => 'Op de baan. In de community.',
+            'description' => 'Nieuws, vliegavonden en alles wat je nodig hebt om aan te sluiten bij Dutch Drone Squad.',
+            'canonical_path' => '/bio',
+        ],
         'home' => [
             'title' => 'Indoor FPV-racing in Alkmaar',
             'description' => 'Race op een volledig indoor FPV-parcours in Alkmaar, verbeter je rondetijden en ontmoet andere dronepiloten bij Dutch Drone Squad.',

@@ -16,6 +16,7 @@ final class PublicSitemap
     /** @var list<string> */
     private const array STATIC_ROUTE_NAMES = [
         'home',
+        'bio',
         'events.index',
         'projects.index',
         'news.index',
