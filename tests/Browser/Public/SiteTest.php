@@ -14,6 +14,52 @@ beforeEach(function () {
     Vite::useHotFile(storage_path('framework/testing/vite.hot'));
 });
 
+test('location visitors can discover other locations from the sidebar', function (int $width, bool $dark) {
+    $location = Location::factory()->create([
+        'name' => 'Sportpaleis Alkmaar',
+        'slug' => 'sportpaleis-alkmaar',
+    ]);
+    Location::factory()->create([
+        'name' => 'Sporthal Koggenhal',
+        'slug' => 'sporthal-koggenhal',
+        'city' => 'De Goorn',
+    ]);
+
+    $page = visit(route('locations.show', $location->slug, false));
+    if ($dark) {
+        $page->inDarkMode();
+    }
+
+    $page->resize($width, 900)->assertSee('Andere locaties')
+        ->assertSee('Sporthal Koggenhal')
+        ->assertSee('De Goorn')
+        ->assertMissing('nav[aria-labelledby="other-locations-heading"] a[href="/locations/sportpaleis-alkmaar"]')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors()
+        ->click('Sporthal Koggenhal')
+        ->assertPathIs('/locations/sporthal-koggenhal')
+        ->assertSee('Sportpaleis Alkmaar')
+        ->assertMissing('nav[aria-labelledby="other-locations-heading"] a[href="/locations/sporthal-koggenhal"]')
+        ->click('Bekijk alle locaties')
+        ->assertPathIs('/locations')
+        ->assertSee('Sporthal Koggenhal')
+        ->assertSee('Sportpaleis Alkmaar')
+        ->assertNoJavaScriptErrors();
+})->with([
+    'mobile' => [390, false],
+    'dark mobile' => [390, true],
+    'desktop' => [1280, false],
+]);
+
+test('a lone location does not show an empty other locations sidebar', function () {
+    $location = Location::factory()->create();
+
+    visit(route('locations.show', $location->slug, false))
+        ->assertSee($location->name)
+        ->assertMissing('nav[aria-labelledby="other-locations-heading"]')
+        ->assertNoJavaScriptErrors();
+});
+
 afterEach(function () {
     Carbon::setTestNow();
 });

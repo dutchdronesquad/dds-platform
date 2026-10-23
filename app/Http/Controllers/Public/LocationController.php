@@ -54,6 +54,18 @@ final class LocationController extends Controller
         $description = $this->markdown->toPlainText($localizedDescription)
             ?: "Bekijk de praktische informatie voor {$location->name}, een vlieglocatie van Dutch Drone Squad.";
 
+        $otherLocations = Location::query()
+            ->whereKeyNot($location->id)
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get(['id', 'slug', 'name', 'city'])
+            ->map(fn (Location $otherLocation): array => [
+                'id' => $otherLocation->id,
+                'slug' => $otherLocation->slug,
+                'name' => $otherLocation->name,
+                'city' => $otherLocation->city,
+            ]);
+
         $upcomingEvents = $location->events()
             ->select([
                 'id',
@@ -109,6 +121,7 @@ final class LocationController extends Controller
                 'image' => $image,
                 ...$this->locationData->googleMapsUrls($location),
             ],
+            'otherLocations' => $otherLocations,
             'upcomingEvents' => $upcomingEvents,
             'seo' => $seoMetadata->forPage('location', [
                 'title' => $location->name,

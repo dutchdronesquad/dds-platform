@@ -31,7 +31,7 @@ test('public pages expose their canonical metadata contract', function (string $
         ->assertSee('rel="canonical"', false)
         ->assertSee('property="og:image"', false);
 })->with([
-    'bio' => ['bio', 'Op de baan. In de community.', '/bio'],
+    'bio' => ['bio', 'Waar dronepiloten samenkomen.', '/bio'],
     'home' => ['home', 'Indoor FPV-racing in Alkmaar', '/'],
     'events' => ['events.index', 'Agenda', '/events'],
     'projects' => ['projects.index', 'Projecten', '/projects'],

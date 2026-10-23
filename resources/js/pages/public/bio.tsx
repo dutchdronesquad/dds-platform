@@ -124,9 +124,7 @@ export default function Bio({
                                 id="bio-heading"
                                 className="mt-3 font-public-display text-[2.5rem] leading-[0.97] font-semibold tracking-[-0.055em] sm:text-5xl"
                             >
-                                Op de baan.
-                                <br />
-                                In de community.
+                                Waar dronepiloten samenkomen.
                             </h1>
                             <p className="mt-3 text-sm leading-6 text-signal-muted dark:text-night-200">
                                 Nieuws, vliegavonden en alles wat je nodig hebt

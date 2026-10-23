@@ -14,7 +14,7 @@ return [
 
     'pages' => [
         'bio' => [
-            'title' => 'Op de baan. In de community.',
+            'title' => 'Waar dronepiloten samenkomen.',
             'description' => 'Nieuws, vliegavonden en alles wat je nodig hebt om aan te sluiten bij Dutch Drone Squad.',
             'canonical_path' => '/bio',
         ],

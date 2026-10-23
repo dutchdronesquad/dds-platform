@@ -125,6 +125,38 @@ test('an unknown location slug is not found', function () {
     $this->get('/locations/unknown-location')->assertNotFound();
 });
 
+test('a location detail lists every other location alphabetically', function (int $otherLocationCount) {
+    $location = Location::factory()->create(['name' => 'Huidige locatie']);
+    $otherLocations = collect(range(1, $otherLocationCount))
+        ->reverse()
+        ->map(fn (int $number): Location => Location::factory()->create([
+            'name' => "Locatie {$number}",
+        ]));
+
+    $this->get(route('locations.show', $location->slug))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('otherLocations', $otherLocations
+                ->sortBy('name')
+                ->values()
+                ->map(fn (Location $otherLocation): array => [
+                    'id' => $otherLocation->id,
+                    'slug' => $otherLocation->slug,
+                    'name' => $otherLocation->name,
+                    'city' => $otherLocation->city,
+                ])
+                ->all())
+        );
+})->with([1, 4]);
+
+test('a location detail has no other locations when it is the only location', function () {
+    $location = Location::factory()->create();
+
+    $this->get(route('locations.show', $location->slug))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('otherLocations', [])
+        );
+});
+
 test('a location detail shows only upcoming publicly visible events at that location', function () {
     $location = Location::factory()->create();
     $otherLocation = Location::factory()->create();
