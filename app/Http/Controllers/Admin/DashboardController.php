@@ -199,8 +199,6 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map($this->recentChange(...))
-                    ->values()
                     ->all()
                 : []),
             ...($canManageSeasons
@@ -211,25 +209,16 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map($this->recentChange(...))
-                    ->values()
                     ->all()
                 : []),
         ];
 
-        $changes = collect($changes)
-            ->sortByDesc('sortAt')
+        return collect($changes)
+            ->sortByDesc(fn (Event|Season $resource): int => $resource->updated_at->getTimestamp())
+            ->take(5)
+            ->map($this->recentChange(...))
             ->values()
             ->all();
-
-        $recentChanges = [];
-
-        foreach (array_slice($changes, 0, 5) as $change) {
-            unset($change['sortAt']);
-            $recentChanges[] = $change;
-        }
-
-        return $recentChanges;
     }
 
     /**
@@ -239,8 +228,7 @@ final class DashboardController extends Controller
      *     slug: string|null,
      *     title: string,
      *     updatedAt: string,
-     *     updatedBy: array{id: int, name: string}|null,
-     *     sortAt: int
+     *     updatedBy: array{id: int, name: string}|null
      * }
      */
     private function recentChange(Event|Season $resource): array
@@ -252,7 +240,6 @@ final class DashboardController extends Controller
             'title' => $resource instanceof Event ? $resource->title : $resource->name,
             'updatedAt' => $resource->updated_at->toIso8601String(),
             'updatedBy' => $this->actor($resource->updatedBy),
-            'sortAt' => $resource->updated_at->getTimestamp(),
         ];
     }
 
