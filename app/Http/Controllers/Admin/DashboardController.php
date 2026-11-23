@@ -14,6 +14,16 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @phpstan-type RecentChange array{
+ *     id: int,
+ *     kind: 'event'|'season',
+ *     slug: string|null,
+ *     title: string,
+ *     updatedAt: string,
+ *     updatedBy: array{id: int, name: string}|null
+ * }
+ */
 final class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
@@ -176,14 +186,7 @@ final class DashboardController extends Controller
     }
 
     /**
-     * @return list<array{
-     *     id: int,
-     *     kind: 'event'|'season',
-     *     slug: string|null,
-     *     title: string,
-     *     updatedAt: string,
-     *     updatedBy: array{id: int, name: string}|null
-     * }>
+     * @return list<RecentChange>
      */
     private function recentChanges(
         bool $canViewEvents,
@@ -199,7 +202,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Event $event): array => [
+                    ->map(/** @return RecentChange&array{sortAt: int} */ fn (Event $event): array => [
                         'id' => $event->id,
                         'kind' => 'event',
                         'slug' => null,
@@ -219,7 +222,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Season $season): array => [
+                    ->map(/** @return RecentChange&array{sortAt: int} */ fn (Season $season): array => [
                         'id' => $season->id,
                         'kind' => 'season',
                         'slug' => $season->slug,
@@ -239,6 +242,7 @@ final class DashboardController extends Controller
         );
 
         return array_map(
+            /** @return RecentChange */
             fn (array $change): array => [
                 'id' => $change['id'],
                 'kind' => $change['kind'],
