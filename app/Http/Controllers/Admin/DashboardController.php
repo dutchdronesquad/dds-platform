@@ -199,16 +199,6 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Event $event): array => [
-                        'id' => $event->id,
-                        'kind' => 'event',
-                        'slug' => null,
-                        'title' => $event->title,
-                        'updatedAt' => $event->updated_at->toIso8601String(),
-                        'updatedBy' => $this->actor($event->updatedBy),
-                        'sortAt' => $event->updated_at->getTimestamp(),
-                    ])
-                    ->values()
                     ->all()
                 : []),
             ...($canManageSeasons
@@ -219,36 +209,41 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Season $season): array => [
-                        'id' => $season->id,
-                        'kind' => 'season',
-                        'slug' => $season->slug,
-                        'title' => $season->name,
-                        'updatedAt' => $season->updated_at->toIso8601String(),
-                        'updatedBy' => $this->actor($season->updatedBy),
-                        'sortAt' => $season->updated_at->getTimestamp(),
-                    ])
-                    ->values()
                     ->all()
                 : []),
         ];
 
-        usort(
-            $changes,
-            fn (array $left, array $right): int => $right['sortAt'] <=> $left['sortAt'],
-        );
+        $recentChanges = [];
 
-        return array_map(
-            fn (array $change): array => [
-                'id' => $change['id'],
-                'kind' => $change['kind'],
-                'slug' => $change['slug'],
-                'title' => $change['title'],
-                'updatedAt' => $change['updatedAt'],
-                'updatedBy' => $change['updatedBy'],
-            ],
-            array_slice($changes, 0, 5),
-        );
+        foreach (collect($changes)
+            ->sortByDesc(fn (Event|Season $resource): int => $resource->updated_at->getTimestamp())
+            ->take(5) as $resource) {
+            $recentChanges[] = $this->recentChange($resource);
+        }
+
+        return $recentChanges;
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     kind: 'event'|'season',
+     *     slug: string|null,
+     *     title: string,
+     *     updatedAt: string,
+     *     updatedBy: array{id: int, name: string}|null
+     * }
+     */
+    private function recentChange(Event|Season $resource): array
+    {
+        return [
+            'id' => $resource->id,
+            'kind' => $resource instanceof Event ? 'event' : 'season',
+            'slug' => $resource instanceof Season ? $resource->slug : null,
+            'title' => $resource instanceof Event ? $resource->title : $resource->name,
+            'updatedAt' => $resource->updated_at->toIso8601String(),
+            'updatedBy' => $this->actor($resource->updatedBy),
+        ];
     }
 
     /** @return array{id: int, name: string}|null */

@@ -146,8 +146,14 @@ test('dashboard shows operational open points and recent changes', function () {
             ->where('openPoints.unassignedUpcomingEvents', 2)
             ->where('nextEvent.title', 'Eerstvolgende training')
             ->where('nextEvent.registrationStatus', EventRegistrationStatus::Closed->value)
+            ->where('recentChanges.0.kind', 'event')
+            ->where('recentChanges.0.slug', null)
+            ->missing('recentChanges.0.sortAt')
             ->where('recentChanges.0.title', 'Eerstvolgende training')
             ->where('recentChanges.0.updatedBy.name', 'Eventbeheerder')
+            ->where('recentChanges.3.kind', 'season')
+            ->where('recentChanges.3.slug', $season->slug)
+            ->missing('recentChanges.3.sortAt')
             ->where('recentChanges.3.title', 'Wintercompetitie')
             ->where('isEmpty', false),
         );
