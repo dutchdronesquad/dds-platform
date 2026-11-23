@@ -14,16 +14,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/**
- * @phpstan-type RecentChange array{
- *     id: int,
- *     kind: 'event'|'season',
- *     slug: string|null,
- *     title: string,
- *     updatedAt: string,
- *     updatedBy: array{id: int, name: string}|null
- * }
- */
 final class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
@@ -186,7 +176,14 @@ final class DashboardController extends Controller
     }
 
     /**
-     * @return list<RecentChange>
+     * @return list<array{
+     *     id: int,
+     *     kind: 'event'|'season',
+     *     slug: string|null,
+     *     title: string,
+     *     updatedAt: string,
+     *     updatedBy: array{id: int, name: string}|null
+     * }>
      */
     private function recentChanges(
         bool $canViewEvents,
@@ -202,7 +199,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(/** @return RecentChange&array{sortAt: int} */ fn (Event $event): array => [
+                    ->map(fn (Event $event): array => [
                         'id' => $event->id,
                         'kind' => 'event',
                         'slug' => null,
@@ -222,7 +219,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(/** @return RecentChange&array{sortAt: int} */ fn (Season $season): array => [
+                    ->map(fn (Season $season): array => [
                         'id' => $season->id,
                         'kind' => 'season',
                         'slug' => $season->slug,
@@ -241,18 +238,14 @@ final class DashboardController extends Controller
             fn (array $left, array $right): int => $right['sortAt'] <=> $left['sortAt'],
         );
 
-        return array_map(
-            /** @return RecentChange */
-            fn (array $change): array => [
-                'id' => $change['id'],
-                'kind' => $change['kind'],
-                'slug' => $change['slug'],
-                'title' => $change['title'],
-                'updatedAt' => $change['updatedAt'],
-                'updatedBy' => $change['updatedBy'],
-            ],
-            array_slice($changes, 0, 5),
-        );
+        $recentChanges = [];
+
+        foreach (array_slice($changes, 0, 5) as $change) {
+            unset($change['sortAt']);
+            $recentChanges[] = $change;
+        }
+
+        return $recentChanges;
     }
 
     /** @return array{id: int, name: string}|null */
