@@ -213,12 +213,15 @@ final class DashboardController extends Controller
                 : []),
         ];
 
-        return collect($changes)
+        $recentChanges = [];
+
+        foreach (collect($changes)
             ->sortByDesc(fn (Event|Season $resource): int => $resource->updated_at->getTimestamp())
-            ->take(5)
-            ->map($this->recentChange(...))
-            ->values()
-            ->all();
+            ->take(5) as $resource) {
+            $recentChanges[] = $this->recentChange($resource);
+        }
+
+        return $recentChanges;
     }
 
     /**
