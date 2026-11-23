@@ -217,10 +217,10 @@ final class DashboardController extends Controller
                 : []),
         ];
 
-        usort(
-            $changes,
-            fn (array $left, array $right): int => $right['sortAt'] <=> $left['sortAt'],
-        );
+        $changes = collect($changes)
+            ->sortByDesc('sortAt')
+            ->values()
+            ->all();
 
         $recentChanges = [];
 
