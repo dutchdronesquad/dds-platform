@@ -199,15 +199,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Event $event): array => [
-                        'id' => $event->id,
-                        'kind' => 'event',
-                        'slug' => null,
-                        'title' => $event->title,
-                        'updatedAt' => $event->updated_at->toIso8601String(),
-                        'updatedBy' => $this->actor($event->updatedBy),
-                        'sortAt' => $event->updated_at->getTimestamp(),
-                    ])
+                    ->map($this->recentChange(...))
                     ->values()
                     ->all()
                 : []),
@@ -219,15 +211,7 @@ final class DashboardController extends Controller
                     ->latest('updated_at')
                     ->limit(5)
                     ->get()
-                    ->map(fn (Season $season): array => [
-                        'id' => $season->id,
-                        'kind' => 'season',
-                        'slug' => $season->slug,
-                        'title' => $season->name,
-                        'updatedAt' => $season->updated_at->toIso8601String(),
-                        'updatedBy' => $this->actor($season->updatedBy),
-                        'sortAt' => $season->updated_at->getTimestamp(),
-                    ])
+                    ->map($this->recentChange(...))
                     ->values()
                     ->all()
                 : []),
@@ -246,6 +230,30 @@ final class DashboardController extends Controller
         }
 
         return $recentChanges;
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     kind: 'event'|'season',
+     *     slug: string|null,
+     *     title: string,
+     *     updatedAt: string,
+     *     updatedBy: array{id: int, name: string}|null,
+     *     sortAt: int
+     * }
+     */
+    private function recentChange(Event|Season $resource): array
+    {
+        return [
+            'id' => $resource->id,
+            'kind' => $resource instanceof Event ? 'event' : 'season',
+            'slug' => $resource instanceof Season ? $resource->slug : null,
+            'title' => $resource instanceof Event ? $resource->title : $resource->name,
+            'updatedAt' => $resource->updated_at->toIso8601String(),
+            'updatedBy' => $this->actor($resource->updatedBy),
+            'sortAt' => $resource->updated_at->getTimestamp(),
+        ];
     }
 
     /** @return array{id: int, name: string}|null */
